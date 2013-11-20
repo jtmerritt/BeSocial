@@ -23,6 +23,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
@@ -52,6 +54,8 @@ public class ContactsListActivity extends FragmentActivity implements
     // search results in a separate instance of the activity rather than loading results in-line
     // as the query is typed.
     private boolean isSearchResultView = false;
+
+    private Spinner groupSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +95,7 @@ public class ContactsListActivity extends FragmentActivity implements
         }
 
         loadGroups();
+        addItemsToGroupsSpinner();
 
         if (isTwoPaneLayout) {
             // If two pane layout, locate the contact detail fragment
@@ -115,7 +120,19 @@ public class ContactsListActivity extends FragmentActivity implements
 
     List<GroupInfo> groups = new ArrayList<GroupInfo>();
 
-    public void loadGroups() {
+    private void addItemsToGroupsSpinner() {
+        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
+        List<String> list = new ArrayList<String>();
+
+        for (GroupInfo groupInfo:groups) {
+            list.add(groupInfo.toString());
+        }
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, list);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        groupSpinner.setAdapter(dataAdapter);
+    }
+    private void loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
                 ContactsContract.Groups.TITLE,
