@@ -18,13 +18,20 @@ package com.example.android.contactslist.ui;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.util.Utils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * FragmentActivity to hold the main {@link ContactsListFragment}. On larger screen devices which
@@ -83,11 +90,68 @@ public class ContactsListActivity extends FragmentActivity implements
             setTitle(title);
         }
 
+        loadGroups();
+
         if (isTwoPaneLayout) {
             // If two pane layout, locate the contact detail fragment
             mContactDetailFragment = (ContactDetailFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_detail);
         }
+    }
+
+    private class GroupInfo {
+        String id;
+        String title;
+
+        @Override
+        public String toString() {
+            return title+ " ("+id+")";
+        }
+
+        public String getId() {
+            return id;
+        }
+    }
+
+    List<GroupInfo> groups = new ArrayList<GroupInfo>();
+
+    public void loadGroups() {
+        final String[] GROUP_PROJECTION = new String[] {
+                ContactsContract.Groups._ID,
+                ContactsContract.Groups.TITLE,
+                ContactsContract.Groups.SUMMARY_WITH_PHONES
+        };
+
+        Cursor c = getContentResolver().query(
+                ContactsContract.Groups.CONTENT_SUMMARY_URI,
+                GROUP_PROJECTION,
+                ContactsContract.Groups.DELETED+"!='1' AND "+
+                        ContactsContract.Groups.GROUP_VISIBLE+"!='0' "
+                ,
+                null,
+                null);
+        final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
+        final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
+
+        Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
+
+        while (c.moveToNext()) {
+            GroupInfo g = new GroupInfo();
+            g.id = c.getString(IDX_ID);
+            g.title = c.getString(IDX_TITLE);
+            int users = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_WITH_PHONES));
+            if (users>0) {
+                // group with duplicate name?
+                GroupInfo g2 = m.get(g.title);
+                if (g2==null) {
+                    m.put(g.title, g);
+                    groups.add(g);
+                } else {
+                    g2.id+=","+g.id;
+                }
+            }
+        }
+        c.close();
     }
 
     /**
