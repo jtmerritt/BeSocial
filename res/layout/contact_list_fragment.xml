@@ -14,25 +14,36 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <Spinner
+        android:id="@+id/contactGroups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <FrameLayout
              android:layout_width="match_parent"
-             android:layout_height="match_parent">
+             android:layout_height="match_parent"
+             android:layout_below="@id/contactGroups">
 
-    <!-- Use standard android.R class list id instead of app specific id. This is just useful for
+        <!-- Use standard android.R class list id instead of app specific id. This is just useful for
+             consistency. -->
+        <ListView android:id="@id/android:list"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  style="@style/ContactListView"/>
+
+        <!-- Use standard android.R class empty id instead of app specific id. This is just useful for
          consistency. -->
-    <ListView android:id="@id/android:list"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              style="@style/ContactListView"/>
+        <TextView android:id="@id/android:empty"
+                  android:gravity="center"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:text="@string/no_contacts"
+                  android:fontFamily="sans-serif-light"
+                  android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-    <!-- Use standard android.R class empty id instead of app specific id. This is just useful for
-     consistency. -->
-    <TextView android:id="@id/android:empty"
-              android:gravity="center"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:text="@string/no_contacts"
-              android:fontFamily="sans-serif-light"
-              android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-</FrameLayout>
+    </FrameLayout>
+</RelativeLayout>
