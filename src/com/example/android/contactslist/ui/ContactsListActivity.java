@@ -115,10 +115,11 @@ public class ContactsListActivity extends FragmentActivity implements
     private class GroupInfo {
         String id;
         String title;
+        int count;
 
         @Override
         public String toString() {
-            return title;
+            return title + "("+count+")";
         }
 
         public int getId() {
@@ -180,6 +181,7 @@ public class ContactsListActivity extends FragmentActivity implements
             pCur.close();
 
         }
+        c.close();
     }
 
     public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -218,7 +220,7 @@ public class ContactsListActivity extends FragmentActivity implements
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
                 ContactsContract.Groups.TITLE,
-                ContactsContract.Groups.SUMMARY_WITH_PHONES
+                ContactsContract.Groups.SUMMARY_COUNT
         };
 
         Cursor c = getContentResolver().query(
@@ -237,8 +239,8 @@ public class ContactsListActivity extends FragmentActivity implements
             GroupInfo g = new GroupInfo();
             g.id = c.getString(IDX_ID);
             g.title = c.getString(IDX_TITLE);
-            int users = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_WITH_PHONES));
-            if (users>0) {
+            g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
+            if (g.count>0) {
                 // group with duplicate name?
                 GroupInfo g2 = m.get(g.title);
                 if (g2==null) {
