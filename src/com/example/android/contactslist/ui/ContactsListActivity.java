@@ -23,6 +23,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
@@ -57,6 +59,11 @@ public class ContactsListActivity extends FragmentActivity implements
 
     private Spinner groupSpinner;
 
+    class ConatctData {
+        String phone, name;
+    }
+
+    private List<ConatctData> contactList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) {
@@ -96,6 +103,7 @@ public class ContactsListActivity extends FragmentActivity implements
 
         loadGroups();
         addItemsToGroupsSpinner();
+        addListenerOnSpinnerItemSelection();
 
         if (isTwoPaneLayout) {
             // If two pane layout, locate the contact detail fragment
@@ -110,11 +118,11 @@ public class ContactsListActivity extends FragmentActivity implements
 
         @Override
         public String toString() {
-            return title+ " ("+id+")";
+            return title;
         }
 
-        public String getId() {
-            return id;
+        public int getId() {
+            return Integer.parseInt(id);
         }
     }
 
@@ -132,6 +140,80 @@ public class ContactsListActivity extends FragmentActivity implements
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         groupSpinner.setAdapter(dataAdapter);
     }
+
+    public void getSampleContactList(int groupID) {
+
+        contactList = new ArrayList<ConatctData>();
+        Uri groupURI = ContactsContract.Data.CONTENT_URI;
+        String[] projection = new String[] {
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID };
+
+        Cursor c = getContentResolver().query(
+                groupURI,
+                projection,
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+                        + "=" + groupID, null, null);
+
+        while (c.moveToNext()) {
+            String id = c
+                    .getString(c
+                            .getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID));
+            Cursor pCur = getContentResolver().query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                    new String[] { id }, null);
+
+            while (pCur.moveToNext()) {
+                ConatctData data = new ConatctData();
+                data.name = pCur
+                        .getString(pCur
+                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+
+                data.phone = pCur
+                        .getString(pCur
+                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+                contactList.add(data);
+            }
+
+            pCur.close();
+
+        }
+    }
+
+    public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+            // this is where we figure out which was selected and then do query.
+            String groupName = groups.get(pos).toString();
+
+            getSampleContactList(groups.get(pos).getId());
+           /* Uri groupURI = ContactsContract.Data.CONTENT_URI;
+
+
+            String[] projection = new String[]{
+                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
+                    ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID};
+
+            Cursor c = managedQuery(groupURI,
+                    projection,
+                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID+"="+groups.get(pos).getId(),
+                    null,null);
+                    */
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {
+            // TODO Auto-generated method stub
+        }
+
+    }
+    public void addListenerOnSpinnerItemSelection() {
+        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
+        groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+    }
     private void loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
@@ -142,8 +224,7 @@ public class ContactsListActivity extends FragmentActivity implements
         Cursor c = getContentResolver().query(
                 ContactsContract.Groups.CONTENT_SUMMARY_URI,
                 GROUP_PROJECTION,
-                ContactsContract.Groups.DELETED+"!='1' AND "+
-                        ContactsContract.Groups.GROUP_VISIBLE+"!='0' "
+                null
                 ,
                 null,
                 null);
