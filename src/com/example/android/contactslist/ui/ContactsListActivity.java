@@ -191,7 +191,7 @@ public class ContactsListActivity extends FragmentActivity implements
             // this is where we figure out which was selected and then do query.
             String groupName = groups.get(pos).toString();
 
-            getSampleContactList(groups.get(pos).getId());
+           // getSampleContactList(groups.get(pos).getId());
            /* Uri groupURI = ContactsContract.Data.CONTENT_URI;
 
 

@@ -27,6 +27,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
@@ -56,6 +58,11 @@ import com.example.android.contactslist.util.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -684,4 +691,102 @@ public class ContactDetailFragment extends Fragment implements
         final static int TYPE = 2;
         final static int LABEL = 3;
     }
+
+/********call log reading**************************/
+
+
+
+
+    private class CallInfo {
+        String CallerName;  /*name of caller, if available.*/
+        long CallDate;  /*date of call. Time of day?*/
+        long CallDuration;  /*Length of the call in Minutes*/
+        int CallType;    /*Type of call: incoming, outgoing or missed */
+
+        @Override
+        public String getCallerName() {
+            return CallerName;
+        }
+
+       public long getCallDate() {
+            return CallDate;
+       }
+
+       public long getCallDuration() {
+            return CallDuration;
+       }
+
+    /* 3 call types:
+    CallLog.Calls.OUTGOING_TYPE = 2
+    CallLog.Calls.INCOMING_TYPE = 1
+    CallLog.Calls.MISSED_TYPE = 3
+    */
+        public int getCallType() {
+         return CallType;
+      }
+    }
+
+    List<CallInfo> CallLog = new ArrayList<CallInfo>();
+
+
+// taken from http://developer.samsung.com/android/technical-docs/CallLogs-in-Android#
+    private void loadCallLogs() {
+        CallLog.clear();
+
+	/*Query Call Log Content Provider*/
+        //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
+        // http://developer.android.com/reference/android/provider/CallLog.Calls.html
+        Cursor callLogCursor = getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI,
+                                                            null,
+                                                            null,
+                                                            null,
+                                                            android.provider.CallLog.Calls.DEFAULT_SORT_ORDER);
+
+	/*Check if cursor is not null*/
+        if (callLogCursor != null) {
+
+	/*Loop through the cursor*/
+            while (callLogCursor.moveToNext()) {
+
+        		/*Create Model Object*/
+                CallInfo CI = new CallInfo();
+
+    		/*Get Contact Name*/
+                String CallerName = callLogCursor.getString(callLogCursor.getColumnIndex(CallLog.Calls.CACHED_NAME));
+
+		    /*Get Date and time information*/
+                long dateTimeMillis = callLogCursor.getLong(callLogCursor.getColumnIndex(CallLog.Calls.DATE));
+                long durationMillis = callLogCursor.getLong(callLogCursor.getColumnIndex(CallLog.Calls.DURATION));
+
+    		/*Get Call Type*/
+                int CallType = callLogCursor.getInt(callLogCursor.getColumnIndex(CallLog.Calls.TYPE));
+
+                //long CallDuration = getDuration(durationMillis);
+
+                //String CallDate = getDateTime(dateTimeMillis);
+
+             //   if (cacheNumber == null)
+             //       cacheNumber = number;
+
+                if (CallerName == null)
+                    CallerName = "No Name";
+
+                CI.CallDate = dateTimeMillis; //CallDate;
+                CI.CallDuration = durationMillis; //CallDuration;
+                CI.CallerName = CallerName;
+                CI.CallType = CallType;
+
+
+    		/*Add it into the ArrayList*/
+                    CallLog.add(CI);
+                }
+            }
+
+	/*Close the cursor*/
+            callLogCursor.close();
+        }
+    }
+
+
+
 }

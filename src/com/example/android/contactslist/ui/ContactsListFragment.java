@@ -480,6 +480,7 @@ public class ContactsListFragment extends ListFragment implements
                     ContactsQuery.PROJECTION,
                     ContactsQuery.SELECTION,
                     null,
+
                     ContactsQuery.SORT_ORDER);
         }
 
