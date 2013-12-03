@@ -33,8 +33,8 @@
          consistency. This is secondary text and not always visible so by default is has its
          visibility set to gone -->
     <TextView android:id="@android:id/text2"
-              android:paddingLeft="@dimen/listview_item_padding"
-              android:paddingRight="@dimen/listview_item_padding"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp"
               android:layout_width="match_parent"
               android:layout_height="26dp"
               android:layout_toRightOf="@android:id/icon"

@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -102,6 +103,7 @@ public class ContactDetailFragment extends Fragment implements
     // in multiple methods throughout this class.
     private ImageView mImageView;
     private LinearLayout mDetailsLayout;
+    private LinearLayout mDetailsCallLogLayout;
     private TextView mEmptyView;
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
@@ -177,9 +179,9 @@ public class ContactDetailFragment extends Fragment implements
             // restartLoader() is used instead of initLoader() as this method may be called
             // multiple times.
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
-            getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-            // TODO: the code this next line initiates is not ready
-            //getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+            //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
+            // TODO: the code this next line initiates is not ready.  crashes the programregardless of address query being removed
+            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
             // in the contacts list. This should only happen in a two-pane layout when the user
@@ -190,6 +192,8 @@ public class ContactDetailFragment extends Fragment implements
             mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
+            mDetailsCallLogLayout.removeAllViews();
+
             if (mContactName != null) {
                 mContactName.setText("");
             }
@@ -248,6 +252,9 @@ public class ContactDetailFragment extends Fragment implements
         // Gets handles to view objects in the layout
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
+
+        //TODO: does this need its own layout?
+        mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
 
         if (mIsTwoPaneLayout) {
@@ -343,10 +350,9 @@ public class ContactDetailFragment extends Fragment implements
                         ContactAddressQuery.PROJECTION,
                         ContactAddressQuery.SELECTION,
                         null, null);
-            // TODo Why is there no break statement here?
+
             case ContactCallLogQuery.QUERY_ID:
-                // This query loads main contact details, see
-                // ContactDetailQuery for more information.
+                // This query loads main contact details, for use in generating a call log.
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
                         null, null, null);
@@ -435,7 +441,7 @@ public class ContactDetailFragment extends Fragment implements
                 // For the contact details query, fetches the contact display name.
                 // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
                 // name field based on OS version.
-                final String contactName2 = data.getString(ContactDetailQuery.DISPLAY_NAME);
+                final String contactName2 = "Janet Zander"; //data.getString(ContactCallLogQuery.DISPLAY_NAME); //This is crashing the program
 
                 //  using the contact name build a call log for the name.
                 loadContactCallLogs(contactName2);
@@ -443,8 +449,8 @@ public class ContactDetailFragment extends Fragment implements
                 // Clears out the details layout first in case the details
                 // layout has CallLogs from a previous data load still
                 // added as children.
-                // TODO: The case needs its own layout statement
-                mDetailsLayout.removeAllViews();
+
+                mDetailsCallLogLayout.removeAllViews();
 
                 // Loops through all the rows in the Cursor
                 if (!mCallLog.isEmpty()) {
@@ -457,16 +463,16 @@ public class ContactDetailFragment extends Fragment implements
                                 contactName2,  /*name of caller, if available.*/
                                 mCallLog.get(j).getCallDate(), /*date of call. Time of day?*/
                                 mCallLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                mCallLog.get(j).getCallType()); /*Type of call: incoming, outgoing or missed */
+                                mCallLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
 
 
                         // Adds the new address layout to the details layout
-                        mDetailsLayout.addView(layout, CallLoglayoutParams);
+                        mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
 
                     } while (j>0);
                 } else {
                     // If nothing found, adds an empty address layout
-                    mDetailsLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+                    mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
                 }
                 break;
         }
@@ -779,7 +785,7 @@ public class ContactDetailFragment extends Fragment implements
      * @return A LinearLayout to add to the contact details layout
      */
     private LinearLayout buildEmptyCallLogLayout() {
-        return buildCallLogLayout("", 0, 0, 4);
+        return buildCallLogLayout("", 0, 0, "");
     }
 
 /********call log layout**************************/
@@ -787,32 +793,43 @@ public class ContactDetailFragment extends Fragment implements
 private LinearLayout buildCallLogLayout(
         String CallerName,  /*name of caller, if available.*/
         long CallDate, /*date of call. Time of day?*/
-        long CallDuration,  /*Length of the call in Minutes*/
-        int CallType    /*Type of call: incoming, outgoing or missed */) {
+        long CallDuration,  /*Length of the call in seconds*/
+        String CallType    /*Type of call: incoming, outgoing or missed */) {
 
     // Inflates the address layout
     final LinearLayout callLogLayout =
             (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                    R.layout.contact_detail_item, mDetailsLayout, false);
+                    R.layout.contact_detail_call_log_item, mDetailsCallLogLayout, false);
 
     // Gets handles to the view objects in the layout
-    final TextView headerTextView =
-            (TextView) callLogLayout.findViewById(R.id.contact_detail_header);
-    final TextView addressTextView =
-            (TextView) callLogLayout.findViewById(R.id.contact_detail_item);
-    final ImageButton viewAddressButton =
-            (ImageButton) callLogLayout.findViewById(R.id.button_view_address);
+    final TextView dateTextView =
+            (TextView) callLogLayout.findViewById(R.id.contact_detail_call_date);
+    final TextView durationTextView =
+            (TextView) callLogLayout.findViewById(R.id.contact_detail_call_duration);
+    final TextView typeTextView =
+            (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
+
 
     // format date string
     Date date = new Date(CallDate);
-    DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    format.setTimeZone(TimeZone.getTimeZone("PSD"));
+    DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+ //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
     String formattedCallDate = format.format(date);
+
+    //convert time to minutes: seconds
+    long minute = TimeUnit.SECONDS.toMinutes(CallDuration);
+    long second = TimeUnit.SECONDS.toSeconds(CallDuration) -
+            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(CallDuration));
+
 
 
         // Sets TextView objects in the layout
-        headerTextView.setText(CallType);
-        addressTextView.setText(formattedCallDate);
+        dateTextView.setText(formattedCallDate);
+        durationTextView.setText(minute + " mins " + second + " secs");
+        typeTextView.setText(CallType);
+
+
+
 
     return callLogLayout;
 }
@@ -827,7 +844,7 @@ private LinearLayout buildCallLogLayout(
     private class CallInfo {
         String CallerName;  /*name of caller, if available.*/
         long CallDate;  /*date of call. Time of day?*/
-        long CallDuration;  /*Length of the call in Minutes*/
+        long CallDuration;  /*Length of the call in Seconds*/
         int CallType;    /*Type of call: incoming, outgoing or missed */
 
 //        @Override
@@ -851,6 +868,19 @@ private LinearLayout buildCallLogLayout(
         public int getCallType() {
          return CallType;
       }
+    public String getCallTypeSting() {
+        switch (CallType){
+            case 1:
+                return "Incoming Call";
+            case 2:
+                return "Outgoing Call";
+            case 3:
+                return "Missed Call";
+            default:
+                return "";
+        }
+    }
+
     }
 
     List<CallInfo> mCallLog = new ArrayList<CallInfo>();
@@ -864,10 +894,10 @@ private LinearLayout buildCallLogLayout(
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
         // http://developer.android.com/reference/android/provider/CallLog.Calls.html
         Cursor callLogCursor = getActivity().getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI,
-                                                            null,
-                                                            null,
-                                                            null,
-                                                            android.provider.CallLog.Calls.DEFAULT_SORT_ORDER);
+                null,
+                null,
+                null,
+                "date ASC" /*android.provider.CallLog.Calls.DEFAULT_SORT_ORDER*/);
 
 	/*Check if cursor is not null*/
         if (callLogCursor != null) {
@@ -895,7 +925,7 @@ private LinearLayout buildCallLogLayout(
                 if (CallerName == null)
                     CallerName = "No Name";
 
-                if(contactName.equals(CallerName)){
+                if((contactName.equals(CallerName))){
             		/*Create Model Object*/
                     CallInfo CI = new CallInfo();
 
