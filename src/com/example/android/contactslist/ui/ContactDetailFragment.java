@@ -178,10 +178,10 @@ public class ContactDetailFragment extends Fragment implements
             // Starts two queries to to retrieve contact information from the Contacts Provider.
             // restartLoader() is used instead of initLoader() as this method may be called
             // multiple times.
+            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
             // TODO: the code this next line initiates is not ready.  crashes the programregardless of address query being removed
-            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
             // in the contacts list. This should only happen in a two-pane layout when the user
@@ -427,52 +427,54 @@ public class ContactDetailFragment extends Fragment implements
             // being the second case of this query_ID, this section will not get called.
             //
             case ContactCallLogQuery.QUERY_ID:
-                // This query loads the contact call log details for the contact. More than
-                // one log is possible, so move each one to a
-                // LinearLayout in a Scrollview so multiple addresses can
-                // be scrolled by the user.
+                if (data.moveToFirst()) {
+                    // This query loads the contact call log details for the contact. More than
+                    // one log is possible, so move each one to a
+                    // LinearLayout in a Scrollview so multiple addresses can
+                    // be scrolled by the user.
 
-                // Each LinearLayout has the same LayoutParams so this can
-                // be created once and used for each address.
-                final LinearLayout.LayoutParams CallLoglayoutParams =
-                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
+                    // Each LinearLayout has the same LayoutParams so this can
+                    // be created once and used for each address.
+                    final LinearLayout.LayoutParams CallLoglayoutParams =
+                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
 
-                // For the contact details query, fetches the contact display name.
-                // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
-                // name field based on OS version.
-                final String contactName2 = "Janet Zander"; //data.getString(ContactCallLogQuery.DISPLAY_NAME); //This is crashing the program
+                    // For the contact details query, fetches the contact display name.
+                    // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
+                    // name field based on OS version.
 
-                //  using the contact name build a call log for the name.
-                loadContactCallLogs(contactName2);
+                    final String contactName2 = data.getString(ContactDetailQuery.DISPLAY_NAME);
+                    //  using the contact name build a call log for the name.
+                    loadContactCallLogs(contactName2);
 
-                // Clears out the details layout first in case the details
-                // layout has CallLogs from a previous data load still
-                // added as children.
+                    // Clears out the details layout first in case the details
+                    // layout has CallLogs from a previous data load still
+                    // added as children.
 
-                mDetailsCallLogLayout.removeAllViews();
+                    mDetailsCallLogLayout.removeAllViews();
 
-                // Loops through all the rows in the Cursor
-                if (!mCallLog.isEmpty()) {
-                    int j=mCallLog.size();
-                    do {
-                        // Implentation reverses the display order of the call log.
-                        j--;
-                        // Builds the address layout
-                        final LinearLayout layout = buildCallLogLayout(
-                                contactName2,  /*name of caller, if available.*/
-                                mCallLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                mCallLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                mCallLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
+                    // Loops through all the rows in the Cursor
+                    if (!mCallLog.isEmpty()) {
+                        int j=mCallLog.size();
+                        do {
+                            // Implentation reverses the display order of the call log.
+                            j--;
+                            // Builds the address layout
+                            final LinearLayout layout = buildCallLogLayout(
+                                    contactName2,  /*name of caller, if available.*/
+                                    mCallLog.get(j).getCallDate(), /*date of call. Time of day?*/
+                                    mCallLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
+                                    mCallLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
 
 
-                        // Adds the new address layout to the details layout
-                        mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
+                            // Adds the new address layout to the details layout
+                            mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
 
-                    } while (j>0);
-                } else {
-                    // If nothing found, adds an empty address layout
-                    mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+                        } while (j>0);
+                    } else {
+                        // If nothing found, adds an empty address layout
+                        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+                    }
                 }
                 break;
         }
