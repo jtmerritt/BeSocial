@@ -104,6 +104,7 @@ public class ContactDetailFragment extends Fragment implements
     private ImageView mImageView;
     private LinearLayout mDetailsLayout;
     private LinearLayout mDetailsCallLogLayout;
+    private LinearLayout mDetailsSMSLogLayout;
     private TextView mEmptyView;
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
@@ -178,10 +179,15 @@ public class ContactDetailFragment extends Fragment implements
             // Starts two queries to to retrieve contact information from the Contacts Provider.
             // restartLoader() is used instead of initLoader() as this method may be called
             // multiple times.
-            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-            // TODO: the code this next line initiates is not ready.  crashes the programregardless of address query being removed
+            // TODO: the code this next line initiates is not ready.  crashes the program regardless of address query being removed
+            //getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+           getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
+
+
+
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
             // in the contacts list. This should only happen in a two-pane layout when the user
@@ -255,6 +261,7 @@ public class ContactDetailFragment extends Fragment implements
 
         //TODO: does this need its own layout?
         mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
+        mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
 
         if (mIsTwoPaneLayout) {
@@ -356,7 +363,11 @@ public class ContactDetailFragment extends Fragment implements
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
                         null, null, null);
-
+            case ContactSMSLogQuery.QUERY_ID:
+                // This query loads main contact details, for use in generating a call log.
+                return new CursorLoader(getActivity(), mContactUri,
+                        ContactDetailQuery.PROJECTION,
+                        null, null, null);
         }
         return null;
     }
@@ -474,6 +485,57 @@ public class ContactDetailFragment extends Fragment implements
                     } else {
                         // If nothing found, adds an empty address layout
                         mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+                    }
+                }
+                break;
+            case ContactSMSLogQuery.QUERY_ID:
+                if (data.moveToFirst()) {
+                    // This query loads the contact SMS log details for the contact. More than
+                    // one log is possible, so move each one to a
+                    // LinearLayout in a Scrollview so multiple addresses can
+                    // be scrolled by the user.
+
+                    // Each LinearLayout has the same LayoutParams so this can
+                    // be created once and used for each SMS.
+                    final LinearLayout.LayoutParams SMSLoglayoutParams =
+                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                    // For the contact details query, fetches the contact display name.
+                    // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
+                    // name field based on OS version.
+
+                    final String contactName3 = data.getString(ContactDetailQuery.DISPLAY_NAME);
+                    //  using the contact name build a SMS log for the name.
+                    loadContactSMSLogs(data.getLong(ContactDetailQuery.ID), contactName3);
+
+                    // Clears out the details layout first in case the details
+                    // layout has SMSLogs from a previous data load still
+                    // added as children.
+
+                    mDetailsSMSLogLayout.removeAllViews();
+
+                    // Loops through all the rows in the Cursor
+                    if (!mSMSLog.isEmpty()) {
+                        int j=mSMSLog.size();
+                        do {
+                            // Implentation reverses the display order of the SMS log.
+                            j--;
+                            // Builds the address layout
+                            final LinearLayout layout = buildSMSLogLayout(
+                                    contactName3,
+                                    mSMSLog.get(j).getSMSDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
+                                    mSMSLog.get(j).getSMSWordCount(), /*Length of the SMS in Minutes*/
+                                    mSMSLog.get(j).getSMSTypeSting()); /*Type of SMS: incoming, outgoing or missed */
+
+
+                            // Adds the new address layout to the details layout
+                            mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
+
+                        } while (j>0);
+                    } else {
+                        // If nothing found, adds an empty address layout
+                        mDetailsSMSLogLayout.addView(buildEmptySMSLogLayout(), SMSLoglayoutParams);
                     }
                 }
                 break;
@@ -728,6 +790,8 @@ public class ContactDetailFragment extends Fragment implements
         final static String[] PROJECTION = {
                 Contacts._ID,
                 Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
+                // TODO: Can the phone number also be included here?
+
         };
 
         // The query column numbers which map to each value in the projection
@@ -749,6 +813,7 @@ public class ContactDetailFragment extends Fragment implements
                 StructuredPostal.FORMATTED_ADDRESS,
                 StructuredPostal.TYPE,
                 StructuredPostal.LABEL,
+
         };
 
         // The query selection criteria. In this case matching against the
@@ -779,6 +844,45 @@ public class ContactDetailFragment extends Fragment implements
         final static int ID = 0;
         final static int DISPLAY_NAME = 1;
     }
+
+    public interface ContactSMSLogQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 4;
+
+        // The query projection (columns to fetch from the provider)
+        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
+        final static String[] PROJECTION = {
+                "_id",      //message ID
+                "date",     //date of message long
+                "address", // phone number long
+                "person", //Name of person (ID?)
+                "body", //body of message
+                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
+                "type" //  Inbox, Sent, Draft
+        };
+        /*
+        { "address", "body", "person", "reply_path_present",
+              "service_center", "status", "subject", "type", "error_code" };
+         */
+
+        // The query selection criteria. In this case matching against the
+        // StructuredPostal content mime type.
+        final static String SELECTION =
+                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
+        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
+        final String SORT_ORDER = null;
+
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DATE = 1;
+        final static int ADDRESS = 2;
+        final static int CONTACT_NAME = 3;
+        final static int BODY = 4;
+        final static int STATUS = 5;
+        final static int TYPE = 6;
+    }
+
 
     /**
      * Builds an empty callLog layout that just shows that no calls
@@ -811,16 +915,24 @@ private LinearLayout buildCallLogLayout(
     final TextView typeTextView =
             (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
 
+    // If there's no addresses for the contact, shows the empty view and message, and hides the
+    // header and button.
+    if (CallDate == 0) {
+        dateTextView.setVisibility(View.GONE);
+        typeTextView.setVisibility(View.GONE);
+        durationTextView.setText("No Calls Found");
 
-    // format date string
-    Date date = new Date(CallDate);
-    DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
- //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-    String formattedCallDate = format.format(date);
+    } else {
 
-    //convert time to minutes: seconds
-    long minute = TimeUnit.SECONDS.toMinutes(CallDuration);
-    long second = TimeUnit.SECONDS.toSeconds(CallDuration) -
+     // format date string
+     Date date = new Date(CallDate);
+     DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+     //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
+      String formattedCallDate = format.format(date);
+
+      //convert time to minutes: seconds
+      long minute = TimeUnit.SECONDS.toMinutes(CallDuration);
+      long second = TimeUnit.SECONDS.toSeconds(CallDuration) -
             TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(CallDuration));
 
 
@@ -830,7 +942,7 @@ private LinearLayout buildCallLogLayout(
         durationTextView.setText(minute + " mins " + second + " secs");
         typeTextView.setText(CallType);
 
-
+    }
 
 
     return callLogLayout;
@@ -839,8 +951,6 @@ private LinearLayout buildCallLogLayout(
 
 
 /********call log reading**************************/
-
-
 
 
     private class CallInfo {
@@ -947,6 +1057,223 @@ private LinearLayout buildCallLogLayout(
         }
     }
 
+    /**
+     * Builds an empty SMSLog layout that just shows that no SMSs
+     * were found for this contact.
+     *
+     * @return A LinearLayout to add to the contact details layout
+     */
+    private LinearLayout buildEmptySMSLogLayout() {
+        return buildSMSLogLayout("", 0, 0, "");
+    }
+
+    /********SMS log layout**************************/
+
+    private LinearLayout buildSMSLogLayout(
+            String SMSerName,  /*name of SMSer, if available.*/
+            long SMSDate, /*date of SMS. Time of day?*/
+            long SMSDuration,  /*Length of the SMS in seconds*/
+            String SMSType    /*Type of SMS: incoming, outgoing or missed */) {
+
+        // Inflates the address layout
+        final LinearLayout SMSLogLayout =
+                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                        R.layout.contact_detail_sms_log_item, mDetailsSMSLogLayout, false);
+
+        // Gets handles to the view objects in the layout
+        final TextView dateTextView =
+                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_date);
+        final TextView durationTextView =
+                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_word_count);
+        final TextView typeTextView =
+                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_type);
+
+        // If there's no addresses for the contact, shows the empty view and message, and hides the
+        // header and button.
+        if (SMSDate == 0) {
+            dateTextView.setVisibility(View.GONE);
+            typeTextView.setVisibility(View.GONE);
+            durationTextView.setText("No SMSs Found");
+
+        } else {
+
+            // format date string //TODO: correct date
+            Date date = new Date(SMSDate);
+            DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+            //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
+            String formattedSMSDate = format.format(date);
+
+            // Sets TextView objects in the layout
+            dateTextView.setText(formattedSMSDate);
+            durationTextView.setText(SMSDuration + " words");
+            typeTextView.setText(SMSType);
+
+        }
+
+
+        return SMSLogLayout;
+    }
+
+
+
+    /********SMS log reading**************************/
+
+
+    private class SMSInfo {
+        String smsID;
+        long smsDate;  /*date of SMS. Time of day?*/
+        String smsAddress;
+        long smsContactID;  /*name of SMSer, if available. Person who sends it*/
+        long smsWordCount;  /*number of tokens broken by spaces*/
+        long smsCharCount; /*number of characters in message*/
+        int smsType;    /*Type of SMS: incoming, outgoing */
+
+        //        @Override
+        public String getSmsID() {
+            return smsID;
+        }
+        public String getSMSAddress() {
+            return smsAddress;
+        }
+        public long getSMSContactID() {
+            return smsContactID;
+        }
+        public long getSMSDate() {
+            return smsDate;
+        }
+        public long getSMSWordCount() {
+            return smsWordCount;
+        }
+        public long getSMSCharCount() {
+            return smsCharCount;
+        }
+
+        /* 2 SMS types:
+        OUTGOING_TYPE = 2
+        INCOMING_TYPE = 1
+        Draft = 3
+        */
+        public int getSMSType() {
+            return smsType;
+        }
+        public String getSMSTypeSting() {
+            switch (smsType){
+                case 1:
+                    return "Incoming SMS";
+                case 2:
+                    return "Outgoing SMS";
+                case 3:
+                    return "Draft SMS";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
+    List<SMSInfo> mSMSLog = new ArrayList<SMSInfo>();
+
+
+
+    private void loadContactSMSLogs(Long contactID, String contactName) {
+        mSMSLog.clear();
+
+        int j = 0;
+
+        final String[] projection = null;
+
+        final String selection = null; //"address IN (" + phoneNumbers + ")"; //"person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
+        final String selectionArgs[] = null; //{"%" + contactName + "%" }; //null; //{addressToBeSearched + "%" }
+        final String contentParsePhrase = "content://sms/";  //for all messages
+        String phoneNumber = "";
+        List<String> phoneNumberList = new ArrayList<String>();
+        phoneNumberList.clear();
+
+        // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
+        Cursor phoneCursor = getActivity().getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                new String[] { contactID.toString() }, null);
+
+        if(phoneCursor.moveToFirst()){
+
+            do{
+                // phone number comes out formatted with dashes or dots, as 555-555-5555
+                phoneNumber = phoneCursor.getString(phoneCursor
+                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                phoneNumber = phoneNumber.replace("-", "").replace(".","").replace("[\\(]","").replace("[\\)]","").replaceAll("\\s","");
+
+                phoneNumberList.add(phoneNumber);
+            }while (phoneCursor.moveToNext());
+        }
+        phoneCursor.close();
+
+
+
+
+        	/*Query SMS Log Content Provider*/
+            /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
+           Cursor SMSLogCursor = getActivity().getContentResolver().query(
+                  Uri.parse(contentParsePhrase),
+                   ContactSMSLogQuery.PROJECTION,
+                  selection,
+                  selectionArgs,
+                   ContactSMSLogQuery.SORT_ORDER);  //example: "DATE desc"
+
+
+        // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
+
+           	/*Check if cursor is not null*/
+            if (SMSLogCursor != null
+                && SMSLogCursor.moveToFirst()
+                && !phoneNumberList.isEmpty()
+                //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("date"))
+                //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("address"))
+                    ) {
+
+	        /*Loop through the cursor*/
+               do{
+
+                   Long smsContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
+                   String smsAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
+                   j = phoneNumberList.size();
+
+                   do{
+                       j--;
+                       //compare each element in the phone number list with the sms Address
+                        if(smsAddress.contains(phoneNumberList.get(j))){
+
+                        String smsID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
+                        Long smsDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
+
+                        String smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
+                        int smsType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
+
+
+                        SMSInfo SMSI = new SMSInfo();
+
+                        SMSI.smsID = smsID;
+                        SMSI.smsDate = smsDate;
+                        SMSI.smsAddress = smsAddress;
+                        SMSI.smsContactID = smsContactID;
+                        SMSI.smsWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
+                        SMSI.smsCharCount = smsBody.length();                //NullPointerException - if str is null
+                        SMSI.smsType = smsType;
+
+
+           		        /*Add it into the ArrayList*/
+                        mSMSLog.add(SMSI);
+                        }
+
+                   }while(j>0); //compare each element in the phone number list
+               }while (SMSLogCursor.moveToNext());
+
+            }
+    	/*Close the cursor  for this iteration of the loop*/
+          SMSLogCursor.close();
+
+    }
 
 
 }
+
