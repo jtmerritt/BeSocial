@@ -16,6 +16,7 @@
 
 package com.example.android.contactslist.ui;
 
+import java.net.URI;
 import java.util.*;  // for date formatting
 import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
@@ -183,8 +184,8 @@ public class ContactDetailFragment extends Fragment implements
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
             // TODO: the code this next line initiates is not ready.  crashes the program regardless of address query being removed
-            //getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
-           getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
+            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+           //getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
 
 
 
@@ -465,17 +466,17 @@ public class ContactDetailFragment extends Fragment implements
                     mDetailsCallLogLayout.removeAllViews();
 
                     // Loops through all the rows in the Cursor
-                    if (!mCallLog.isEmpty()) {
-                        int j=mCallLog.size();
+                    if (!mEventLog.isEmpty()) {
+                        int j=mEventLog.size();
                         do {
                             // Implentation reverses the display order of the call log.
                             j--;
                             // Builds the address layout
                             final LinearLayout layout = buildCallLogLayout(
                                     contactName2,  /*name of caller, if available.*/
-                                    mCallLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                    mCallLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                    mCallLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
+                                    mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
+                                    mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
+                                    mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
 
 
                             // Adds the new address layout to the details layout
@@ -516,17 +517,17 @@ public class ContactDetailFragment extends Fragment implements
                     mDetailsSMSLogLayout.removeAllViews();
 
                     // Loops through all the rows in the Cursor
-                    if (!mSMSLog.isEmpty()) {
-                        int j=mSMSLog.size();
+                    if (!mEventLog.isEmpty()) {
+                        int j=mEventLog.size();
                         do {
                             // Implentation reverses the display order of the SMS log.
                             j--;
                             // Builds the address layout
                             final LinearLayout layout = buildSMSLogLayout(
                                     contactName3,
-                                    mSMSLog.get(j).getSMSDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
-                                    mSMSLog.get(j).getSMSWordCount(), /*Length of the SMS in Minutes*/
-                                    mSMSLog.get(j).getSMSTypeSting()); /*Type of SMS: incoming, outgoing or missed */
+                                    mEventLog.get(j).getEventDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
+                                    mEventLog.get(j).getEventWordCount(), /*Length of the SMS in Minutes*/
+                                    mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
 
 
                             // Adds the new address layout to the details layout
@@ -828,7 +829,7 @@ public class ContactDetailFragment extends Fragment implements
         final static int LABEL = 3;
     }
 
-    public interface ContactCallLogQuery {
+    public interface xContactCallLogQuery {
         // A unique query ID to distinguish queries being run by the
         // LoaderManager.
         final static int QUERY_ID = 3;
@@ -845,33 +846,36 @@ public class ContactDetailFragment extends Fragment implements
         final static int DISPLAY_NAME = 1;
     }
 
-    public interface ContactSMSLogQuery {
+
+    public interface ContactCallLogQuery {
         // A unique query ID to distinguish queries being run by the
         // LoaderManager.
-        final static int QUERY_ID = 4;
+        final static int QUERY_ID = 3;
+
+        //create URI for the SMS query
+       // final String contentParsePhrase = "content://sms/";  //for all messages
+        final static Uri ContentURI= android.provider.CallLog.Calls.CONTENT_URI;
 
         // The query projection (columns to fetch from the provider)
         // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
         final static String[] PROJECTION = {
                 "_id",      //message ID
                 "date",     //date of message long
+                "duration",
+                "cached_name",
                 "address", // phone number long
-                "person", //Name of person (ID?)
+                "person", //ID of person who sent message
                 "body", //body of message
                 "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbox, Sent, Draft
+                "type" //  Inbound, Outbound, Missed/draft
         };
-        /*
-        { "address", "body", "person", "reply_path_present",
-              "service_center", "status", "subject", "type", "error_code" };
-         */
 
         // The query selection criteria. In this case matching against the
         // StructuredPostal content mime type.
-        final static String SELECTION =
-                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
-        final String SORT_ORDER = null;
+        // Except they never quite worked in this context.
+        final static String SELECTION = null;
+        final String SELECTION_ARGS[] = null;
+        final String SORT_ORDER = "date ASC";   //example: "DATE desc"
 
         // The query column numbers which map to each value in the projection
         final static int ID = 0;
@@ -882,6 +886,8 @@ public class ContactDetailFragment extends Fragment implements
         final static int STATUS = 5;
         final static int TYPE = 6;
     }
+
+
 
 
     /**
@@ -897,10 +903,10 @@ public class ContactDetailFragment extends Fragment implements
 /********call log layout**************************/
 
 private LinearLayout buildCallLogLayout(
-        String CallerName,  /*name of caller, if available.*/
+        String eventContactName,  /*name of caller, if available.*/
         long CallDate, /*date of call. Time of day?*/
-        long CallDuration,  /*Length of the call in seconds*/
-        String CallType    /*Type of call: incoming, outgoing or missed */) {
+        long eventDuration,  /*Length of the call in seconds*/
+        String eventType    /*Type of call: incoming, outgoing or missed */) {
 
     // Inflates the address layout
     final LinearLayout callLogLayout =
@@ -931,16 +937,16 @@ private LinearLayout buildCallLogLayout(
       String formattedCallDate = format.format(date);
 
       //convert time to minutes: seconds
-      long minute = TimeUnit.SECONDS.toMinutes(CallDuration);
-      long second = TimeUnit.SECONDS.toSeconds(CallDuration) -
-            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(CallDuration));
+      long minute = TimeUnit.SECONDS.toMinutes(eventDuration);
+      long second = TimeUnit.SECONDS.toSeconds(eventDuration) -
+            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventDuration));
 
 
 
         // Sets TextView objects in the layout
         dateTextView.setText(formattedCallDate);
         durationTextView.setText(minute + " mins " + second + " secs");
-        typeTextView.setText(CallType);
+        typeTextView.setText(eventType);
 
     }
 
@@ -953,60 +959,17 @@ private LinearLayout buildCallLogLayout(
 /********call log reading**************************/
 
 
-    private class CallInfo {
-        String CallerName;  /*name of caller, if available.*/
-        long CallDate;  /*date of call. Time of day?*/
-        long CallDuration;  /*Length of the call in Seconds*/
-        int CallType;    /*Type of call: incoming, outgoing or missed */
-
-//        @Override
-        public String getCallerName() {
-            return CallerName;
-        }
-
-       public long getCallDate() {
-            return CallDate;
-       }
-
-       public long getCallDuration() {
-            return CallDuration;
-       }
-
-    /* 3 call types:
-    CallLog.Calls.OUTGOING_TYPE = 2
-    CallLog.Calls.INCOMING_TYPE = 1
-    CallLog.Calls.MISSED_TYPE = 3
-    */
-        public int getCallType() {
-         return CallType;
-      }
-    public String getCallTypeSting() {
-        switch (CallType){
-            case 1:
-                return "Incoming Call";
-            case 2:
-                return "Outgoing Call";
-            case 3:
-                return "Missed Call";
-            default:
-                return "";
-        }
-    }
-
-    }
-
-    List<CallInfo> mCallLog = new ArrayList<CallInfo>();
-
-
 // taken from http://developer.samsung.com/android/technical-docs/CallLogs-in-Android#
     private void loadContactCallLogs(String contactName) {
-        mCallLog.clear();
+        mEventLog.clear();
+        int j=0;
 
 	/*Query Call Log Content Provider*/
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
         // http://developer.android.com/reference/android/provider/CallLog.Calls.html
-        Cursor callLogCursor = getActivity().getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI,
-                null,
+        Cursor callLogCursor = getActivity().getContentResolver().query(
+                ContactCallLogQuery.ContentURI,
+                null, //ContactCallLogQuery.PROJECTION,
                 null,
                 null,
                 "date ASC" /*android.provider.CallLog.Calls.DEFAULT_SORT_ORDER*/);
@@ -1018,38 +981,32 @@ private LinearLayout buildCallLogLayout(
             while (callLogCursor.moveToNext()) {
 
     		/*Get Contact Name*/
-                String CallerName = callLogCursor.getString(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME));
+                String eventContactName = callLogCursor.getString(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME));
 
 		    /*Get Date and time information*/
-                long dateTimeMillis = callLogCursor.getLong(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.DATE));
-                long durationMillis = callLogCursor.getLong(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.DURATION));
+                long eventDate = callLogCursor.getLong(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.DATE));
+                long eventDuration = callLogCursor.getLong(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.DURATION));
 
     		/*Get Call Type*/
-                int CallType = callLogCursor.getInt(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.TYPE));
+                int eventType = callLogCursor.getInt(callLogCursor.getColumnIndex(android.provider.CallLog.Calls.TYPE));
 
-                //long CallDuration = getDuration(durationMillis);
+                if (eventContactName == null)
+                    eventContactName = "No Name";
 
-                //String CallDate = getDateTime(dateTimeMillis);
-
-             //   if (cacheNumber == null)
-             //       cacheNumber = number;
-
-                if (CallerName == null)
-                    CallerName = "No Name";
-
-                if((contactName.equals(CallerName))){
+                if((contactName.equals(eventContactName))){
             		/*Create Model Object*/
-                    CallInfo CI = new CallInfo();
+                    EventInfo CI = new EventInfo();
 
-                    CI.CallDate = dateTimeMillis; //CallDate;
-                    CI.CallDuration = durationMillis; //CallDuration;
-                    CI.CallerName = CallerName;
-                    CI.CallType = CallType;
+                    CI.eventDate = eventDate;
+                    CI.eventDuration = eventDuration;
+                    CI.eventContactName = eventContactName;
+                    CI.eventType = eventType;
 
 
     		        /*Add it into the ArrayList*/
-                    mCallLog.add(CI);
+                    mEventLog.add(CI);
                 }
+                j++;
             }
 
 	/*Close the cursor*/
@@ -1071,7 +1028,7 @@ private LinearLayout buildCallLogLayout(
 
     private LinearLayout buildSMSLogLayout(
             String SMSerName,  /*name of SMSer, if available.*/
-            long SMSDate, /*date of SMS. Time of day?*/
+            long EventDate, /*date of SMS. Time of day?*/
             long SMSDuration,  /*Length of the SMS in seconds*/
             String SMSType    /*Type of SMS: incoming, outgoing or missed */) {
 
@@ -1090,7 +1047,7 @@ private LinearLayout buildCallLogLayout(
 
         // If there's no addresses for the contact, shows the empty view and message, and hides the
         // header and button.
-        if (SMSDate == 0) {
+        if (EventDate == 0) {
             dateTextView.setVisibility(View.GONE);
             typeTextView.setVisibility(View.GONE);
             durationTextView.setText("No SMSs Found");
@@ -1098,13 +1055,13 @@ private LinearLayout buildCallLogLayout(
         } else {
 
             // format date string //TODO: correct date
-            Date date = new Date(SMSDate);
+            Date date = new Date(EventDate);
             DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
             //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-            String formattedSMSDate = format.format(date);
+            String formattedEventDate = format.format(date);
 
             // Sets TextView objects in the layout
-            dateTextView.setText(formattedSMSDate);
+            dateTextView.setText(formattedEventDate);
             durationTextView.setText(SMSDuration + " words");
             typeTextView.setText(SMSType);
 
@@ -1115,55 +1072,130 @@ private LinearLayout buildCallLogLayout(
     }
 
 
+    public interface ContactSMSLogQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 4;
+
+        //create URI for the SMS query
+        final String contentParsePhrase = "content://sms/";  //for all messages
+        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
+
+        // The query projection (columns to fetch from the provider)
+        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
+        final static String[] PROJECTION = {
+                "_id",      //message ID
+                "date",     //date of message long
+                "address", // phone number long
+                "person", //Name of person (ID?)
+                "body", //body of message
+                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
+                "type" //  Inbox, Sent, Draft
+        };
+        /*
+        { "address", "body", "person", "reply_path_present",
+              "service_center", "status", "subject", "type", "error_code" };
+         */
+
+        // The query selection criteria. In this case matching against the
+        // StructuredPostal content mime type.
+        // Except they never quite worked in this context.
+        final static String SELECTION =
+                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
+        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
+        final String SORT_ORDER = null;   //example: "DATE desc"
+
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DATE = 1;
+        final static int ADDRESS = 2;
+        final static int CONTACT_NAME = 3;
+        final static int BODY = 4;
+        final static int STATUS = 5;
+        final static int TYPE = 6;
+    }
+
+
+
+
 
     /********SMS log reading**************************/
 
 
-    private class SMSInfo {
-        String smsID;
-        long smsDate;  /*date of SMS. Time of day?*/
-        String smsAddress;
-        long smsContactID;  /*name of SMSer, if available. Person who sends it*/
-        long smsWordCount;  /*number of tokens broken by spaces*/
-        long smsCharCount; /*number of characters in message*/
-        int smsType;    /*Type of SMS: incoming, outgoing */
+    private class EventInfo {
+        //Primarily for phonecalls
+        String eventContactName;
+        long eventDuration;
+
+        // Primarily for SMS
+        String eventID;
+        long eventDate;  /*date of SMS. Time of day?*/
+        String eventContactAddress;
+        long eventContactID;  /*name of SMSer, if available. Person who sends it*/
+        long eventWordCount;  /*number of tokens broken by spaces*/
+        long eventCharCount; /*number of characters in message*/
+        int eventType;    /*Type of event
+            /* 3 call types:
+                CallLog.Calls.OUTGOING_TYPE = 2
+                CallLog.Calls.INCOMING_TYPE = 1
+                CallLog.Calls.MISSED_TYPE = 3
+                
+               3 SMS typs
+                 OUTGOING_TYPE = 2
+                 INCOMING_TYPE = 1
+                 Draft = 3
+            */
+
+        
+        int eventClass; // phone, SMS, email, etc
 
         //        @Override
-        public String getSmsID() {
-            return smsID;
+        public String getEventID() {
+            return eventID;
         }
-        public String getSMSAddress() {
-            return smsAddress;
+        public String getEventAddress() {
+            return eventContactAddress;
         }
-        public long getSMSContactID() {
-            return smsContactID;
+        public long getEventContactID() {
+            return eventContactID;
         }
-        public long getSMSDate() {
-            return smsDate;
+        public long getEventDate() {
+            return eventDate;
         }
-        public long getSMSWordCount() {
-            return smsWordCount;
+        public long getEventWordCount() {
+            return eventWordCount;
         }
-        public long getSMSCharCount() {
-            return smsCharCount;
+        public long getEventCharCount() {
+            return eventCharCount;
         }
-
-        /* 2 SMS types:
-        OUTGOING_TYPE = 2
-        INCOMING_TYPE = 1
-        Draft = 3
-        */
-        public int getSMSType() {
-            return smsType;
+        public int getEventType() {
+            return eventType;
         }
-        public String getSMSTypeSting() {
-            switch (smsType){
+        
+        // For phone calls
+        public String getCallerName() {
+            return eventContactName;
+        }
+        public long getCallDate() {
+            return eventDate;
+        }
+        public int getCallType() {
+            return eventType;
+        }
+        public long getCallDuration() {
+            return eventDuration;
+        }
+        public String getCallTypeSting() {
+            return getEventTypeSting();
+        }
+        public String getEventTypeSting() {
+            switch (eventType){
                 case 1:
-                    return "Incoming SMS";
+                    return "Incoming";
                 case 2:
-                    return "Outgoing SMS";
+                    return "Outgoing";
                 case 3:
-                    return "Draft SMS";
+                    return "Missed/Draft";
                 default:
                     return "";
             }
@@ -1171,20 +1203,15 @@ private LinearLayout buildCallLogLayout(
 
     }
 
-    List<SMSInfo> mSMSLog = new ArrayList<SMSInfo>();
+    List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
 
 
     private void loadContactSMSLogs(Long contactID, String contactName) {
-        mSMSLog.clear();
+        mEventLog.clear();
 
         int j = 0;
 
-        final String[] projection = null;
-
-        final String selection = null; //"address IN (" + phoneNumbers + ")"; //"person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-        final String selectionArgs[] = null; //{"%" + contactName + "%" }; //null; //{addressToBeSearched + "%" }
-        final String contentParsePhrase = "content://sms/";  //for all messages
         String phoneNumber = "";
         List<String> phoneNumberList = new ArrayList<String>();
         phoneNumberList.clear();
@@ -1210,15 +1237,15 @@ private LinearLayout buildCallLogLayout(
 
 
 
-
         	/*Query SMS Log Content Provider*/
             /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
            Cursor SMSLogCursor = getActivity().getContentResolver().query(
-                  Uri.parse(contentParsePhrase),
+                   ContactSMSLogQuery.SMSLogURI,
+                  //Uri.parse(contentParsePhrase),
                    ContactSMSLogQuery.PROJECTION,
-                  selection,
-                  selectionArgs,
-                   ContactSMSLogQuery.SORT_ORDER);  //example: "DATE desc"
+                    null,
+                    null,
+                   ContactSMSLogQuery.SORT_ORDER);
 
 
         // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
@@ -1234,35 +1261,35 @@ private LinearLayout buildCallLogLayout(
 	        /*Loop through the cursor*/
                do{
 
-                   Long smsContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
-                   String smsAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
+                   Long eventContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
+                   String eventContactAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
                    j = phoneNumberList.size();
 
                    do{
                        j--;
                        //compare each element in the phone number list with the sms Address
-                        if(smsAddress.contains(phoneNumberList.get(j))){
+                        if(eventContactAddress.contains(phoneNumberList.get(j))){
 
-                        String smsID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
-                        Long smsDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
+                        String eventID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
+                        Long eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
 
                         String smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
-                        int smsType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
+                        int eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
 
 
-                        SMSInfo SMSI = new SMSInfo();
+                        EventInfo EventInfo = new EventInfo();
 
-                        SMSI.smsID = smsID;
-                        SMSI.smsDate = smsDate;
-                        SMSI.smsAddress = smsAddress;
-                        SMSI.smsContactID = smsContactID;
-                        SMSI.smsWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
-                        SMSI.smsCharCount = smsBody.length();                //NullPointerException - if str is null
-                        SMSI.smsType = smsType;
+                        EventInfo.eventID = eventID;
+                        EventInfo.eventDate = eventDate;
+                        EventInfo.eventContactAddress = eventContactAddress;
+                        EventInfo.eventContactID = eventContactID;
+                        EventInfo.eventWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
+                        EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
+                        EventInfo.eventType = eventType;
 
 
            		        /*Add it into the ArrayList*/
-                        mSMSLog.add(SMSI);
+                        mEventLog.add(EventInfo);
                         }
 
                    }while(j>0); //compare each element in the phone number list
