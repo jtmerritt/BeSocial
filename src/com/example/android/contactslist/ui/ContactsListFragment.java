@@ -28,6 +28,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
 import android.support.v4.app.ListFragment;
@@ -115,6 +116,9 @@ public class ContactsListFragment extends ListFragment implements
     // Whether or not this is a search result view of this fragment, only used on pre-honeycomb
     // OS versions as search results are shown in-line via Action Bar search from honeycomb onward
     private boolean mIsSearchResultView = false;
+
+
+    private int mGroupID = -1;  //stores the selected groupID for display
 
     /**
      * Fragments require an empty constructor.
@@ -450,80 +454,105 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri contentUri;
 
-        // If this is the loader for finding contacts in the Contacts Provider
-        // (the only one supported)
-        if (id == ContactsQuery.QUERY_ID) {
-            Uri contentUri;
 
-            // There are two types of searches, one which displays all contacts and
-            // one which filters contacts by a search query. If mSearchTerm is set
-            // then a search query has been entered and the latter should be used.
+        // switch between search query and a group query
+        switch (id){
+            case ContactsQuery.QUERY_ID:
+                // If this is the loader for finding contacts in the Contacts Provider
 
-            if (mSearchTerm == null) {
-                // Since there's no search string, use the content URI that searches the entire
-                // Contacts table
-                contentUri = ContactsQuery.CONTENT_URI;
-            } else {
-                // Since there's a search string, use the special content Uri that searches the
-                // Contacts table. The URI consists of a base Uri and the search string.
-                contentUri =
+                // There are two types of searches, one which displays all contacts and
+                // one which filters contacts by a search query. If mSearchTerm is set
+                // then a search query has been entered and the latter should be used.
+
+                if (mSearchTerm == null) {
+                    // Since there's no search string, use the content URI that searches the entire
+                    // Contacts table
+                    contentUri = ContactsQuery.CONTENT_URI;
+
+                } else {
+                    // Since there's a search string, use the special content Uri that searches the
+                    // Contacts table. The URI consists of a base Uri and the search string.
+                    contentUri =
                         Uri.withAppendedPath(ContactsQuery.FILTER_URI, Uri.encode(mSearchTerm));
-            }
+                }
 
-            // Returns a new CursorLoader for querying the Contacts table. No arguments are used
-            // for the selection clause. The search string is either encoded onto the content URI,
-            // or no contacts search string is used. The other search criteria are constants. See
-            // the ContactsQuery interface.
-            return new CursorLoader(getActivity(),
+                // Returns a new CursorLoader for querying the Contacts table. No arguments are used
+                // for the selection clause. The search string is either encoded onto the content URI,
+                // or no contacts search string is used. The other search criteria are constants. See
+                // the ContactsQuery interface.
+                return new CursorLoader(getActivity(),
                     contentUri,
                     ContactsQuery.PROJECTION,
                     ContactsQuery.SELECTION,
                     null,
 
                     ContactsQuery.SORT_ORDER);
-        }
 
-        Log.e(TAG, "onCreateLoader - incorrect ID provided (" + id + ")");
-        return null;
+            case ContactsGroupQuery.QUERY_ID:
+                if(mGroupID != -1){
+                    contentUri = ContactsGroupQuery.CONTENT_URI;
+                    return new CursorLoader(getActivity(),
+                        contentUri,
+                        ContactsGroupQuery.PROJECTION,
+                        ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "=" + mGroupID,
+                        null,
+
+                        ContactsGroupQuery.SORT_ORDER);
+
+                }
+
+        default:
+
+            Log.e(TAG, "onCreateLoader - incorrect ID provided (" + id + ")");
+            return null;
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // This swaps the new cursor into the adapter.
-        if (loader.getId() == ContactsQuery.QUERY_ID) {
-            mAdapter.swapCursor(data);
+        switch (loader.getId()){
+            case ContactsQuery.QUERY_ID:
+            case ContactsGroupQuery.QUERY_ID:
+                mAdapter.swapCursor(data);
 
-            // If this is a two-pane layout and there is a search query then
-            // there is some additional work to do around default selected
-            // search item.
-            if (mIsTwoPaneLayout && !TextUtils.isEmpty(mSearchTerm) && mSearchQueryChanged) {
-                // Selects the first item in results, unless this fragment has
-                // been restored from a saved state (like orientation change)
-                // in which case it selects the previously selected search item.
-                if (data != null && data.moveToPosition(mPreviouslySelectedSearchItem)) {
-                    // Creates the content Uri for the previously selected contact by appending the
-                    // contact's ID to the Contacts table content Uri
-                    final Uri uri = Uri.withAppendedPath(
+                // If this is a two-pane layout and there is a search query then
+                // there is some additional work to do around default selected
+                // search item.
+                if (mIsTwoPaneLayout && !TextUtils.isEmpty(mSearchTerm) && mSearchQueryChanged) {
+                    // Selects the first item in results, unless this fragment has
+                    // been restored from a saved state (like orientation change)
+                    // in which case it selects the previously selected search item.
+                    if (data != null && data.moveToPosition(mPreviouslySelectedSearchItem)) {
+                        // Creates the content Uri for the previously selected contact by appending the
+                        // contact's ID to the Contacts table content Uri
+                        final Uri uri = Uri.withAppendedPath(
                             Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsQuery.ID)));
-                    mOnContactSelectedListener.onContactSelected(uri);
-                    getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
-                } else {
-                    // No results, clear selection.
-                    onSelectionCleared();
+                        mOnContactSelectedListener.onContactSelected(uri);
+                        getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
+                    } else {
+                        // No results, clear selection.
+                        onSelectionCleared();
+                    }
+                    // Only restore from saved state one time. Next time fall back
+                    // to selecting first item. If the fragment state is saved again
+                    // then the currently selected item will once again be saved.
+                    mPreviouslySelectedSearchItem = 0;
+                    mSearchQueryChanged = false;
                 }
-                // Only restore from saved state one time. Next time fall back
-                // to selecting first item. If the fragment state is saved again
-                // then the currently selected item will once again be saved.
-                mPreviouslySelectedSearchItem = 0;
-                mSearchQueryChanged = false;
-            }
+                break;
+            default:
+
+
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if (loader.getId() == ContactsQuery.QUERY_ID) {
+        if ((loader.getId() == ContactsQuery.QUERY_ID) ||
+                (loader.getId() == ContactsGroupQuery.QUERY_ID)){
             // When the loader is being reset, clear the cursor from the adapter. This allows the
             // cursor resources to be freed.
             mAdapter.swapCursor(null);
@@ -902,6 +931,8 @@ public class ContactsListFragment extends ListFragment implements
         final static String[] PROJECTION = {
 
                 // The contact's row id
+                Contacts._ID, //extra collumn is to make this projection match up with thatfor ContactsGroupQuery
+                //TODO: should probably make this above statement not a cludge
                 Contacts._ID,
 
                 // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
@@ -928,9 +959,83 @@ public class ContactsListFragment extends ListFragment implements
 
         // The query column numbers which map to each value in the projection
         final static int ID = 0;
-        final static int LOOKUP_KEY = 1;
-        final static int DISPLAY_NAME = 2;
-        final static int PHOTO_THUMBNAIL_DATA = 3;
-        final static int SORT_KEY = 4;
+        final static int LOOKUP_KEY = 2;
+        final static int DISPLAY_NAME = 3;
+        final static int PHOTO_THUMBNAIL_DATA = 4;
+        final static int SORT_KEY = 5;
     }
+
+    public void setGroupQuery(int groupID) {
+        if (groupID == -1 ) {
+            mGroupID = groupID; ///um...
+        } else {
+            mGroupID = groupID;
+            getLoaderManager().restartLoader(
+                    ContactsGroupQuery.QUERY_ID, null, ContactsListFragment.this);
+
+        }
+    }
+
+    /**
+     * This interface defines constants for the Cursor and CursorLoader, based on constants defined
+     * in the {@link android.provider.ContactsContract.Contacts} class.
+     */
+    public interface ContactsGroupQuery {
+
+        // An identifier for the loader
+        final static int QUERY_ID = 2;
+
+        // A content URI for the Contacts table
+        final static Uri CONTENT_URI = ContactsContract.Data.CONTENT_URI;
+
+        // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
+        // sort key allows for localization. In earlier versions. use the display name as the sort
+        // key.
+        @SuppressLint("InlinedApi")
+        final static String SORT_ORDER =
+                Utils.hasHoneycomb() ? Contacts.SORT_KEY_PRIMARY : Contacts.DISPLAY_NAME;
+
+        // The projection for the CursorLoader query. This is a list of columns that the Contacts
+        // Provider should return in the Cursor.
+        @SuppressLint("InlinedApi")
+        final static String[] PROJECTION = {
+
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
+                //ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID,
+
+                // The contact's row id
+                Contacts._ID,
+
+                // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
+                // a contact's current _ID value and LOOKUP_KEY, the Contacts Provider can generate
+                // a "permanent" contact URI.
+                Contacts.LOOKUP_KEY,
+
+                // In platform version 3.0 and later, the Contacts table contains
+                // DISPLAY_NAME_PRIMARY, which either contains the contact's displayable name or
+                // some other useful identifier such as an email address. This column isn't
+                // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
+                // instead.
+                Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
+
+                // In Android 3.0 and later, the thumbnail image is pointed to by
+                // PHOTO_THUMBNAIL_URI. In earlier versions, there is no direct pointer; instead,
+                // you generate the pointer from the contact's ID value and constants defined in
+                // android.provider.ContactsContract.Contacts.
+                Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
+
+                // The sort order column for the returned Cursor, used by the AlphabetIndexer
+                SORT_ORDER,
+        };
+
+        // The query column numbers which map to each value in the projection
+        final static int GROUP_ID = 0;
+        final static int ID = 1;
+        final static int LOOKUP_KEY = 2;
+        final static int DISPLAY_NAME = 3;
+        final static int PHOTO_THUMBNAIL_DATA = 4;
+        final static int SORT_KEY = 5;
+    }
+
+
 }

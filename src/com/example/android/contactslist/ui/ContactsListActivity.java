@@ -141,7 +141,7 @@ public class ContactsListActivity extends FragmentActivity implements
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         groupSpinner.setAdapter(dataAdapter);
     }
-
+/*
     public void getSampleContactList(int groupID) {
 
         contactList = new ArrayList<ConatctData>();
@@ -182,7 +182,7 @@ public class ContactsListActivity extends FragmentActivity implements
 
         }
         c.close();
-    }
+    }*/
 
     public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
@@ -190,20 +190,13 @@ public class ContactsListActivity extends FragmentActivity implements
 
             // this is where we figure out which was selected and then do query.
             String groupName = groups.get(pos).toString();
+            int groupID = -1;
 
-           // getSampleContactList(groups.get(pos).getId());
-           /* Uri groupURI = ContactsContract.Data.CONTENT_URI;
+            //Call the ContactListFragment to display only the contacts in the selected group
+            ContactsListFragment mContactsListFragment = (ContactsListFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-
-            String[] projection = new String[]{
-                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
-                    ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID};
-
-            Cursor c = managedQuery(groupURI,
-                    projection,
-                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID+"="+groups.get(pos).getId(),
-                    null,null);
-                    */
+            mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
         }
 
         @Override
@@ -239,15 +232,18 @@ public class ContactsListActivity extends FragmentActivity implements
             GroupInfo g = new GroupInfo();
             g.id = c.getString(IDX_ID);
             g.title = c.getString(IDX_TITLE);
-            g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
-            if (g.count>0) {
-                // group with duplicate name?
-                GroupInfo g2 = m.get(g.title);
-                if (g2==null) {
-                    m.put(g.title, g);
-                    groups.add(g);
-                } else {
-                    g2.id+=","+g.id;
+            //only record groups of interest
+            if(g.title.equals("Starred in Android") || (g.title.equals("BeSocial"))){
+                g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
+                if (g.count>0) {
+                    // group with duplicate name?
+                    GroupInfo g2 = m.get(g.title);
+                    if (g2==null) {
+                        m.put(g.title, g);
+                        groups.add(g);
+                    } else {
+                        g2.id+=","+g.id;
+                    }
                 }
             }
         }
