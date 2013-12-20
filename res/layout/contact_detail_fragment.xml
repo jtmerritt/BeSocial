@@ -42,7 +42,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="@integer/contact_detail_info_percent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+            android:weightSum="1">
 
             <TextView android:id="@+id/contact_name"
                       android:layout_width="match_parent"
@@ -52,6 +53,15 @@
                       android:paddingTop="@dimen/padding"
                       android:visibility="gone"
                       style="@style/contactNameTitle"/>
+
+            <LinearLayout
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/padding"
+                android:orientation="vertical">
+
+            </LinearLayout>
 
             <ScrollView
                     android:layout_width="match_parent"

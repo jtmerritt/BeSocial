@@ -141,48 +141,7 @@ public class ContactsListActivity extends FragmentActivity implements
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         groupSpinner.setAdapter(dataAdapter);
     }
-/*
-    public void getSampleContactList(int groupID) {
 
-        contactList = new ArrayList<ConatctData>();
-        Uri groupURI = ContactsContract.Data.CONTENT_URI;
-        String[] projection = new String[] {
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID };
-
-        Cursor c = getContentResolver().query(
-                groupURI,
-                projection,
-                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-                        + "=" + groupID, null, null);
-
-        while (c.moveToNext()) {
-            String id = c
-                    .getString(c
-                            .getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID));
-            Cursor pCur = getContentResolver().query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                    new String[] { id }, null);
-
-            while (pCur.moveToNext()) {
-                ConatctData data = new ConatctData();
-                data.name = pCur
-                        .getString(pCur
-                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-
-                data.phone = pCur
-                        .getString(pCur
-                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                contactList.add(data);
-            }
-
-            pCur.close();
-
-        }
-        c.close();
-    }*/
 
     public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 

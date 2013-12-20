@@ -16,17 +16,20 @@
 
 package com.example.android.contactslist.ui;
 
+
 import java.net.URI;
 import java.util.*;  // for date formatting
 import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -67,6 +70,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.achartengine.ChartFactory;
+import org.achartengine.GraphicalView;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.chart.LineChart;
+import org.achartengine.model.TimeSeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
+
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -109,6 +122,7 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mEmptyView;
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
+    private LinearLayout mChartLayout;
 
     /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
@@ -264,6 +278,11 @@ public class ContactDetailFragment extends Fragment implements
         mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
+
+        //********************* chart
+        mChartLayout = (LinearLayout) detailView.findViewById(R.id.chart);
+
+
 
         if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
@@ -465,8 +484,17 @@ public class ContactDetailFragment extends Fragment implements
 
                     mDetailsCallLogLayout.removeAllViews();
 
+                    mChartLayout.removeAllViews();
+
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
+
+                        //Build the chart view
+                        GraphicalView gView = getView(getActivity());
+
+                        //add the chart view to the fragment.
+                        mChartLayout.addView(gView);
+
                         int j=mEventLog.size();
                         do {
                             // Implentation reverses the display order of the call log.
@@ -483,6 +511,7 @@ public class ContactDetailFragment extends Fragment implements
                             mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
 
                         } while (j>0);
+
                     } else {
                         // If nothing found, adds an empty address layout
                         mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
@@ -908,6 +937,15 @@ private LinearLayout buildCallLogLayout(
         long eventDuration,  /*Length of the call in seconds*/
         String eventType    /*Type of call: incoming, outgoing or missed */) {
 
+
+
+
+
+
+
+
+
+
     // Inflates the address layout
     final LinearLayout callLogLayout =
             (LinearLayout) LayoutInflater.from(getActivity()).inflate(
@@ -1301,6 +1339,71 @@ private LinearLayout buildCallLogLayout(
 
     }
 
+ /*****Charts*****************
+
+    private null buildCallLogChartLayout(    ){
+
+        /**Build Chart
+        final LinearLayout callLogChartLayout = (LinearLayout) mChartLayout;
+
+        GraphicalView gView = getView(getActivity());
+
+        callLogChartLayout.addView(gView);
+
+        //********end chart
+
+    }*/
+
+
+
+
+    public GraphicalView getView(Context context) {
+
+        TimeSeries series = new TimeSeries("Line1");
+
+        // transfer the eventLog to the dataset
+        int j=mEventLog.size();
+        do {
+            // Implentation reverses the display order of the call log.
+            j--;
+            // place each point in the data series
+            series.add(mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
+                    mEventLog.get(j).getCallDuration()); /*Length of the call in Minutes*/
+        } while (j>0);
+
+
+        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+        dataset.addSeries(series);
+        //dataset.addSeries(series2);
+
+        XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
+
+        XYSeriesRenderer renderer = new XYSeriesRenderer(); // This will be used to customize line 1
+        //XYSeriesRenderer renderer2 = new XYSeriesRenderer(); // This will be used to customize line 2
+        mRenderer.addSeriesRenderer(renderer);
+        //mRenderer.addSeriesRenderer(renderer2);
+
+        // Customization time for line 1!
+        renderer.setColor(Color.BLUE);
+        renderer.setPointStyle(PointStyle.SQUARE);
+        renderer.setFillPoints(true);
+
+        // Customization time for line 2!
+        //renderer2.setColor(getResources().getColor(android.R.color.holo_green_dark));
+        //renderer2.setPointStyle(PointStyle.DIAMOND);
+        //renderer2.setFillPoints(true);
+
+        mRenderer.setPanEnabled(true, false);
+        mRenderer.setZoomEnabled(true, false);
+        mRenderer.setGridColor(getResources().getColor(android.R.color.holo_red_dark));
+        mRenderer.setMarginsColor(getResources().getColor(android.R.color.darker_gray));
+        mRenderer.setApplyBackgroundColor(true);
+        mRenderer.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+
+      return ChartFactory.getTimeChartView(context, dataset, mRenderer, "yyyy-MM-dd");
+
+
+    }
 
 }
 
