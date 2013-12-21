@@ -1339,24 +1339,7 @@ private LinearLayout buildCallLogLayout(
 
     }
 
- /*****Charts*****************
-
-    private null buildCallLogChartLayout(    ){
-
-        /**Build Chart
-        final LinearLayout callLogChartLayout = (LinearLayout) mChartLayout;
-
-        GraphicalView gView = getView(getActivity());
-
-        callLogChartLayout.addView(gView);
-
-        //********end chart
-
-    }*/
-
-
-
-
+ //*****Charts*****************
     public GraphicalView getView(Context context) {
 
         TimeSeries series = new TimeSeries("Line1");
@@ -1374,6 +1357,7 @@ private LinearLayout buildCallLogLayout(
 
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
         dataset.addSeries(series);
+        series.setTitle("Durration");
         //dataset.addSeries(series2);
 
         XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
@@ -1399,8 +1383,17 @@ private LinearLayout buildCallLogLayout(
         mRenderer.setMarginsColor(getResources().getColor(android.R.color.darker_gray));
         mRenderer.setApplyBackgroundColor(true);
         mRenderer.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        mRenderer.setChartTitle("Event History");
+        mRenderer.setChartTitleTextSize(40);
 
-      return ChartFactory.getTimeChartView(context, dataset, mRenderer, "yyyy-MM-dd");
+        double THREEDAYS = 81300000 *3;
+        mRenderer.setPanLimits(new double[] {series.getMinX()- THREEDAYS, series.getMaxX()+ THREEDAYS, 0 , 0});
+        mRenderer.setZoomLimits(new double[] {series.getMinX()- THREEDAYS, series.getMaxX()+ THREEDAYS, 0 , 0});
+
+
+
+
+      return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
 
 
     }
