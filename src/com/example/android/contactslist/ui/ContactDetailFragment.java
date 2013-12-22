@@ -123,6 +123,7 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
     private LinearLayout mChartLayout;
+    private String mContactNameString;
 
     /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
@@ -197,8 +198,7 @@ public class ContactDetailFragment extends Fragment implements
 
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-            // TODO: the code this next line initiates is not ready.  crashes the program regardless of address query being removed
-            getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+            //getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
            //getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
 
 
@@ -409,17 +409,26 @@ public class ContactDetailFragment extends Fragment implements
                     // For the contact details query, fetches the contact display name.
                     // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
                     // name field based on OS version.
-                    final String contactName = data.getString(ContactDetailQuery.DISPLAY_NAME);
+                    mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
                     if (mIsTwoPaneLayout && mContactName != null) {
                         // In the two pane layout, there is a dedicated TextView
                         // that holds the contact name.
-                        mContactName.setText(contactName);
+                        mContactName.setText(mContactNameString);
                     } else {
                         // In the single pane layout, sets the activity title
                         // to the contact name. On HC+ this will be set as
                         // the ActionBar title text.
-                        getActivity().setTitle(contactName);
+                        getActivity().setTitle(mContactNameString);
                     }
+
+                    //  using the contact name build the log ov events
+                    loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
+
+                    //Build the chart view
+                    GraphicalView gView = getView(getActivity());
+
+                    //add the chart view to the fragment.
+                    mChartLayout.addView(gView);
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -438,6 +447,9 @@ public class ContactDetailFragment extends Fragment implements
                 // layout has addresses from a previous data load still
                 // added as children.
                 mDetailsLayout.removeAllViews();
+                mDetailsCallLogLayout.removeAllViews();
+                mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
+                mChartLayout.removeAllViews(); //remove previously displayed chart
 
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
@@ -470,30 +482,16 @@ public class ContactDetailFragment extends Fragment implements
                             new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.WRAP_CONTENT);
 
-                    // For the contact details query, fetches the contact display name.
-                    // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
-                    // name field based on OS version.
-
-                    final String contactName2 = data.getString(ContactDetailQuery.DISPLAY_NAME);
-                    //  using the contact name build a call log for the name.
-                    loadContactCallLogs(contactName2);
-
                     // Clears out the details layout first in case the details
                     // layout has CallLogs from a previous data load still
                     // added as children.
 
                     mDetailsCallLogLayout.removeAllViews();
-
+                    mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                     mChartLayout.removeAllViews();
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
-
-                        //Build the chart view
-                        GraphicalView gView = getView(getActivity());
-
-                        //add the chart view to the fragment.
-                        mChartLayout.addView(gView);
 
                         int j=mEventLog.size();
                         do {
@@ -501,7 +499,7 @@ public class ContactDetailFragment extends Fragment implements
                             j--;
                             // Builds the address layout
                             final LinearLayout layout = buildCallLogLayout(
-                                    contactName2,  /*name of caller, if available.*/
+                                    mContactNameString,  /*name of caller, if available.*/
                                     mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
                                     mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
                                     mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
@@ -531,19 +529,9 @@ public class ContactDetailFragment extends Fragment implements
                             new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.WRAP_CONTENT);
 
-                    // For the contact details query, fetches the contact display name.
-                    // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
-                    // name field based on OS version.
-
-                    final String contactName3 = data.getString(ContactDetailQuery.DISPLAY_NAME);
-                    //  using the contact name build a SMS log for the name.
-                    loadContactSMSLogs(data.getLong(ContactDetailQuery.ID), contactName3);
-
-                    // Clears out the details layout first in case the details
-                    // layout has SMSLogs from a previous data load still
-                    // added as children.
-
-                    mDetailsSMSLogLayout.removeAllViews();
+                    mDetailsCallLogLayout.removeAllViews();
+                    mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
+                    mChartLayout.removeAllViews(); //remove previously displayed chart
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
@@ -553,7 +541,7 @@ public class ContactDetailFragment extends Fragment implements
                             j--;
                             // Builds the address layout
                             final LinearLayout layout = buildSMSLogLayout(
-                                    contactName3,
+                                    mContactNameString,
                                     mEventLog.get(j).getEventDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
                                     mEventLog.get(j).getEventWordCount(), /*Length of the SMS in Minutes*/
                                     mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
@@ -858,23 +846,6 @@ public class ContactDetailFragment extends Fragment implements
         final static int LABEL = 3;
     }
 
-    public interface xContactCallLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 3;
-
-        // The query projection (columns to fetch from the provider)
-        @SuppressLint("InlinedApi")
-        final static String[] PROJECTION = {
-                Contacts._ID,
-                Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
-        };
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DISPLAY_NAME = 1;
-    }
-
 
     public interface ContactCallLogQuery {
         // A unique query ID to distinguish queries being run by the
@@ -916,7 +887,48 @@ public class ContactDetailFragment extends Fragment implements
         final static int TYPE = 6;
     }
 
+    public interface ContactSMSLogQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 4;
 
+        //create URI for the SMS query
+        final String contentParsePhrase = "content://sms/";  //for all messages
+        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
+
+        // The query projection (columns to fetch from the provider)
+        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
+        final static String[] PROJECTION = {
+                "_id",      //message ID
+                "date",     //date of message long
+                "address", // phone number long
+                "person", //Name of person (ID?)
+                "body", //body of message
+                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
+                "type" //  Inbox, Sent, Draft
+        };
+        /*
+        { "address", "body", "person", "reply_path_present",
+              "service_center", "status", "subject", "type", "error_code" };
+         */
+
+        // The query selection criteria. In this case matching against the
+        // StructuredPostal content mime type.
+        // Except they never quite worked in this context.
+        final static String SELECTION =
+                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
+        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
+        final String SORT_ORDER = null;   //example: "DATE desc"
+
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DATE = 1;
+        final static int ADDRESS = 2;
+        final static int CONTACT_NAME = 3;
+        final static int BODY = 4;
+        final static int STATUS = 5;
+        final static int TYPE = 6;
+    }
 
 
     /**
@@ -936,14 +948,6 @@ private LinearLayout buildCallLogLayout(
         long CallDate, /*date of call. Time of day?*/
         long eventDuration,  /*Length of the call in seconds*/
         String eventType    /*Type of call: incoming, outgoing or missed */) {
-
-
-
-
-
-
-
-
 
 
     // Inflates the address layout
@@ -999,7 +1003,7 @@ private LinearLayout buildCallLogLayout(
 
 // taken from http://developer.samsung.com/android/technical-docs/CallLogs-in-Android#
     private void loadContactCallLogs(String contactName) {
-        mEventLog.clear();
+
         int j=0;
 
 	/*Query Call Log Content Provider*/
@@ -1033,16 +1037,17 @@ private LinearLayout buildCallLogLayout(
 
                 if((contactName.equals(eventContactName))){
             		/*Create Model Object*/
-                    EventInfo CI = new EventInfo();
+                    EventInfo eventInfo = new EventInfo();
 
-                    CI.eventDate = eventDate;
-                    CI.eventDuration = eventDuration;
-                    CI.eventContactName = eventContactName;
-                    CI.eventType = eventType;
+                    eventInfo.eventDate = eventDate;
+                    eventInfo.eventDuration = eventDuration;
+                    eventInfo.eventContactName = eventContactName;
+                    eventInfo.eventType = eventType;
+                    eventInfo.eventClass = eventInfo.PHONE_CLASS;
 
 
     		        /*Add it into the ArrayList*/
-                    mEventLog.add(CI);
+                    mEventLog.add(eventInfo);
                 }
                 j++;
             }
@@ -1110,48 +1115,7 @@ private LinearLayout buildCallLogLayout(
     }
 
 
-    public interface ContactSMSLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 4;
 
-        //create URI for the SMS query
-        final String contentParsePhrase = "content://sms/";  //for all messages
-        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
-
-        // The query projection (columns to fetch from the provider)
-        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
-        final static String[] PROJECTION = {
-                "_id",      //message ID
-                "date",     //date of message long
-                "address", // phone number long
-                "person", //Name of person (ID?)
-                "body", //body of message
-                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbox, Sent, Draft
-        };
-        /*
-        { "address", "body", "person", "reply_path_present",
-              "service_center", "status", "subject", "type", "error_code" };
-         */
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        // Except they never quite worked in this context.
-        final static String SELECTION =
-                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
-        final String SORT_ORDER = null;   //example: "DATE desc"
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DATE = 1;
-        final static int ADDRESS = 2;
-        final static int CONTACT_NAME = 3;
-        final static int BODY = 4;
-        final static int STATUS = 5;
-        final static int TYPE = 6;
-    }
 
 
 
@@ -1172,6 +1136,14 @@ private LinearLayout buildCallLogLayout(
         long eventContactID;  /*name of SMSer, if available. Person who sends it*/
         long eventWordCount;  /*number of tokens broken by spaces*/
         long eventCharCount; /*number of characters in message*/
+
+        int eventClass;
+        //eventClass definition
+        final static int PHONE_CLASS = 1;
+        final static int SMS_CLASS = 2;
+        final static int EMAIL_CLASS = 3;
+
+
         int eventType;    /*Type of event
             /* 3 call types:
                 CallLog.Calls.OUTGOING_TYPE = 2
@@ -1184,8 +1156,10 @@ private LinearLayout buildCallLogLayout(
                  Draft = 3
             */
 
-        
-        int eventClass; // phone, SMS, email, etc
+        public void setEvent(int eClass, String eContactName,
+                             long eDate, long eDuration, long eWordCount) {
+
+        }
 
         //        @Override
         public String getEventID() {
@@ -1205,6 +1179,9 @@ private LinearLayout buildCallLogLayout(
         }
         public long getEventCharCount() {
             return eventCharCount;
+        }
+        public int getEventClass() {
+            return eventClass;
         }
         public int getEventType() {
             return eventType;
@@ -1226,6 +1203,19 @@ private LinearLayout buildCallLogLayout(
         public String getCallTypeSting() {
             return getEventTypeSting();
         }
+
+        public String getEventClassSting() {
+            switch (eventClass){
+                case PHONE_CLASS:
+                    return "Phone";
+                case SMS_CLASS:
+                    return "SMS";
+                case EMAIL_CLASS:
+                    return "Email";
+                default:
+                    return "Unknown";
+            }
+        }
         public String getEventTypeSting() {
             switch (eventType){
                 case 1:
@@ -1246,7 +1236,6 @@ private LinearLayout buildCallLogLayout(
 
 
     private void loadContactSMSLogs(Long contactID, String contactName) {
-        mEventLog.clear();
 
         int j = 0;
 
@@ -1324,6 +1313,7 @@ private LinearLayout buildCallLogLayout(
                         EventInfo.eventWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
                         EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
                         EventInfo.eventType = eventType;
+                        EventInfo.eventClass = EventInfo.SMS_CLASS;
 
 
            		        /*Add it into the ArrayList*/
@@ -1339,59 +1329,111 @@ private LinearLayout buildCallLogLayout(
 
     }
 
+
+    private void loadContactLogs(String contactName, long contactID){
+        mEventLog.clear();
+        loadContactCallLogs(contactName);
+        loadContactSMSLogs(contactID, contactName);
+
+    }
+
+
  //*****Charts*****************
     public GraphicalView getView(Context context) {
 
-        TimeSeries series = new TimeSeries("Line1");
+        double plotMin; //Time ms
+        double plotMax;
+        double THREEDAYS = 81300000 *3;
+
+        TimeSeries series_Phone = new TimeSeries("Phone");
+        TimeSeries series_SMS = new TimeSeries("SMS");
+
 
         // transfer the eventLog to the dataset
         int j=mEventLog.size();
         do {
             // Implentation reverses the display order of the call log.
             j--;
-            // place each point in the data series
-            series.add(mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                    mEventLog.get(j).getCallDuration()); /*Length of the call in Minutes*/
+            switch(mEventLog.get(j).getEventClass()){
+
+                // place each point in the data series
+                case 1: //phone class
+                    series_Phone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                            TimeUnit.SECONDS.toMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
+                            //TODO: The number of seconds is currently cut off..  Should be included.
+                    break;
+                case 2: //SMS class
+                    series_SMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                            mEventLog.get(j).getEventWordCount()); /*Length of the call in Minutes*/
+                    break;
+                default:
+
+            }
         } while (j>0);
 
 
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        dataset.addSeries(series);
-        series.setTitle("Durration");
-        //dataset.addSeries(series2);
+        dataset.addSeries(series_Phone);
+        series_Phone.setTitle("Call Durration");
+        dataset.addSeries(series_SMS);
+        series_SMS.setTitle("SMS Word Count");
 
         XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
 
-        XYSeriesRenderer renderer = new XYSeriesRenderer(); // This will be used to customize line 1
-        //XYSeriesRenderer renderer2 = new XYSeriesRenderer(); // This will be used to customize line 2
-        mRenderer.addSeriesRenderer(renderer);
-        //mRenderer.addSeriesRenderer(renderer2);
+        XYSeriesRenderer renderer_Phone = new XYSeriesRenderer(); // This will be used to customize line 1
+        XYSeriesRenderer renderer_SMS = new XYSeriesRenderer(); // This will be used to customize line 2
+        mRenderer.addSeriesRenderer(renderer_Phone);
+        mRenderer.addSeriesRenderer(renderer_SMS);
 
-        // Customization time for line 1!
-        renderer.setColor(Color.BLUE);
-        renderer.setPointStyle(PointStyle.SQUARE);
-        renderer.setFillPoints(true);
+        // Customization time for phone!
+        renderer_Phone.setColor(Color.BLUE);
+        renderer_Phone.setPointStyle(PointStyle.SQUARE);
+        renderer_Phone.setFillPoints(true);
 
-        // Customization time for line 2!
-        //renderer2.setColor(getResources().getColor(android.R.color.holo_green_dark));
-        //renderer2.setPointStyle(PointStyle.DIAMOND);
-        //renderer2.setFillPoints(true);
+        //Customization time for SMS !
+        renderer_SMS.setColor(getResources().getColor(android.R.color.holo_green_dark));
+        renderer_SMS.setPointStyle(PointStyle.DIAMOND);
+        renderer_SMS.setFillPoints(true);
 
         mRenderer.setPanEnabled(true, false);
         mRenderer.setZoomEnabled(true, false);
         mRenderer.setGridColor(getResources().getColor(android.R.color.holo_red_dark));
-        mRenderer.setMarginsColor(getResources().getColor(android.R.color.darker_gray));
+        mRenderer.setMarginsColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
         mRenderer.setApplyBackgroundColor(true);
-        mRenderer.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        mRenderer.setBackgroundColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
         mRenderer.setChartTitle("Event History");
         mRenderer.setChartTitleTextSize(40);
 
-        double THREEDAYS = 81300000 *3;
-        mRenderer.setPanLimits(new double[] {series.getMinX()- THREEDAYS, series.getMaxX()+ THREEDAYS, 0 , 0});
-        mRenderer.setZoomLimits(new double[] {series.getMinX()- THREEDAYS, series.getMaxX()+ THREEDAYS, 0 , 0});
 
+        // Choose the most expansive date range to include all the data
+        plotMin = (series_Phone.getMinX() < series_SMS.getMinX() ?
+                series_Phone.getMinX() : series_SMS.getMinX())
+                - THREEDAYS;
+        plotMax = (series_Phone.getMaxX() > series_SMS.getMaxX() ?
+                series_Phone.getMaxX() : series_SMS.getMaxX())
+                + THREEDAYS;
 
+        // set zoom and pan limits
+        mRenderer.setPanLimits(new double[] {plotMin, plotMax, 0 , 0});
+        mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
 
+        mRenderer.setAxisTitleTextSize(20);
+        mRenderer.setLabelsTextSize(16);
+        mRenderer.setLegendTextSize(16);
+        mRenderer.setXLabels(20);
+        mRenderer.setXTitle("Date (MM-dd)");
+
+        // good resource for mirror axis http://stackoverflow.com/questions/9904457/how-to-set-value-in-x-axis-label-in-achartengine
+/*
+        mRenderer.setYAxisAlign(Align.LEFT, 0);
+        mRenderer.setYAxisAlign(Align.RIGHT, 1);
+        mRenderer.setYLabelsAlign(Align.LEFT, 0);
+        mRenderer.setYLabelsAlign(Align.RIGHT, 1);
+*/
+        mRenderer.setAxesColor(Color.LTGRAY);
+        mRenderer.setLabelsColor(Color.parseColor("#5f5f5f"));
+        mRenderer.setShowGrid(true);
+        mRenderer.setGridColor(Color.GRAY);
 
       return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
 
