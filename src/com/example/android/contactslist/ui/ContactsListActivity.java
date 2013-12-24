@@ -178,8 +178,7 @@ public class ContactsListActivity extends FragmentActivity implements
         Cursor c = getContentResolver().query(
                 ContactsContract.Groups.CONTENT_SUMMARY_URI,
                 GROUP_PROJECTION,
-                null
-                ,
+                null,
                 null,
                 null);
         final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);

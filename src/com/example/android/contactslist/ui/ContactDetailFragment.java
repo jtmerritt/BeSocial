@@ -50,7 +50,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -95,7 +97,9 @@ import org.achartengine.renderer.XYSeriesRenderer;
  * Uri for the contact you want to display.
  */
 public class ContactDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>
+        //, View.OnClickListener
+        {
 
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
@@ -124,6 +128,12 @@ public class ContactDetailFragment extends Fragment implements
     private MenuItem mEditContactMenuItem;
     private LinearLayout mChartLayout;
     private String mContactNameString;
+
+
+    private Button buttonCallLog = null;
+    private Button buttonSMSLog = null;
+    private Button buttonEmailLog = null;
+
 
     /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
@@ -198,10 +208,6 @@ public class ContactDetailFragment extends Fragment implements
 
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-            //getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
-           //getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
-
-
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -307,7 +313,50 @@ public class ContactDetailFragment extends Fragment implements
             // savedInstanceState Bundle
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
         }
+
+        // In a fragment, button listeners must be defined in code, preferably during onActivityCreated
+        buttonCallLog =  (Button)getActivity().findViewById(R.id.buttonCallLog);
+        buttonCallLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the Call event log as a list.
+            @Override
+            public void onClick(View v) {
+                displayCallLog();
+            }
+        });
+
+        buttonSMSLog =  (Button)getActivity().findViewById(R.id.buttonSMSLog);
+        buttonSMSLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the SMS event log as a list.
+            @Override
+            public void onClick(View v) {
+                displaySMSLog();
+            }
+        });
+
+
+        buttonEmailLog =  (Button)getActivity().findViewById(R.id.buttonEmailLog);
+        buttonEmailLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the SMS event log as a list.
+            @Override
+            public void onClick(View v) {
+                displayAddressLog();
+            }
+        });
+
+
     }
+
+            public void displayCallLog(){
+                getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+            }
+
+            public void displaySMSLog(){
+                getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
+            }
+
+            public void displayAddressLog(){
+                getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
+            }
 
     /**
      * When the Fragment is being saved in order to change activity state, save the
@@ -358,6 +407,7 @@ public class ContactDetailFragment extends Fragment implements
         // it is visible.
         mEditContactMenuItem.setVisible(mContactUri != null);
     }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -497,17 +547,20 @@ public class ContactDetailFragment extends Fragment implements
                         do {
                             // Implentation reverses the display order of the call log.
                             j--;
-                            // Builds the address layout
-                            final LinearLayout layout = buildCallLogLayout(
+
+                            // If the item in the event log is for phone calls, display it.
+                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
+                                // Builds the address layout
+                                final LinearLayout layout = buildCallLogLayout(
                                     mContactNameString,  /*name of caller, if available.*/
                                     mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
                                     mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
                                     mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
 
 
-                            // Adds the new address layout to the details layout
-                            mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-
+                                // Adds the new address layout to the details layout
+                                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
+                            }
                         } while (j>0);
 
                     } else {
@@ -539,17 +592,20 @@ public class ContactDetailFragment extends Fragment implements
                         do {
                             // Implentation reverses the display order of the SMS log.
                             j--;
-                            // Builds the address layout
-                            final LinearLayout layout = buildSMSLogLayout(
+                            //If the item in the event Log is for SMS, display it.
+                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).SMS_CLASS) {
+
+                                // Builds the address layout
+                                final LinearLayout layout = buildSMSLogLayout(
                                     mContactNameString,
                                     mEventLog.get(j).getEventDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
                                     mEventLog.get(j).getEventWordCount(), /*Length of the SMS in Minutes*/
                                     mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
 
 
-                            // Adds the new address layout to the details layout
-                            mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
-
+                                // Adds the new address layout to the details layout
+                                mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
+                            }
                         } while (j>0);
                     } else {
                         // If nothing found, adds an empty address layout

@@ -24,6 +24,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.util.Utils;
@@ -88,4 +89,5 @@ public class ContactDetailActivity extends FragmentActivity {
         // documentation.
         return super.onOptionsItemSelected(item);
     }
+
 }
