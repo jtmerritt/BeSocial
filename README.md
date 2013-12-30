@@ -6,5 +6,14 @@ TODO
 - Load list of contacts within group as async task
 - Load cummunication log as background task when contact is selected
 - Include multiple phone numbers in the call log collection
-- Generate graph of communicaton data for display per contact.
+- Done! Generate graph of communicaton data for display per contact.
         - https://code.google.com/p/achartengine/
+- Make dropdown box function for choosing the displayed date range of the chart.
+- Make the toggles just above the chart display and remove chart data.
+- Break up ContactDetailFragment into multiple files.
+    - Data collection
+    - Chart generation
+    - ...
+- Add color changing progress bar to individual contacts on the list of contacts,
+    showing number of days since last contact out of a maximum number.
+- Find a cluster analysis package.

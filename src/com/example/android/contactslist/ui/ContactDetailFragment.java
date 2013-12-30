@@ -52,15 +52,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.ui.dateSelection.dateSelection;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 
@@ -98,6 +102,7 @@ import org.achartengine.renderer.XYSeriesRenderer;
  */
 public class ContactDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
+        , dateSelection
         //, View.OnClickListener
         {
 
@@ -127,15 +132,21 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
     private LinearLayout mChartLayout;
+    private GraphicalView gView = null;
     private String mContactNameString;
-
 
     private Button buttonCallLog = null;
     private Button buttonSMSLog = null;
     private Button buttonEmailLog = null;
 
+    private Spinner dateSpinner = null;
 
-    /**
+    private Button toggleViewCallLog = null;
+    private Button toggleViewSMSLog = null;
+    private Button toggleViewScore = null;
+
+
+            /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
      * method is preferable to simply using the constructor as it handles creating the bundle and
      * setting the bundle as an argument.
@@ -343,6 +354,28 @@ public class ContactDetailFragment extends Fragment implements
             }
         });
 
+        //SETUP SPINNER BOX
+        addItemsToGroupsSpinner();
+        //addListenerOnSpinnerItemSelection();
+        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+                // this is where we figure out which was selected and then do query.
+                //applyRangeGraphicalView(pos);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+
+        //Setup toggle buttons
+        toggleViewCallLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewCallLog);
+        toggleViewSMSLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewSMSLog);
+        toggleViewScore =  (Button)getActivity().findViewById(R.id.toggleButtonViewScore);
+
 
     }
 
@@ -475,10 +508,12 @@ public class ContactDetailFragment extends Fragment implements
                     loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
 
                     //Build the chart view
-                    GraphicalView gView = getView(getActivity());
+                    gView = getView(getActivity());
 
                     //add the chart view to the fragment.
                     mChartLayout.addView(gView);
+
+
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -500,6 +535,7 @@ public class ContactDetailFragment extends Fragment implements
                 mDetailsCallLogLayout.removeAllViews();
                 mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                 mChartLayout.removeAllViews(); //remove previously displayed chart
+                hideChartControlls();
 
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
@@ -539,6 +575,7 @@ public class ContactDetailFragment extends Fragment implements
                     mDetailsCallLogLayout.removeAllViews();
                     mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                     mChartLayout.removeAllViews();
+                    hideChartControlls();
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
@@ -585,6 +622,7 @@ public class ContactDetailFragment extends Fragment implements
                     mDetailsCallLogLayout.removeAllViews();
                     mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                     mChartLayout.removeAllViews(); //remove previously displayed chart
+                    hideChartControlls();
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
@@ -1399,7 +1437,6 @@ private LinearLayout buildCallLogLayout(
 
         double plotMin; //Time ms
         double plotMax;
-        double THREEDAYS = 81300000 *3;
 
         TimeSeries series_Phone = new TimeSeries("Phone");
         TimeSeries series_SMS = new TimeSeries("SMS");
@@ -1459,20 +1496,6 @@ private LinearLayout buildCallLogLayout(
         mRenderer.setBackgroundColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
         mRenderer.setChartTitle("Event History");
         mRenderer.setChartTitleTextSize(40);
-
-
-        // Choose the most expansive date range to include all the data
-        plotMin = (series_Phone.getMinX() < series_SMS.getMinX() ?
-                series_Phone.getMinX() : series_SMS.getMinX())
-                - THREEDAYS;
-        plotMax = (series_Phone.getMaxX() > series_SMS.getMaxX() ?
-                series_Phone.getMaxX() : series_SMS.getMaxX())
-                + THREEDAYS;
-
-        // set zoom and pan limits
-        mRenderer.setPanLimits(new double[] {plotMin, plotMax, 0 , 0});
-        mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
-
         mRenderer.setAxisTitleTextSize(20);
         mRenderer.setLabelsTextSize(16);
         mRenderer.setLegendTextSize(16);
@@ -1491,10 +1514,98 @@ private LinearLayout buildCallLogLayout(
         mRenderer.setShowGrid(true);
         mRenderer.setGridColor(Color.GRAY);
 
-      return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
+
+        //*****************time ranges*************
+
+        // Choose the most expansive date range to include all the data
+        plotMin = (series_Phone.getMinX() < series_SMS.getMinX() ?
+                series_Phone.getMinX() : series_SMS.getMinX())
+                - dateSelection.THREE_DAY;
+        plotMax = (series_Phone.getMaxX() > series_SMS.getMaxX() ?
+                series_Phone.getMaxX() : series_SMS.getMaxX())
+                + dateSelection.THREE_DAY;
+        mRenderer.setPanLimits(new double[] {plotMin, plotMax, 0 , 0});
+        mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
 
 
-    }
+
+        return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
+   }
+
+/*
+       public void applyRangeGraphicalView(int index){
+
+           // set zoom and pan limits
+           switch(index){
+               case dateSelection.S_MATCH_PHONE:
+                   break;
+               case dateSelection.S_THREE_MONTHS:
+                   break;
+               case dateSelection.S_SIX_MONTHS:
+                   break;
+               case dateSelection.S_NINE_MONTHS:
+                   break;
+               case dateSelection.S_MAX_TIME:
+               case dateSelection.S_DEFAULT:
+               default:
+                   mChartLayout.get mRenderer.setPanLimits(new double[]{plotMin, plotMax, 0, 0});
+                   mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
+                   break;
+           }
+
+
+
+       }
+    */
+            private void addItemsToGroupsSpinner() {
+                dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
+
+                List<String> list = new ArrayList<String>();
+
+                for(String s : dateSelection.Selections){
+                    list.add(s);
+                }
+
+                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_spinner_item, list);
+
+
+                dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                dateSpinner.setAdapter(dateAdapter);
+            }
+/*
+            public void addListenerOnSpinnerItemSelection() {
+                //dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
+                dateSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+            }
+
+
+            public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
+
+                public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+                    // this is where we figure out which was selected and then do query.
+                    int i;
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
+                    // TODO Auto-generated method stub
+                }
+
+            }
+*/
+
+        public void hideChartControlls(){
+
+            dateSpinner.setVisibility(View.GONE);
+            toggleViewCallLog.setVisibility(View.GONE);
+            toggleViewSMSLog.setVisibility(View.GONE);
+            toggleViewScore.setVisibility(View.GONE);
+        }
+
 
 }
+
+
 
