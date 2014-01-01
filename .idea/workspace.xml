@@ -6,12 +6,7 @@
     </shared>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="453a1773-2ac2-4101-98db-581daa4fac97" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/BeSocial.iml" afterPath="$PROJECT_DIR$/BeSocial.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gen/com/example/android/contactslist/BuildConfig.java" afterPath="$PROJECT_DIR$/gen/com/example/android/contactslist/BuildConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="453a1773-2ac2-4101-98db-581daa4fac97" name="Default" comment="" />
     <ignored path="BeSocial.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -74,13 +69,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="ContactDetailFragment.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="ContactDetailFragment.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/example/android/contactslist/ui/ContactDetailFragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="115" column="87" selection-start="4481" selection-end="4481" vertical-scroll-proportion="0.79710144" vertical-offset="1185" max-vertical-offset="23715">
+            <state line="97" column="2" selection-start="3676" selection-end="3676" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="23715">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ThreadPoolExecutor.class" pinned="false" current="true" current-in-tab="true">
+        <entry file="jar://$APPLICATION_HOME_DIR$/sdk/platforms/android-17/android.jar!/java/util/concurrent/ThreadPoolExecutor.class">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="106" column="0" selection-start="5096" selection-end="5096" vertical-scroll-proportion="0.7826087" vertical-offset="1251" max-vertical-offset="1665">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -386,7 +390,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="48" y="22" width="1319" height="773" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -404,7 +408,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24791509" sideWeight="0.67109144" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24791509" sideWeight="0.67109144" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32890856" sideWeight="0.4996209" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -477,10 +481,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/example/android/contactslist/ui/ContactDetailFragment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="87" selection-start="4481" selection-end="4481" vertical-scroll-proportion="0.79710144" vertical-offset="1185" max-vertical-offset="23715">
+        <state line="97" column="2" selection-start="3676" selection-end="3676" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="23715">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/sdk/platforms/android-17/android.jar!/java/util/concurrent/ThreadPoolExecutor.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="106" column="0" selection-start="5096" selection-end="5096" vertical-scroll-proportion="0.7826087" vertical-offset="1251" max-vertical-offset="1665">
+          <folding />
         </state>
       </provider>
     </entry>
