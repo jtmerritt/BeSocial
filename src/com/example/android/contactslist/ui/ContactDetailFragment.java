@@ -1389,7 +1389,9 @@ private LinearLayout buildCallLogLayout(
                    do{
                        j--;
                        //compare each element in the phone number list with the sms Address
-                        if(eventContactAddress.contains(phoneNumberList.get(j))){
+                        if(eventContactAddress != null &&
+                           j > 0 &&
+                           eventContactAddress.contains(phoneNumberList.get(j))){
 
                         String eventID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
                         Long eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
