@@ -13,6 +13,7 @@ ___________________________________________________________________
 - Add color changing progress bar to individual contacts on the list of contacts,
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
+- Under SMS Log, Call log and email log, make 'incoming' and 'outgoing' be different colors with arrows possibly
 
 Notes
 ___________________________________________________________________
