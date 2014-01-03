@@ -1,4 +1,4 @@
-TODO
+TODO:
 ___________________________________________________________________
 
 - Load list of contacts within group as async task
