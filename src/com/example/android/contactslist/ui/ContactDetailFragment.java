@@ -1449,19 +1449,23 @@ private LinearLayout buildCallLogLayout(
         do {
             // Implentation reverses the display order of the call log.
             j--;
-            switch(mEventLog.get(j).getEventClass()){
+            if (j >= 0)
+            {
+                switch(mEventLog.get(j).getEventClass()){
 
-                // place each point in the data series
-                case 1: //phone class
-                    series_Phone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
-                            TimeUnit.SECONDS.toMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
-                            //TODO: The number of seconds is currently cut off..  Should be included.
-                    break;
-                case 2: //SMS class
-                    series_SMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
-                            mEventLog.get(j).getEventWordCount()); /*Length of the call in Minutes*/
-                    break;
-                default:
+                    // place each point in the data series
+                    case 1: //phone class
+                        series_Phone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                                TimeUnit.SECONDS.toMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
+                                //TODO: The number of seconds is currently cut off..  Should be included.
+                        break;
+                    case 2: //SMS class
+                        series_SMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                                mEventLog.get(j).getEventWordCount()); /*Length of the call in Minutes*/
+                        break;
+                    default:
+                        break;
+                }
 
             }
         } while (j>0);
