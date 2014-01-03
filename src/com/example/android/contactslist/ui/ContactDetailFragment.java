@@ -1051,6 +1051,8 @@ private LinearLayout buildCallLogLayout(
     final TextView typeTextView =
             (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
 
+
+
     // If there's no addresses for the contact, shows the empty view and message, and hides the
     // header and button.
     if (CallDate == 0) {
@@ -1077,6 +1079,18 @@ private LinearLayout buildCallLogLayout(
         dateTextView.setText(formattedCallDate);
         durationTextView.setText(minute + " mins " + second + " secs");
         typeTextView.setText(eventType);
+
+
+        if (eventType.equalsIgnoreCase("incoming")){
+            Log.d("typeTextView=", eventType);
+            typeTextView.setTextColor(getResources().getColor(R.color.yellow));
+        }
+
+
+
+
+
+
 
     }
 

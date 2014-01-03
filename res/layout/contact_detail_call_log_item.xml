@@ -36,7 +36,8 @@
         android:id="@+id/contact_detail_call_type"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        style="@style/addressHeader"/>
+        android:textAlignment="center"
+        style="@style/addressHeader1"/>
 
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
