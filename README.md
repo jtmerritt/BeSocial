@@ -26,3 +26,4 @@ ___________________________________________________________________
 - Done! Only show 2 groups in the group list: Starred and BeSocial
 - Done! Generate graph of communicaton data for display per contact.
         - https://code.google.com/p/achartengine/
+- Done! Fixed bugs with my contacts (Brandy, Tyson) crashing when attempting to look at them.
