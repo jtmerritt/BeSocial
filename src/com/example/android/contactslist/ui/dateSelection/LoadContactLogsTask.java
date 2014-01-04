@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 
+import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.ui.ContactDetailFragment;
 import com.example.android.contactslist.ui.EventInfo;
 
@@ -21,13 +22,15 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     private ContentResolver mContentResolver;
 
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
+    private ContactDetailFragmentCallback mContactDetailFragmentCallback;
 
 
-    public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver, List<EventInfo> eventLog) {
+    public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver, List<EventInfo> eventLog, ContactDetailFragmentCallback contactDetailFragmentCallback) {
         contactID = cID;
         contactName = cName;
         mContentResolver = contentResolver;
         mEventLog = eventLog;
+        mContactDetailFragmentCallback = contactDetailFragmentCallback;
 
     }
     private void loadContactSMSLogs() {
@@ -189,7 +192,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     protected Integer doInBackground(Void... v1) {
         loadContactSMSLogs();
         loadContactCallLogs();
-        return 0;
+        return 1;
 
    }
 
@@ -197,7 +200,9 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         // do something
     }
 
-    protected void onPostExecute(Long result) {
+    protected void onPostExecute(Integer result) {
         // do something
+        int nine = 9;
+        mContactDetailFragmentCallback.finishedLoading();
     }
 }

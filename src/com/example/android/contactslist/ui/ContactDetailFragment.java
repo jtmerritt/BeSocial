@@ -60,6 +60,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.dateSelection.LoadContactLogsTask;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
@@ -70,6 +71,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.achartengine.ChartFactory;
@@ -96,7 +98,8 @@ import org.achartengine.renderer.XYSeriesRenderer;
  */
 public class ContactDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
-        , dateSelection
+        , dateSelection,
+        ContactDetailFragmentCallback
         //, View.OnClickListener
         {
 
@@ -373,17 +376,17 @@ public class ContactDetailFragment extends Fragment implements
 
     }
 
-            public void displayCallLog(){
-                getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
-            }
+    public void displayCallLog(){
+        getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+    }
 
-            public void displaySMSLog(){
-                getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
-            }
+    public void displaySMSLog(){
+        getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
+    }
 
-            public void displayAddressLog(){
-                getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-            }
+    public void displayAddressLog(){
+        getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
+    }
 
     /**
      * When the Fragment is being saved in order to change activity state, save the
@@ -501,11 +504,6 @@ public class ContactDetailFragment extends Fragment implements
                     //  using the contact name build the log ov events
                     loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
 
-                    //Build the chart view
-                    gView = getView(getActivity());
-
-                    //add the chart view to the fragment.
-                    mChartLayout.addView(gView);
 
 
                 }
@@ -1174,118 +1172,21 @@ private LinearLayout buildCallLogLayout(
 
 
 
-    /********SMS log reading**************************/
 
 
+    public void finishedLoading() {
+        //Build the chart view
+        gView = getView(getActivity());
 
-
-
-// TODO- this call takes a long time
-    /*
-    private void loadContactSMSLogs(Long contactID, String contactName) {
-
-        int j = 0;
-
-        String phoneNumber = "";
-        List<String> phoneNumberList = new ArrayList<String>();
-        phoneNumberList.clear();
-
-        // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
-        Cursor phoneCursor = getActivity().getContentResolver().query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                new String[] { contactID.toString() }, null);
-
-        if(phoneCursor.moveToFirst()){
-
-            do{
-                // phone number comes out formatted with dashes or dots, as 555-555-5555
-                phoneNumber = phoneCursor.getString(phoneCursor
-                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                phoneNumber = phoneNumber.replace("-", "").replace(".","").replace("[\\(]","").replace("[\\)]","").replaceAll("\\s","");
-
-                phoneNumberList.add(phoneNumber);
-            }while (phoneCursor.moveToNext());
-        }
-        phoneCursor.close();
-
-
-
-        	// Query SMS Log Content Provider
-            // Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs
-           Cursor SMSLogCursor = getActivity().getContentResolver().query(
-                   ContactSMSLogQuery.SMSLogURI,
-                  //Uri.parse(contentParsePhrase),
-                   ContactSMSLogQuery.PROJECTION,
-                    null,
-                    null,
-                   ContactSMSLogQuery.SORT_ORDER);
-
-
-        // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
-
-           	// Check if cursor is not null
-            if (SMSLogCursor != null
-                && SMSLogCursor.moveToFirst()
-                && !phoneNumberList.isEmpty()
-                //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("date"))
-                //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("address"))
-                    ) {
-
-	        // Loop through the cursor
-               do{
-
-                   Long eventContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
-                   String eventContactAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
-                   j = phoneNumberList.size();
-
-                   do{
-                       j--;
-                       //compare each element in the phone number list with the sms Address
-                        if(eventContactAddress != null &&
-                           j > 0 &&
-                           eventContactAddress.contains(phoneNumberList.get(j))){
-
-                        String eventID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
-                        Long eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
-
-                        String smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
-                        int eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
-
-
-                        EventInfo EventInfo = new EventInfo();
-
-                        EventInfo.eventID = eventID;
-                        EventInfo.eventDate = eventDate;
-                        EventInfo.eventContactAddress = eventContactAddress;
-                        EventInfo.eventContactID = eventContactID;
-                        EventInfo.eventWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
-                        EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
-                        EventInfo.eventType = eventType;
-                        EventInfo.eventClass = EventInfo.SMS_CLASS;
-
-
-           		        //Add it into the ArrayList
-                        mEventLog.add(EventInfo);
-                        }
-
-                   }while(j>0); //compare each element in the phone number list
-               }while (SMSLogCursor.moveToNext());
-
-            }
-        SMSLogCursor.close();
-
+        //add the chart view to the fragment.
+        mChartLayout.addView(gView);
     }
-    */
-
-
     private void loadContactLogs(String contactName, long contactID){
         mEventLog.clear();
         // KS TODO: look into possibility of sending parameters in execute instead
         AsyncTask<Void, Void, Integer> contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, getActivity().getContentResolver(), mEventLog);
+                (contactID, contactName, getActivity().getContentResolver(), mEventLog, this);
         contactLogsTask.execute();
-
     }
 
 
