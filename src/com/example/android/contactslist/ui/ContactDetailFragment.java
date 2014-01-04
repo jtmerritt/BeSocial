@@ -1052,7 +1052,6 @@ private LinearLayout buildCallLogLayout(
             (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
 
 
-
     // If there's no addresses for the contact, shows the empty view and message, and hides the
     // header and button.
     if (CallDate == 0) {
@@ -1084,17 +1083,17 @@ private LinearLayout buildCallLogLayout(
         if (eventType.equalsIgnoreCase("incoming")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.holo_blue));
-            typeTextView.setBackgroundResource(R.drawable.incoming);
+            callLogLayout.setBackgroundResource(R.drawable.incomingsmall);
         }
         else if (eventType.equalsIgnoreCase("outgoing")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.yellow));
-            typeTextView.setBackgroundResource(R.drawable.outgoing);
+            callLogLayout.setBackgroundResource(R.drawable.outgoingsmall);
         }
         else if (eventType.equalsIgnoreCase("missed/draft")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.red));
-            typeTextView.setBackgroundResource(R.drawable.missed);
+            callLogLayout.setBackgroundResource(R.drawable.missedsmall);
         }
 
 
