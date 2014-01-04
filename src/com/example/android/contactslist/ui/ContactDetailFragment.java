@@ -1083,7 +1083,18 @@ private LinearLayout buildCallLogLayout(
 
         if (eventType.equalsIgnoreCase("incoming")){
             Log.d("typeTextView=", eventType);
+            typeTextView.setTextColor(getResources().getColor(R.color.holo_blue));
+            typeTextView.setBackgroundResource(R.drawable.incoming);
+        }
+        else if (eventType.equalsIgnoreCase("outgoing")){
+            Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.yellow));
+            typeTextView.setBackgroundResource(R.drawable.outgoing);
+        }
+        else if (eventType.equalsIgnoreCase("missed/draft")){
+            Log.d("typeTextView=", eventType);
+            typeTextView.setTextColor(getResources().getColor(R.color.red));
+            typeTextView.setBackgroundResource(R.drawable.missed);
         }
 
 
