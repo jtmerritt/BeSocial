@@ -14,6 +14,7 @@ ___________________________________________________________________
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
 - Under SMS Log, Call log and email log, make 'incoming' and 'outgoing' be different colors with arrows possibly
+- KS: fix SMS log.  I broke it.
 
 Notes
 ___________________________________________________________________
