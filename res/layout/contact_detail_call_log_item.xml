@@ -32,20 +32,43 @@
             android:layout_width="wrap_content"
             style="@style/addressHeader"/>
 
-    <TextView
-        android:id="@+id/contact_detail_call_type"
+
+
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:textAlignment="center"
-        style="@style/addressHeader1"/>
+        android:minHeight="28dp"
+        android:layout_gravity="left"
+        android:gravity="left" >
+
+        <TextView
+            android:id="@+id/contact_detail_call_type"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:gravity="left"
+            android:textAlignment="center"
+            android:layout_toLeftOf="@+id/call_type_image1" />
+
+        <ImageView
+            android:id="@+id/call_type_image1"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="10px"
+            android:layout_width="35px"
+            android:layout_height="35px" />
+
+    </RelativeLayout>
 
 
+
+<!-- linear wrapper must be here for duration to show -->
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:showDividers="middle"
-                  android:dividerPadding="12dp"
-                  android:minHeight="48dp"
+                  android:dividerPadding="0dp"
+                  android:minHeight="20dp"
+                  android:layout_marginTop="0px"
                   android:divider="?android:attr/listDivider">
 
         <TextView
@@ -54,8 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:paddingRight="@dimen/padding"
-                android:layout_gravity="center"
-                style="@style/addressDetail"/>
+                style="@style/callDuration"/>
 
     </LinearLayout>
 

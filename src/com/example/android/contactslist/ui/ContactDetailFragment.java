@@ -1049,6 +1049,8 @@ private LinearLayout buildCallLogLayout(
     final TextView typeTextView =
             (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
 
+    final ImageView typeImageView = (ImageView) callLogLayout.findViewById(R.id.call_type_image1);
+
 
     // If there's no addresses for the contact, shows the empty view and message, and hides the
     // header and button.
@@ -1078,20 +1080,21 @@ private LinearLayout buildCallLogLayout(
         typeTextView.setText(eventType);
 
 
+
         if (eventType.equalsIgnoreCase("incoming")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.holo_blue));
-            callLogLayout.setBackgroundResource(R.drawable.incomingsmall);
+            typeImageView.setBackgroundResource(R.drawable.incomingsmall);
         }
         else if (eventType.equalsIgnoreCase("outgoing")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.yellow));
-            callLogLayout.setBackgroundResource(R.drawable.outgoingsmall);
+            typeImageView.setBackgroundResource(R.drawable.outgoingsmall);
         }
         else if (eventType.equalsIgnoreCase("missed/draft")){
             Log.d("typeTextView=", eventType);
             typeTextView.setTextColor(getResources().getColor(R.color.red));
-            callLogLayout.setBackgroundResource(R.drawable.missedsmall);
+            typeImageView.setBackgroundResource(R.drawable.missedsmall);
         }
 
 
