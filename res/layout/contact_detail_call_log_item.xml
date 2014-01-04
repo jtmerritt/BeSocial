@@ -38,7 +38,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="28dp"
+        android:minHeight="20dp"
         android:layout_gravity="left"
         android:gravity="left" >
 
@@ -68,15 +68,12 @@
                   android:showDividers="middle"
                   android:dividerPadding="0dp"
                   android:minHeight="20dp"
-                  android:layout_marginTop="0px"
-                  android:divider="?android:attr/listDivider">
+                  android:layout_marginTop="0px" >
 
         <TextView
                 android:id="@+id/contact_detail_call_duration"
                 android:layout_height="wrap_content"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:paddingRight="@dimen/padding"
+                android:layout_width="wrap_content"
                 style="@style/callDuration"/>
 
     </LinearLayout>
