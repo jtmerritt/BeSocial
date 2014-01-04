@@ -28,3 +28,4 @@ ___________________________________________________________________
 - Done! Generate graph of communicaton data for display per contact.
         - https://code.google.com/p/achartengine/
 - Done! Fixed bugs with my contacts (Brandy, Tyson) crashing when attempting to look at them.
+- Done! Make the load contact logs (sms and call) an async task.  This was the start of breaking up ContactDetailFragment into mutilple files.
