@@ -190,8 +190,8 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
     @Override
     protected Integer doInBackground(Void... v1) {
-        loadContactSMSLogs();
         loadContactCallLogs();
+        loadContactSMSLogs();
         return 1;
 
    }
