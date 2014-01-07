@@ -33,6 +33,33 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         mContactDetailFragmentCallback = contactDetailFragmentCallback;
 
     }
+
+   // TODO: move to utility class at some point
+
+    // TODO: there's gotta be a generic library for this!!
+    private String convertNumber(String num)
+    {
+        String ret = num.replaceAll("-","");
+        ret = ret.replaceAll("\\+", "");
+        ret = ret.replaceAll("\\(", "");
+        ret = ret.replaceAll("\\)", "");
+        ret = ret.replaceAll(" ", "");
+        // TODO- remove country codes in general
+        if (ret.startsWith("1"))
+            ret = ret.replace("1", "");
+        return ret;
+    }
+
+    public boolean isEquivalentNumber(String num1, String num2) {
+        // convert numbers and compare
+
+        String n1 = convertNumber(num1);
+        String n2 = convertNumber(num2);
+
+        if (n1.compareTo(n2) == 0)
+            return true;
+        return false;
+    }
     private void loadContactSMSLogs() {
         int j = 0;
 
@@ -93,8 +120,9 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                     j--;
                     //compare each element in the phone number list with the sms Address
                     if(eventContactAddress != null &&
-                            j > 0 &&
-                            eventContactAddress.contains(phoneNumberList.get(j))){
+                            j >= 0 &&
+                            isEquivalentNumber(eventContactAddress, phoneNumberList.get(j))) {
+                            //eventContactAddress.contains(phoneNumberList.get(j))){
 
                         String eventID = SMSLogCursor.getString(ContactDetailFragment.ContactSMSLogQuery.ID);
                         Long eventDate = SMSLogCursor.getLong(ContactDetailFragment.ContactSMSLogQuery.DATE);
