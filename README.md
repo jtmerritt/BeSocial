@@ -1,11 +1,15 @@
 TODO
 ___________________________________________________________________
+Small Tasks
 
-- Load list of contacts within group as async task
-- Load cummunication log as background task when contact is selected
+- Titles on pages for "Call log", "SMS log", "Email Log"
+- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
+- 
+
+ 
+Medium Tasks
+
 - Include multiple phone numbers in the call log collection
-- Make dropdown box function for choosing the displayed date range of the chart.
-- Make the toggles just above the chart display and remove chart data.
 - Break up ContactDetailFragment into multiple files.
     - Data collection
     - Chart generation
@@ -13,9 +17,16 @@ ___________________________________________________________________
 - Add color changing progress bar to individual contacts on the list of contacts,
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
-- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly
-- Only retrieve data for one page-full at a time to speed things up.
+- Load list of contacts within group as async task
+- Load cummunication log as background task when contact is selected
+- Make dropdown box function for choosing the displayed date range of the chart.
+- Make the toggles just above the chart display and remove chart data.
 
+
+Large Tasks
+
+- Only retrieve data for one page-full at a time to speed things up.
+- Cloud-based retrieval/storage?
 
 Notes
 ___________________________________________________________________
