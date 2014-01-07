@@ -15,7 +15,7 @@ ___________________________________________________________________
 - Find a cluster analysis package.
 - Under SMS Log, Call log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly
     - Done for call log B.D. 
-- KS: fix SMS log.  I broke it.
+
 
 Notes
 ___________________________________________________________________
@@ -31,3 +31,4 @@ ___________________________________________________________________
         - https://code.google.com/p/achartengine/
 - Done! Fixed bugs with my contacts (Brandy, Tyson) crashing when attempting to look at them.
 - Done! Make the load contact logs (sms and call) an async task.  This was the start of breaking up ContactDetailFragment into mutilple files.
+- Done KS: fix SMS log.  I broke it.
