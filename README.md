@@ -14,6 +14,7 @@ ___________________________________________________________________
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
 - Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly
+- Only retrieve data for one page-full at a time to speed things up.
 
 
 Notes
