@@ -21,6 +21,7 @@ Medium Tasks
 - Load cummunication log as background task when contact is selected
 - Make dropdown box function for choosing the displayed date range of the chart.
 - Make the toggles just above the chart display and remove chart data.
+- Move betterBranch to main branch.  Note- we have made a mess trying to do this.  Maybe ask someone really good at git to help with this at some point.
 
 
 Large Tasks
