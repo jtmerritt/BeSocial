@@ -13,8 +13,7 @@ ___________________________________________________________________
 - Add color changing progress bar to individual contacts on the list of contacts,
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
-- Under SMS Log, Call log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly
-    - Done for call log B.D. 
+- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly
 
 
 Notes
@@ -31,4 +30,5 @@ ___________________________________________________________________
         - https://code.google.com/p/achartengine/
 - Done! Fixed bugs with my contacts (Brandy, Tyson) crashing when attempting to look at them.
 - Done! Make the load contact logs (sms and call) an async task.  This was the start of breaking up ContactDetailFragment into mutilple files.
-- Done KS: fix SMS log.  I broke it.
+- Done KS: fix SMS log.  I broke it. NOTE: this change is really on betterBranch.
+- Done! (for Call Log) BD: Under SMS Log, Call log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly 
