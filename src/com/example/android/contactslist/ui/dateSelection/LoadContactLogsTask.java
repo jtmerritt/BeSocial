@@ -219,7 +219,12 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     @Override
     protected Integer doInBackground(Void... v1) {
         loadContactCallLogs();
+
+        //TODO: Fix below
+        //temporarily removed because the SMS Logs are very slow.  MALOC operation?
         loadContactSMSLogs();
+
+
         return 1;
 
    }
