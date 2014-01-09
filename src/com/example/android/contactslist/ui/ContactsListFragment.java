@@ -736,7 +736,7 @@ public class ContactsListFragment extends ListFragment implements
             holder.text1 = (TextView) itemLayout.findViewById(android.R.id.text1);
             holder.text2 = (TextView) itemLayout.findViewById(android.R.id.text2);
             holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
-            
+
             holder.fractionView = (FractionView) itemLayout.findViewById(R.id.fraction);
 
             int min = 1;
