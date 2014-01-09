@@ -135,7 +135,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
                         EventInfo.eventID = eventID;
                         EventInfo.eventDate = eventDate;
-                        EventInfo.eventContactAddress = eventContactAddress;
+                        EventInfo.eventContactAddress = convertNumber(eventContactAddress);
                         EventInfo.eventContactID = eventContactID;
                         EventInfo.eventWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
                         EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
