@@ -45,9 +45,23 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="addressHeader1" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">@color/red</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <style name="callDuration" parent="@android:style/TextAppearance.Small">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:alpha">10</item>
+    </style>
+
     <style name="addressDetail" parent="@android:style/TextAppearance.Medium">
         <item name="android:fontFamily">sans-serif-light</item>
         <item name="android:textIsSelectable">true</item>
+        <item name="android:alpha">10</item>
     </style>
 
     <style name="contactNameTitle" parent="@android:style/TextAppearance.Large">

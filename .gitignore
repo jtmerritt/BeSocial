@@ -1,1 +1,7 @@
 .idea/workspace.xml
+libs/
+.idea/misc.xml
+.idea/vcs.xml
+BeSocial.iml
+.idea/libraries/libs.xml
+local.properties

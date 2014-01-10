@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-
-//Hello
-
-
 package com.example.android.contactslist.ui;
 
 import android.annotation.SuppressLint;
@@ -70,6 +66,7 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * This fragment displays a list of contacts stored in the Contacts Provider. Each item in the list
@@ -123,6 +120,8 @@ public class ContactsListFragment extends ListFragment implements
 
 
     private int mGroupID = -1;  //stores the selected groupID for display
+
+    private FractionView mFractionView;
 
     /**
      * Fragments require an empty constructor.
@@ -738,6 +737,19 @@ public class ContactsListFragment extends ListFragment implements
             holder.text2 = (TextView) itemLayout.findViewById(android.R.id.text2);
             holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
 
+            holder.fractionView = (FractionView) itemLayout.findViewById(R.id.fraction);
+
+            int min = 1;
+            int max = 10;
+
+            Random r = new Random();
+            int i1 = r.nextInt(max - min + 1) + min;
+            int i2 = r.nextInt(max - min + 1) + min;
+
+            holder.fractionView.setFraction(i1, i2);
+
+
+
             // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
             // available to bindView and other methods that receive a handle to the item view.
             itemLayout.setTag(holder);
@@ -876,6 +888,7 @@ public class ContactsListFragment extends ListFragment implements
             TextView text1;
             TextView text2;
             QuickContactBadge icon;
+            FractionView fractionView;
         }
     }
 

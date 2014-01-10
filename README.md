@@ -1,4 +1,4 @@
-TODO
+TODO:
 ___________________________________________________________________
 Small Tasks
 
@@ -17,6 +17,7 @@ Medium Tasks
 - Add color changing progress bar to individual contacts on the list of contacts,
     showing number of days since last contact out of a maximum number.
 - Find a cluster analysis package.
+- Don't load the entire SMS/phone log at a time.
 - Load list of contacts within group as async task
 - Load cummunication log as background task when contact is selected
 - Make dropdown box function for choosing the displayed date range of the chart.
