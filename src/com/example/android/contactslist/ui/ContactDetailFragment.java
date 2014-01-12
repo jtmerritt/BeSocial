@@ -76,11 +76,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
+import org.achartengine.chart.BarChart;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+
+import android.widget.TabHost;
+import android.widget.TabHost.TabSpec;
 
 
 /**
@@ -132,6 +136,7 @@ public class ContactDetailFragment extends Fragment implements
     private GraphicalView gView = null;
     private String mContactNameString;
 
+/*
     private Button buttonCallLog = null;
     private Button buttonSMSLog = null;
     private Button buttonEmailLog = null;
@@ -141,7 +146,7 @@ public class ContactDetailFragment extends Fragment implements
     private Button toggleViewCallLog = null;
     private Button toggleViewSMSLog = null;
     private Button toggleViewScore = null;
-
+*/
 
             /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
@@ -287,10 +292,8 @@ public class ContactDetailFragment extends Fragment implements
         // Gets handles to view objects in the layout
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-
-        //TODO: does this need its own layout?
-        mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
+        mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_call_details_layout);
+        mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_sms_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
 
         //********************* chart
@@ -322,56 +325,35 @@ public class ContactDetailFragment extends Fragment implements
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
         }
 
-        // In a fragment, button listeners must be defined in code, preferably during onActivityCreated
-        buttonCallLog =  (Button)getActivity().findViewById(R.id.buttonCallLog);
-        buttonCallLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the Call event log as a list.
-            @Override
-            public void onClick(View v) {
-                displayCallLog();
-            }
-        });
-
-        buttonSMSLog =  (Button)getActivity().findViewById(R.id.buttonSMSLog);
-        buttonSMSLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the SMS event log as a list.
-            @Override
-            public void onClick(View v) {
-                displaySMSLog();
-            }
-        });
 
 
-        buttonEmailLog =  (Button)getActivity().findViewById(R.id.buttonEmailLog);
-        buttonEmailLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the SMS event log as a list.
-            @Override
-            public void onClick(View v) {
-                displayAddressLog();
-            }
-        });
+        TabHost tabHost=(TabHost)getActivity().findViewById(R.id.tabHost);
+        tabHost.setup();
 
-        //SETUP SPINNER BOX
-        addItemsToGroupsSpinner();
-        //addListenerOnSpinnerItemSelection();
-        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+        TabSpec spec1=tabHost.newTabSpec("Tab Chart");
+        spec1.setIndicator("Chart");
+        spec1.setContent(R.id.tab_chart);
 
-                // this is where we figure out which was selected and then do query.
-                //applyRangeGraphicalView(pos);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
+        TabSpec spec2=tabHost.newTabSpec("Tab Call");
+        spec2.setIndicator("Call Log");
+        spec2.setContent(R.id.tab_call);
+
+        TabSpec spec3=tabHost.newTabSpec("Tab SMS");
+        spec3.setIndicator("SMS Log");
+        spec3.setContent(R.id.tab_sms);
+
+        TabSpec spec4=tabHost.newTabSpec("Tab Address");
+        spec4.setIndicator("Addy");
+        spec4.setContent(R.id.tab_addy);
 
 
-        //Setup toggle buttons
-        toggleViewCallLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewCallLog);
-        toggleViewSMSLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewSMSLog);
-        toggleViewScore =  (Button)getActivity().findViewById(R.id.toggleButtonViewScore);
+        tabHost.addTab(spec1);
+        tabHost.addTab(spec2);
+        tabHost.addTab(spec3);
+        tabHost.addTab(spec4);
+
+        tabHost.setCurrentTab(0);
+
 
 
     }
@@ -523,11 +505,14 @@ public class ContactDetailFragment extends Fragment implements
                 // Clears out the details layout first in case the details
                 // layout has addresses from a previous data load still
                 // added as children.
+
+                /* change layout
                 mDetailsLayout.removeAllViews();
                 mDetailsCallLogLayout.removeAllViews();
                 mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                 mChartLayout.removeAllViews(); //remove previously displayed chart
-                hideChartControlls();
+                */
+                //hideChartControlls();
 
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
@@ -564,10 +549,12 @@ public class ContactDetailFragment extends Fragment implements
                     // layout has CallLogs from a previous data load still
                     // added as children.
 
+                    /* change layout
                     mDetailsCallLogLayout.removeAllViews();
                     mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                     mChartLayout.removeAllViews();
-                    hideChartControlls();
+                    */
+                    //hideChartControlls();
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
@@ -611,12 +598,16 @@ public class ContactDetailFragment extends Fragment implements
                             new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.WRAP_CONTENT);
 
+                    /* change layout
                     mDetailsCallLogLayout.removeAllViews();
                     mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
                     mChartLayout.removeAllViews(); //remove previously displayed chart
-                    hideChartControlls();
+                    */
+                    //hideChartControlls();
 
                     // Loops through all the rows in the Cursor
+
+                    //TODO: the EventLog having content is not the same as having SMS content
                     if (!mEventLog.isEmpty()) {
                         int j=mEventLog.size();
                         do {
@@ -633,7 +624,7 @@ public class ContactDetailFragment extends Fragment implements
                                     mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
 
 
-                                // Adds the new address layout to the details layout
+                                // Adds the new SMS layout to the details layout
                                 mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
                             }
                         } while (j>0);
@@ -1179,10 +1170,14 @@ private LinearLayout buildCallLogLayout(
 
     public void finishedLoading() {
         //Build the chart view
-        gView = getView(getActivity());
+        gView = getTimeChartView(getActivity());
 
         //add the chart view to the fragment.
         mChartLayout.addView(gView);
+
+        displayCallLog();
+        displaySMSLog();
+        displayAddressLog();
     }
     private void loadContactLogs(String contactName, long contactID){
         mEventLog.clear();
@@ -1194,7 +1189,7 @@ private LinearLayout buildCallLogLayout(
 
 
  //*****Charts*****************
-    public GraphicalView getView(Context context) {
+    public GraphicalView getTimeChartView(Context context) {
 
         double plotMin; //Time ms
         double plotMax;
@@ -1278,6 +1273,7 @@ private LinearLayout buildCallLogLayout(
         mRenderer.setLabelsColor(Color.parseColor("#5f5f5f"));
         mRenderer.setShowGrid(true);
         mRenderer.setGridColor(Color.GRAY);
+        mRenderer.setAntialiasing(false);
 
 
         //*****************time ranges*************
@@ -1296,6 +1292,144 @@ private LinearLayout buildCallLogLayout(
 
         return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
    }
+
+
+            //*****Bar Chart*****************
+            public GraphicalView getBarChartView(Context context) {
+
+                double plotMin; //Time ms
+                double plotMax;
+
+                TimeSeries series_Phone = new TimeSeries("Phone");
+                TimeSeries series_SMS = new TimeSeries("SMS");
+
+                Calendar cal = Calendar.getInstance();
+                cal.setFirstDayOfWeek(Calendar.MONDAY);
+
+                double bucket_Phone = 0;
+                double bucket_SMS = 0;
+                double bucket_startDate = 0;
+
+
+
+                // transfer the eventLog to the dataset
+                int j=mEventLog.size();
+                do {
+                    // Implentation reverses the display order of the call log.
+                    j--;
+                    if (j >= 0)
+                    {
+                        /*
+                        cal.setTimeInMillis(mEventLog.get(j).getEventDate());
+                        cal.get(Calendar.WEEK_OF_YEAR);
+                        cal.get(Calendar.MONTH);
+                        cal.get(Calendar.YEAR);
+
+                           bucket_startDate = mEventLog.get(j).getEventDate();
+
+*/
+                        if(true){
+                            switch(mEventLog.get(j).getEventClass()){
+
+                                // place each point in the data series
+                                case 1: //phone class
+                                    bucket_Phone += TimeUnit.SECONDS.toMinutes(mEventLog.get(j).getCallDuration()); /*Length of the call in Minutes*/
+                                    //TODO: The number of seconds is currently cut off..  Should be included.
+                                    break;
+                                case 2: //SMS class
+                                     bucket_SMS += mEventLog.get(j).getEventWordCount(); /*Length of the call in Minutes*/
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                        }else{
+
+                            switch(mEventLog.get(j).getEventClass()){
+
+                                // place each point in the data series
+                                case 1: //phone class
+                                    series_Phone.add(bucket_startDate, /*date of call. Time of day?*/
+                                            bucket_Phone); /*Length of the call in Minutes*/
+                                    //TODO: The number of seconds is currently cut off..  Should be included.
+                                    bucket_Phone = 0;
+                                    break;
+                                case 2: //SMS class
+                                    series_SMS.add(bucket_startDate, /*date of call. Time of day?*/
+                                            bucket_SMS); /*Length of the call in Minutes*/
+                                    bucket_SMS = 0;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+
+                            //bucket_startDate = 0;
+
+                        }
+
+
+
+                    }
+                } while (j>0);
+
+
+                XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+                dataset.addSeries(series_Phone);
+                series_Phone.setTitle("Call Durration");
+                dataset.addSeries(series_SMS);
+                series_SMS.setTitle("SMS Word Count");
+
+                XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
+
+                XYSeriesRenderer renderer_Phone = new XYSeriesRenderer(); // This will be used to customize line 1
+                XYSeriesRenderer renderer_SMS = new XYSeriesRenderer(); // This will be used to customize line 2
+                mRenderer.addSeriesRenderer(renderer_Phone);
+                mRenderer.addSeriesRenderer(renderer_SMS);
+
+
+                // Customization time for phone!
+                renderer_Phone.setColor(Color.BLUE);
+                renderer_Phone.setFillPoints(true);
+                //renderer_Phone.setLineWidth(5);
+
+
+                //Customization time for SMS !
+                renderer_SMS.setColor(getResources().getColor(android.R.color.holo_green_dark));
+                renderer_SMS.setFillPoints(true);
+                //renderer_SMS.setLineWidth(5);
+
+
+
+                // chart properties
+                mRenderer.setPanEnabled(false, false);
+                mRenderer.setZoomEnabled(false, false);
+                mRenderer.setGridColor(getResources().getColor(android.R.color.holo_red_dark));
+                mRenderer.setMarginsColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
+                mRenderer.setApplyBackgroundColor(true);
+                mRenderer.setBackgroundColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
+                mRenderer.setChartTitle("Event History");
+                mRenderer.setChartTitleTextSize(40);
+                mRenderer.setAxisTitleTextSize(20);
+                mRenderer.setLabelsTextSize(16);
+                mRenderer.setLegendTextSize(16);
+                mRenderer.setXLabels(20);
+                mRenderer.setXTitle("Date (MM-dd)");
+
+                mRenderer.setAxesColor(Color.LTGRAY);
+                mRenderer.setLabelsColor(Color.parseColor("#5f5f5f"));
+                mRenderer.setShowGrid(true);
+                mRenderer.setGridColor(Color.GRAY);
+                mRenderer.setBarSpacing(1.0);
+
+
+
+
+
+                return ChartFactory.getBarChartView(context, dataset, mRenderer, BarChart.Type.STACKED);
+                //return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
+            }
+
 
 /*
        public void applyRangeGraphicalView(int index){
@@ -1322,6 +1456,8 @@ private LinearLayout buildCallLogLayout(
 
        }
     */
+
+            /*
             private void addItemsToGroupsSpinner() {
                 dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
 
@@ -1338,6 +1474,7 @@ private LinearLayout buildCallLogLayout(
                 dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 dateSpinner.setAdapter(dateAdapter);
             }
+            */
 /*
             public void addListenerOnSpinnerItemSelection() {
                 //dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
@@ -1360,7 +1497,7 @@ private LinearLayout buildCallLogLayout(
 
             }
 */
-
+/*
         public void hideChartControlls(){
 
             dateSpinner.setVisibility(View.GONE);
@@ -1368,6 +1505,62 @@ private LinearLayout buildCallLogLayout(
             toggleViewSMSLog.setVisibility(View.GONE);
             toggleViewScore.setVisibility(View.GONE);
         }
+*/
+
+                    /*
+        // Buttons removed, replace with tabs
+        // In a fragment, button listeners must be defined in code, preferably during onActivityCreated
+        buttonCallLog =  (Button)getActivity().findViewById(R.id.buttonCallLog);
+        buttonCallLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the Call event log as a list.
+            @Override
+            public void onClick(View v) {
+                displayCallLog();
+            }
+        });
+
+        buttonSMSLog =  (Button)getActivity().findViewById(R.id.buttonSMSLog);
+        buttonSMSLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the SMS event log as a list.
+            @Override
+            public void onClick(View v) {
+                displaySMSLog();
+            }
+        });
+
+
+        buttonEmailLog =  (Button)getActivity().findViewById(R.id.buttonEmailLog);
+        buttonEmailLog.setOnClickListener(new View.OnClickListener() {
+            //When the button is pressed, display the SMS event log as a list.
+            @Override
+            public void onClick(View v) {
+                displayAddressLog();
+            }
+        });
+*/
+            //SETUP SPINNER BOX
+        /*
+        addItemsToGroupsSpinner();
+        //addListenerOnSpinnerItemSelection();
+        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+                // this is where we figure out which was selected and then do query.
+                //applyRangeGraphicalView(pos);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+
+        //Setup toggle buttons
+        toggleViewCallLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewCallLog);
+        toggleViewSMSLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewSMSLog);
+        toggleViewScore =  (Button)getActivity().findViewById(R.id.toggleButtonViewScore);
+*/
 
 
 }

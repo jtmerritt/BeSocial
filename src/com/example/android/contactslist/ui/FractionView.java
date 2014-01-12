@@ -15,6 +15,8 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 
+import com.example.android.contactslist.R;
+
 public class FractionView extends View {
 
     private Paint mCirclePaint;
@@ -29,6 +31,8 @@ public class FractionView extends View {
     private int cy = 0;
     private int radius = 0;
     private TranslateAnimation translateAnimation;
+
+
 
   public FractionView(Context context) {
     super(context);
@@ -51,19 +55,19 @@ public class FractionView extends View {
   }
 
   private void init() {
-    setBackgroundColor(Color.LTGRAY);
+    setBackgroundColor(Color.parseColor("#F5F5F5"));//Color.LTGRAY);
     mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     mCirclePaint.setColor(Color.CYAN);
     mCirclePaint.setStyle(Paint.Style.FILL);
 
     mRedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mRedPaint.setColor(Color.RED);
+    mRedPaint.setColor(getResources().getColor(android.R.color.holo_red_dark));//Color.RED);
     mRedPaint.setStyle(Paint.Style.FILL);
 
     mSectorOval = new RectF();
 
     mGreenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mGreenPaint.setColor(Color.GREEN);
+    mGreenPaint.setColor(getResources().getColor(android.R.color.holo_green_light));//Color.GREEN);
     mGreenPaint.setStyle(Paint.Style.FILL);
 
     /*
@@ -146,10 +150,10 @@ public class FractionView extends View {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        translateAnimation = new TranslateAnimation(0, 0, 0,  300);
-        translateAnimation.setDuration(1000);
-        translateAnimation.setInterpolator(new AccelerateInterpolator(1.0f));
-        translateAnimation.setRepeatCount(2);
+        translateAnimation = new TranslateAnimation(0, 10, 0, 10);
+        translateAnimation.setDuration(200);
+        translateAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
+        translateAnimation.setRepeatCount(4);
         translateAnimation.setRepeatMode(Animation.REVERSE);
         this.startAnimation(translateAnimation);
 
