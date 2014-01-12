@@ -3,8 +3,8 @@ ___________________________________________________________________
 Small Tasks
 
 - Titles on pages for "Call log", "SMS log", "Email Log"
+- Text on fraction view
 - Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
-- 
 
  
 Medium Tasks
