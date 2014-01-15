@@ -11,11 +11,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
     </content>
-    <orderEntry type="jdk" jdkName="Android SDK" jdkType="Android SDK" />
+    <orderEntry type="jdk" jdkName="Android 4.2.2 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="libs" level="project" />
     <orderEntry type="library" name="achartengine-1.1.0 (3)" level="project" />
     <orderEntry type="library" name="android-support-v4 (3)" level="project" />
+    <orderEntry type="library" name="achartengine-1.1.0 (2)" level="project" />
+    <orderEntry type="library" name="android-support-v4 (2)" level="project" />
   </component>
 </module>
 

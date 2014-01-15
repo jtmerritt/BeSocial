@@ -1,9 +1,10 @@
-package com.example.android.contactslist.ui.dateSelection;
+package com.example.android.contactslist.ui;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.ui.ContactDetailFragment;
@@ -21,6 +22,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     private String contactName;
     private ContentResolver mContentResolver;
 
+    //TODO: thiis next line appears twice, once in ContactDetailFragment.java
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private ContactDetailFragmentCallback mContactDetailFragmentCallback;
 
@@ -60,6 +62,9 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
             return true;
         return false;
     }
+
+
+
     private void loadContactSMSLogs() {
         int j = 0;
 
@@ -118,11 +123,14 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
                 do{
                     j--;
+
                     //compare each element in the phone number list with the sms Address
                     if(eventContactAddress != null &&
                             j >= 0 &&
                             isEquivalentNumber(eventContactAddress, phoneNumberList.get(j))) {
                             //eventContactAddress.contains(phoneNumberList.get(j))){
+                        Log.w("************************", "***************");
+
 
                         String eventID = SMSLogCursor.getString(ContactDetailFragment.ContactSMSLogQuery.ID);
                         Long eventDate = SMSLogCursor.getLong(ContactDetailFragment.ContactSMSLogQuery.DATE);
@@ -143,8 +151,9 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                         EventInfo.eventClass = EventInfo.SMS_CLASS;
 
 
+
                     /*Add it into the ArrayList*/
-                        mEventLog.add(EventInfo);
+                       mEventLog.add(EventInfo);
                     }
 
                 }while(j>0); //compare each element in the phone number list
@@ -155,9 +164,11 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         SMSLogCursor.close();
 
     }
+
+
+
+
     /********call log reading**************************/
-
-
 // taken from http://developer.samsung.com/android/technical-docs/CallLogs-in-Android#
 // TODO- this call takes a long time
     private void loadContactCallLogs() {
@@ -238,4 +249,8 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         int nine = 9;
         mContactDetailFragmentCallback.finishedLoading();
     }
+
+
+
+
 }

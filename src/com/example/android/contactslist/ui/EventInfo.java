@@ -77,6 +77,9 @@ public class EventInfo {
     public long getCallDuration() {
         return eventDuration;
     }
+    public long getEventDuration() {
+        return eventDuration;
+    }
     public String getCallTypeSting() {
         return getEventTypeSting();
     }
