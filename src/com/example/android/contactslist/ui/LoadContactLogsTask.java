@@ -2,6 +2,7 @@ package com.example.android.contactslist.ui;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -96,12 +97,12 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         /*Query SMS Log Content Provider*/
         /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
         Cursor SMSLogCursor = mContentResolver.query(
-                ContactDetailFragment.ContactSMSLogQuery.SMSLogURI,
+                ContactSMSLogQuery.SMSLogURI,
                 //Uri.parse(contentParsePhrase),
-                ContactDetailFragment.ContactSMSLogQuery.PROJECTION,
+                ContactSMSLogQuery.PROJECTION,
                 null,
                 null,
-                ContactDetailFragment.ContactSMSLogQuery.SORT_ORDER);
+                ContactSMSLogQuery.SORT_ORDER);
 
 
         // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
@@ -117,8 +118,8 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         /*Loop through the cursor*/
             do{
 
-                Long eventContactID = SMSLogCursor.getLong(ContactDetailFragment.ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
-                String eventContactAddress = SMSLogCursor.getString(ContactDetailFragment.ContactSMSLogQuery.ADDRESS);
+                Long eventContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME); //TODO: cleanup name vs ID
+                String eventContactAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
                 j = phoneNumberList.size();
 
                 do{
@@ -129,14 +130,13 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                             j >= 0 &&
                             isEquivalentNumber(eventContactAddress, phoneNumberList.get(j))) {
                             //eventContactAddress.contains(phoneNumberList.get(j))){
-                        Log.w("************************", "***************");
 
 
-                        String eventID = SMSLogCursor.getString(ContactDetailFragment.ContactSMSLogQuery.ID);
-                        Long eventDate = SMSLogCursor.getLong(ContactDetailFragment.ContactSMSLogQuery.DATE);
+                        String eventID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
+                        Long eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
 
-                        String smsBody = SMSLogCursor.getString(ContactDetailFragment.ContactSMSLogQuery.BODY);
-                        int eventType = SMSLogCursor.getInt(ContactDetailFragment.ContactSMSLogQuery.TYPE);
+                        String smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
+                        int eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
 
 
                         EventInfo EventInfo = new EventInfo();
@@ -161,7 +161,10 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
         }
     /*Close the cursor  for this iteration of the loop*/
+        Log.w("************************", "Load Contact SMS Logs");
+
         SMSLogCursor.close();
+        Log.w("************************", "Load Contact SMS Logs");
 
     }
 
@@ -179,7 +182,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
         // http://developer.android.com/reference/android/provider/CallLog.Calls.html
         Cursor callLogCursor = mContentResolver.query(
-                ContactDetailFragment.ContactCallLogQuery.ContentURI,
+                ContactCallLogQuery.ContentURI,
                 null, //ContactCallLogQuery.PROJECTION,
                 null,
                 null,
@@ -234,6 +237,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         //TODO: Fix below
         //temporarily removed because the SMS Logs are very slow.  MALOC operation?
         loadContactSMSLogs();
+        Log.w("************************", "Do in Background");
 
 
         return 1;
@@ -250,7 +254,88 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         mContactDetailFragmentCallback.finishedLoading();
     }
 
+    public interface ContactCallLogQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 3;
 
+        //create URI for the SMS query
+        // final String contentParsePhrase = "content://sms/";  //for all messages
+        final static Uri ContentURI= android.provider.CallLog.Calls.CONTENT_URI;
+
+        // The query projection (columns to fetch from the provider)
+        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
+        final static String[] PROJECTION = {
+                "_id",      //message ID
+                "date",     //date of message long
+                "duration",
+                "cached_name",
+                "address", // phone number long
+                "person", //ID of person who sent message
+                "body", //body of message
+                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
+                "type" //  Inbound, Outbound, Missed/draft
+        };
+
+        // The query selection criteria. In this case matching against the
+        // StructuredPostal content mime type.
+        // Except they never quite worked in this context.
+        final static String SELECTION = null;
+        final String SELECTION_ARGS[] = null;
+        final String SORT_ORDER = "date ASC";   //example: "DATE desc"
+
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DATE = 1;
+        final static int ADDRESS = 2;
+        final static int CONTACT_NAME = 3;
+        final static int BODY = 4;
+        final static int STATUS = 5;
+        final static int TYPE = 6;
+    }
+
+    public interface ContactSMSLogQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 4;
+
+        //create URI for the SMS query
+        final String contentParsePhrase = "content://sms/";  //for all messages
+        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
+
+        // The query projection (columns to fetch from the provider)
+        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
+        final static String[] PROJECTION = {
+                "_id",      //message ID
+                "date",     //date of message long
+                "address", // phone number long
+                "person", //Name of person (ID?)
+                "body", //body of message
+                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
+                "type" //  Inbox, Sent, Draft
+        };
+        /*
+        { "address", "body", "person", "reply_path_present",
+              "service_center", "status", "subject", "type", "error_code" };
+         */
+
+        // The query selection criteria. In this case matching against the
+        // StructuredPostal content mime type.
+        // Except they never quite worked in this context.
+        final static String SELECTION =
+                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
+        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
+        final String SORT_ORDER = null;   //example: "DATE desc"
+
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DATE = 1;
+        final static int ADDRESS = 2;
+        final static int CONTACT_NAME = 3;
+        final static int BODY = 4;
+        final static int STATUS = 5;
+        final static int TYPE = 6;
+    }
 
 
 }

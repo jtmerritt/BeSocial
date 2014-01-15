@@ -354,11 +354,11 @@ public class ContactDetailFragment extends Fragment implements
     }
 
     public void displayCallLog(){
-        getLoaderManager().restartLoader(ContactCallLogQuery.QUERY_ID, null, this);
+        getLoaderManager().restartLoader(LoadContactLogsTask.ContactCallLogQuery.QUERY_ID, null, this);
     }
 
     public void displaySMSLog(){
-        getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
+        getLoaderManager().restartLoader(LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID, null, this);
     }
 
     public void displayAddressLog(){
@@ -435,12 +435,12 @@ public class ContactDetailFragment extends Fragment implements
                         ContactAddressQuery.SELECTION,
                         null, null);
 
-            case ContactCallLogQuery.QUERY_ID:
+            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
                 // This query loads main contact details, for use in generating a call log.
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
                         null, null, null);
-            case ContactSMSLogQuery.QUERY_ID:
+            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
                 // This query loads main contact details, for use in generating a call log.
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
@@ -527,7 +527,7 @@ public class ContactDetailFragment extends Fragment implements
                 break;
             // being the second case of this query_ID, this section will not get called.
             //
-            case ContactCallLogQuery.QUERY_ID:
+            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
                 if (data.moveToFirst()) {
                     // This query loads the contact call log details for the contact. More than
                     // one log is possible, so move each one to a
@@ -580,7 +580,7 @@ public class ContactDetailFragment extends Fragment implements
                     }
                 }
                 break;
-            case ContactSMSLogQuery.QUERY_ID:
+            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
                 if (data.moveToFirst()) {
                     // This query loads the contact SMS log details for the contact. More than
                     // one log is possible, so move each one to a
@@ -918,91 +918,6 @@ public class ContactDetailFragment extends Fragment implements
         final static int LABEL = 3;
     }
 
-
-    public interface ContactCallLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 3;
-
-        //create URI for the SMS query
-       // final String contentParsePhrase = "content://sms/";  //for all messages
-        final static Uri ContentURI= android.provider.CallLog.Calls.CONTENT_URI;
-
-        // The query projection (columns to fetch from the provider)
-        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
-        final static String[] PROJECTION = {
-                "_id",      //message ID
-                "date",     //date of message long
-                "duration",
-                "cached_name",
-                "address", // phone number long
-                "person", //ID of person who sent message
-                "body", //body of message
-                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbound, Outbound, Missed/draft
-        };
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        // Except they never quite worked in this context.
-        final static String SELECTION = null;
-        final String SELECTION_ARGS[] = null;
-        final String SORT_ORDER = "date ASC";   //example: "DATE desc"
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DATE = 1;
-        final static int ADDRESS = 2;
-        final static int CONTACT_NAME = 3;
-        final static int BODY = 4;
-        final static int STATUS = 5;
-        final static int TYPE = 6;
-    }
-
-    public interface ContactSMSLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 4;
-
-        //create URI for the SMS query
-        final String contentParsePhrase = "content://sms/";  //for all messages
-        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
-
-        // The query projection (columns to fetch from the provider)
-        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
-        final static String[] PROJECTION = {
-                "_id",      //message ID
-                "date",     //date of message long
-                "address", // phone number long
-                "person", //Name of person (ID?)
-                "body", //body of message
-                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbox, Sent, Draft
-        };
-        /*
-        { "address", "body", "person", "reply_path_present",
-              "service_center", "status", "subject", "type", "error_code" };
-         */
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        // Except they never quite worked in this context.
-        final static String SELECTION =
-                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
-        final String SORT_ORDER = null;   //example: "DATE desc"
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DATE = 1;
-        final static int ADDRESS = 2;
-        final static int CONTACT_NAME = 3;
-        final static int BODY = 4;
-        final static int STATUS = 5;
-        final static int TYPE = 6;
-    }
-
-
     /**
      * Builds an empty callLog layout that just shows that no calls
      * were found for this contact.
@@ -1170,8 +1085,14 @@ private LinearLayout buildCallLogLayout(
         //Build the chart view
         gView = getBarChartView(getActivity());
 
-        //add the chart view to the fragment.
-        mChartLayout.addView(gView);
+        try
+        {
+            //add the chart view to the fragment.
+            mChartLayout.addView(gView);
+        }
+        catch (Exception e)
+        {}
+
 
         displayCallLog();
         displaySMSLog();
@@ -1330,21 +1251,21 @@ private LinearLayout buildCallLogLayout(
                 mRenderer.addSeriesRenderer(renderer_Phone);
                 mRenderer.addSeriesRenderer(renderer_SMS);
 
+                NumberFormat format = NumberFormat.getNumberInstance();
+                format.setMaximumFractionDigits(1);
 
                 // Customization time for phone!
                 renderer_Phone.setColor(Color.BLUE);
-                renderer_Phone.setFillPoints(true);
-
                 renderer_Phone.setDisplayChartValues(true);
                 renderer_Phone.setChartValuesTextSize(15);
-                NumberFormat format = NumberFormat.getNumberInstance();
-                format.setMaximumFractionDigits(1);
                 renderer_Phone.setChartValuesFormat(format);
 
                 //Customization time for SMS !
                 renderer_SMS.setColor(getResources().getColor(android.R.color.holo_green_dark));
-                renderer_SMS.setFillPoints(true);
-                //renderer_SMS.setLineWidth(5);
+                //TODO: changing setDisplayChartValues(true) in the below instance crashes the program.  Fix it!!!
+                renderer_SMS.setDisplayChartValues(false);
+                renderer_SMS.setChartValuesTextSize(15);
+                // Do not set format to fractional digit
 
 
                 // chart properties
@@ -1363,7 +1284,6 @@ private LinearLayout buildCallLogLayout(
                 mRenderer.setShowGrid(true);
                 mRenderer.setGridColor(Color.GRAY);
                 mRenderer.setBarSpacing(0.5);
-                mRenderer.setDisplayValues(true);
                 mRenderer.setLabelsTextSize(20);
 
                 int[] margins= {60,40,40,30};
@@ -1492,14 +1412,16 @@ private LinearLayout buildCallLogLayout(
                 mRenderer.setXAxisMax(plotMax);
                 mRenderer.setXAxisMin(plotMin);
                 mRenderer.setYAxisMax(
-                        1.1*series_Phone.getMaxY()
+                        //Choose the larger of the 2 bounds
+                        1.1*(series_Phone.getMaxY() > series_SMS.getMaxY() ?
+                                series_Phone.getMaxY() : series_SMS.getMaxY())
                 );
 
 
 
 
 
-                return ChartFactory.getBarChartView(context, dataset, mRenderer, BarChart.Type.STACKED);
+                return ChartFactory.getBarChartView(context, dataset, mRenderer, BarChart.Type.DEFAULT);
             }
 
 
@@ -1573,8 +1495,10 @@ private LinearLayout buildCallLogLayout(
 
             do{
                 j--;
+                //TODO: Should not be compairing eventIDs for sorting into the correct buckets
                 if(Log.get(j).eventID.equals(info.eventID)
-                        //&& Log.get(j).getEventClass() == info.getEventClass()
+                        && Log.get(j).getEventClass() == info.getEventClass()
+                        //&& Log.get(j).getEventType() == info.getEventType()
                          )
 
                 {

@@ -10,7 +10,7 @@ ___________________________________________________________________
 ***Medium Tasks***
 - Include multiple phone numbers in the call log collection
 - Break up ContactDetailFragment into multiple files.
-    - Done! Data collection
+    - Done, but buggy: Data collection
     - Chart generation
     - ...
 - Find a cluster analysis package.
@@ -21,6 +21,7 @@ ___________________________________________________________________
 ***Large Tasks***
 - Only display data for one page-full at a time to speed things up.
 - Cloud-based retrieval/storage?
+- fix crash when setDisplayChartValues(true) for renderer_SMS
 
 
 Notes
