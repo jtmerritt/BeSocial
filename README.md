@@ -11,7 +11,7 @@ ___________________________________________________________________
 - Include multiple phone numbers in the call log collection
 - Break up ContactDetailFragment into multiple files.
     - Done, but buggy: Data collection
-    - Chart generation
+    - Done, but buggy: Chart generation
     - ...
 - Find a cluster analysis package.
 - Fix slow load of SMS log - memory problem

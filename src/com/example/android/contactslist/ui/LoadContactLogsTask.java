@@ -6,12 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Log;
-
 import com.example.android.contactslist.ContactDetailFragmentCallback;
-import com.example.android.contactslist.ui.ContactDetailFragment;
-import com.example.android.contactslist.ui.EventInfo;
-
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
