@@ -249,6 +249,7 @@ public class ContactDetailFragment extends Fragment implements
          * details on how it works can be found in the following Android Training class:
          * http://developer.android.com/training/displaying-bitmaps/
          */
+
         mImageLoader = new ImageLoader(getActivity(), getLargestScreenDimension()) {
             @Override
             protected Bitmap processBitmap(Object data) {
@@ -258,6 +259,7 @@ public class ContactDetailFragment extends Fragment implements
 
             }
         };
+
 
         // Set a placeholder loading image for the image loader
         mImageLoader.setLoadingImage(R.drawable.ic_contact_picture_180_holo_light);
@@ -469,11 +471,8 @@ public class ContactDetailFragment extends Fragment implements
                         getActivity().setTitle(mContactNameString);
                     }
 
-                    //  using the contact name build the log ov events
+                    //  using the contact name build the log of events
                     loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
-
-
-
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -593,7 +592,6 @@ public class ContactDetailFragment extends Fragment implements
 
                     // Loops through all the rows in the Cursor
 
-                    //TODO: the EventLog having content is not the same as having SMS content
                     if (!mEventLog.isEmpty()) {
                         int j=mEventLog.size();
                         do {
@@ -605,7 +603,8 @@ public class ContactDetailFragment extends Fragment implements
                                 // Builds the address layout
                                 final LinearLayout layout = buildSMSLogLayout(
                                     mContactNameString,
-                                    mEventLog.get(j).getEventDate(), /*date & time of SMS*/  //TODO: This date may not be in the correct format.
+                                        //TODO: This date may not be in the correct format.
+                                    mEventLog.get(j).getEventDate(), /*date & time of SMS*/
                                     mEventLog.get(j).getEventWordCount(), /*Length of the SMS in Minutes*/
                                     mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
 
@@ -1000,7 +999,6 @@ private LinearLayout buildCallLogLayout(
 
     return callLogLayout;
 }
-            //TODO: thiis next line appears twice, once in LoadContactLogsTask.java
     List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
 

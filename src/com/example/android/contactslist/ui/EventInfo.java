@@ -20,6 +20,16 @@ public class EventInfo {
     final public static int SMS_CLASS = 2;
     final public static int EMAIL_CLASS = 3;
 
+    public void clear(){
+        eventContactName = null;
+        eventDuration = 0;
+        eventID = null;
+        eventDate = 0;
+        eventContactAddress = null;
+        eventContactID = -1;
+        eventWordCount = 0;
+        eventCharCount = 0;
+    }
 
     public int eventType;    /*Type of event
         /* 3 call types:
