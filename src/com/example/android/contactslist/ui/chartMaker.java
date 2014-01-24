@@ -18,9 +18,12 @@ import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
+import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -172,7 +175,10 @@ public class chartMaker {
         int chart_range = 2;  //This is a hard coding of bucket size.  See switch statement below.
         long bucket_time;
         long eventDuration;
-        String label;
+
+        // format date string
+        DateFormat formatMonth = new SimpleDateFormat("MMM''yy");
+        String formattedDate1 = null;
 
 
 
@@ -221,8 +227,11 @@ public class chartMaker {
         mRenderer.setChartTitle("History");
         mRenderer.setChartTitleTextSize(40);
         mRenderer.setAxisTitleTextSize(20);
-        mRenderer.setLegendTextSize(16);
+        mRenderer.setLegendTextSize(18);
         mRenderer.setXLabels(0); //needs to be 0 for text labels
+        mRenderer.setXLabelsAngle(-60); //Angle text to read up to the axis line
+        mRenderer.setXLabelsPadding(30); //add space between labels and Axis label
+        mRenderer.setYLabelsPadding(5); // distance from axis
 
 
         mRenderer.setAxesColor(Color.GRAY);
@@ -232,7 +241,7 @@ public class chartMaker {
         mRenderer.setBarSpacing(0.5);
         mRenderer.setLabelsTextSize(20);
 
-        int[] margins= {60,40,40,30};
+        int[] margins= {60,55,50,30}; //top,left ,bottom ,right
         mRenderer.setMargins(margins);
         mRenderer.setYLabelsAlign(Paint.Align.RIGHT);
 
@@ -259,7 +268,7 @@ public class chartMaker {
                     case 2:
                         cal.set(Calendar.DAY_OF_MONTH, 1);
                         bucket_time = cal.getTimeInMillis();
-                        mRenderer.setXTitle("Month");
+                        mRenderer.setXTitle("Time");
 
                         break;
                     case 3:
@@ -281,7 +290,6 @@ public class chartMaker {
                         series_Phone.add(mBarChartEventLog.get(j).getEventDate() , /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
                         );
-                        label = mBarChartEventLog.get(j).eventID;
                         break;
 
                     case EventInfo.SMS_CLASS: //SMS class
@@ -308,9 +316,9 @@ public class chartMaker {
                         break;
 
                     case 2:
-                        mRenderer.addXTextLabel(bucket_time, cal.getDisplayName(
-                                Calendar.MONTH,Calendar.SHORT, Locale.US
-                        ));
+                        Date date = new Date(bucket_time);
+                        formattedDate1 = formatMonth.format(date);
+                        mRenderer.addXTextLabel(bucket_time, formattedDate1);
                         break;
 
                     case 3:
@@ -376,7 +384,6 @@ public class chartMaker {
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
         Calendar cal = Calendar.getInstance();
         cal.setFirstDayOfWeek(Calendar.MONDAY);
-        String lable;
 
         int j=mEventLog.size();
         do {
@@ -401,10 +408,19 @@ public class chartMaker {
 
                 }
 
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+
                 ChartEventInfo.eventDate = cal.getTimeInMillis();
                 ChartEventInfo.eventID = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US);
-                // add into the correct data set
 
+                //Date date2 = new Date(ChartEventInfo.eventDate);
+                //formattedDate2 = format.format(date2);
+
+
+                // add into the correct data set
                 ChartEventInfo.eventClass = mEventLog.get(j).getEventClass();
                 ChartEventInfo.eventType = mEventLog.get(j).getEventType();
 
@@ -441,8 +457,7 @@ public class chartMaker {
 
             do{
                 j--;
-                //TODO: Should not be compairing eventIDs for sorting into the correct buckets
-                if(Log.get(j).eventID.equals(info.eventID)
+                if(Log.get(j).eventDate == info.eventDate
                         && Log.get(j).getEventClass() == info.getEventClass()
                     //&& Log.get(j).getEventType() == info.getEventType()
                         )

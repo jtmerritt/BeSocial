@@ -22,14 +22,11 @@ import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -122,17 +119,6 @@ public class ContactDetailFragment extends Fragment implements
     private GraphicalView gView = null;
     private String mContactNameString;
 
-/*
-    private Button buttonCallLog = null;
-    private Button buttonSMSLog = null;
-    private Button buttonEmailLog = null;
-
-    private Spinner dateSpinner = null;
-
-    private Button toggleViewCallLog = null;
-    private Button toggleViewSMSLog = null;
-    private Button toggleViewScore = null;
-*/
 
             /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
@@ -491,14 +477,6 @@ public class ContactDetailFragment extends Fragment implements
                 // layout has addresses from a previous data load still
                 // added as children.
 
-                /* change layout
-                mDetailsLayout.removeAllViews();
-                mDetailsCallLogLayout.removeAllViews();
-                mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
-                mChartLayout.removeAllViews(); //remove previously displayed chart
-                */
-                //hideChartControlls();
-
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
                     do {
@@ -533,13 +511,6 @@ public class ContactDetailFragment extends Fragment implements
                     // Clears out the details layout first in case the details
                     // layout has CallLogs from a previous data load still
                     // added as children.
-
-                    /* change layout
-                    mDetailsCallLogLayout.removeAllViews();
-                    mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
-                    mChartLayout.removeAllViews();
-                    */
-                    //hideChartControlls();
 
                     // Loops through all the rows in the Cursor
                     if (!mEventLog.isEmpty()) {
@@ -583,15 +554,7 @@ public class ContactDetailFragment extends Fragment implements
                             new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.WRAP_CONTENT);
 
-                    /* change layout
-                    mDetailsCallLogLayout.removeAllViews();
-                    mDetailsSMSLogLayout.removeAllViews(); //remove previously displayed logs
-                    mChartLayout.removeAllViews(); //remove previously displayed chart
-                    */
-                    //hideChartControlls();
-
                     // Loops through all the rows in the Cursor
-
                     if (!mEventLog.isEmpty()) {
                         int j=mEventLog.size();
                         do {
@@ -988,15 +951,7 @@ private LinearLayout buildCallLogLayout(
             typeImageView.setBackgroundResource(R.drawable.missedsmall);
         }
 
-
-
-
-
-
-
     }
-
-
     return callLogLayout;
 }
     List<EventInfo> mEventLog = new ArrayList<EventInfo>();
@@ -1054,14 +1009,12 @@ private LinearLayout buildCallLogLayout(
             typeTextView.setText(SMSType);
 
         }
-
-
         return SMSLogLayout;
     }
 
     public void finishedLoading() {
-        //Build the chart view
 
+        //Build the chart view
         chartMaker chartMakerTask = new chartMaker(
                 //contactID, contactName,
                 getActivity().getContentResolver(),
@@ -1076,7 +1029,7 @@ private LinearLayout buildCallLogLayout(
         catch (Exception e)
         {}
 
-
+        //Display all the data
         displayCallLog();
         displaySMSLog();
         displayAddressLog();
@@ -1088,115 +1041,6 @@ private LinearLayout buildCallLogLayout(
                 (contactID, contactName, getActivity().getContentResolver(), mEventLog, this);
         contactLogsTask.execute();
     }
-
-
-
-
-            /*
-            private void addItemsToGroupsSpinner() {
-                dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
-
-                List<String> list = new ArrayList<String>();
-
-                for(String s : dateSelection.Selections){
-                    list.add(s);
-                }
-
-                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
-                        android.R.layout.simple_spinner_item, list);
-
-
-                dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                dateSpinner.setAdapter(dateAdapter);
-            }
-            */
-/*
-            public void addListenerOnSpinnerItemSelection() {
-                //dateSpinner = (Spinner) getActivity().findViewById(R.id.date_range_spinner);
-                dateSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-            }
-
-
-            public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
-
-                public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-
-                    // this is where we figure out which was selected and then do query.
-                    int i;
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> arg0) {
-                    // TODO Auto-generated method stub
-                }
-
-            }
-*/
-/*
-        public void hideChartControlls(){
-
-            dateSpinner.setVisibility(View.GONE);
-            toggleViewCallLog.setVisibility(View.GONE);
-            toggleViewSMSLog.setVisibility(View.GONE);
-            toggleViewScore.setVisibility(View.GONE);
-        }
-*/
-
-                    /*
-        // Buttons removed, replace with tabs
-        // In a fragment, button listeners must be defined in code, preferably during onActivityCreated
-        buttonCallLog =  (Button)getActivity().findViewById(R.id.buttonCallLog);
-        buttonCallLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the Call event log as a list.
-            @Override
-            public void onClick(View v) {
-                displayCallLog();
-            }
-        });
-
-        buttonSMSLog =  (Button)getActivity().findViewById(R.id.buttonSMSLog);
-        buttonSMSLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the SMS event log as a list.
-            @Override
-            public void onClick(View v) {
-                displaySMSLog();
-            }
-        });
-
-
-        buttonEmailLog =  (Button)getActivity().findViewById(R.id.buttonEmailLog);
-        buttonEmailLog.setOnClickListener(new View.OnClickListener() {
-            //When the button is pressed, display the SMS event log as a list.
-            @Override
-            public void onClick(View v) {
-                displayAddressLog();
-            }
-        });
-*/
-            //SETUP SPINNER BOX
-        /*
-        addItemsToGroupsSpinner();
-        //addListenerOnSpinnerItemSelection();
-        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-
-                // this is where we figure out which was selected and then do query.
-                //applyRangeGraphicalView(pos);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-
-        //Setup toggle buttons
-        toggleViewCallLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewCallLog);
-        toggleViewSMSLog =  (Button)getActivity().findViewById(R.id.toggleButtonViewSMSLog);
-        toggleViewScore =  (Button)getActivity().findViewById(R.id.toggleButtonViewScore);
-*/
-
 
 }
 

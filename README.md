@@ -9,14 +9,13 @@ ___________________________________________________________________
 
 ***Medium Tasks***
 - Include multiple phone numbers in the call log collection
-- Break up ContactDetailFragment into multiple files.
-    - Done, but buggy: Data collection
-    - Done, but buggy: Chart generation
-    - ...
+- Fix bugs for chart
 - Find a cluster analysis package.
 - Fix slow load of SMS log - memory problem
     - perhaps related, there are 2 instances of mEventLog
 - add spinner for chart function for choosing the displayed date range of the chart.
+- add action listeners to tabs so they might load the data only when selected.
+- Try placing user photo and pie chart in action bar, then implement swipable tabs.
 
 ***Large Tasks***
 - Only display data for one page-full at a time to speed things up.
@@ -44,3 +43,6 @@ ___________________________________________________________________
 - Load list of contacts within group as async task
 - Move betterBranch to main branch.  Note- we have made a mess trying to do this.  Maybe ask someone really good at git to help with this at some point.
 - Add color changing progress bar to individual contacts on the list of contacts
+- Break up ContactDetailFragment into multiple files.
+    - Done: Data collection
+    - Done: Chart generation
