@@ -88,7 +88,7 @@
                 <TabWidget
                     android:id="@android:id/tabs"
                     android:layout_width="fill_parent"
-                    android:layout_height="22dp"></TabWidget>
+                    android:layout_height="wrap_content"></TabWidget>
 
                 <FrameLayout
                     android:id="@android:id/tabcontent"
@@ -104,12 +104,20 @@
                     <LinearLayout
                         android:id="@+id/tab_chart"
                         android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
+                        android:layout_height="fill_parent"
+                        android:orientation="vertical">
+
+                        <Spinner
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/chart_spinner"
+                            android:gravity="center"
+                            android:ellipsize="marquee"/>
 
                         <LinearLayout
                             android:id="@+id/chart"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:paddingBottom="5dp"
                             android:orientation="vertical">
 
@@ -162,7 +170,7 @@
                         </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/tab_addy"
+                        android:id="@+id/tab_stats"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent">
 

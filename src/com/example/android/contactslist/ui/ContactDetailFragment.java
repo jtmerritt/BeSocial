@@ -50,9 +50,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost;
@@ -118,6 +121,9 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mChartLayout;
     private GraphicalView gView = null;
     private String mContactNameString;
+    private FractionView fractionView = null;
+    private Spinner chartSpinner = null;
+
 
 
             /**
@@ -272,7 +278,10 @@ public class ContactDetailFragment extends Fragment implements
 
         //********************* chart
         mChartLayout = (LinearLayout) detailView.findViewById(R.id.chart);
+        //chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
 
+        //Fraction View
+        fractionView = (FractionView) detailView.findViewById(R.id.fraction);
 
 
         if (mIsTwoPaneLayout) {
@@ -316,9 +325,9 @@ public class ContactDetailFragment extends Fragment implements
         spec3.setIndicator("SMS Log");
         spec3.setContent(R.id.tab_sms);
 
-        TabSpec spec4=tabHost.newTabSpec("Tab Address");
-        spec4.setIndicator("Addy");
-        spec4.setContent(R.id.tab_addy);
+        TabSpec spec4=tabHost.newTabSpec("Tab Statistics");
+        spec4.setIndicator("Stats");
+        spec4.setContent(R.id.tab_stats);
 
 
         tabHost.addTab(spec1);
@@ -328,6 +337,22 @@ public class ContactDetailFragment extends Fragment implements
 
         tabHost.setCurrentTab(0);
 
+        //setup spinner which is just above the chart
+        addItemsToChartSpinner();
+
+
+        chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+                // this is where we figure out which was selected and then do query.
+                //applyRangeGraphicalView(pos);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
 
 
     }
@@ -342,6 +367,18 @@ public class ContactDetailFragment extends Fragment implements
 
     public void displayAddressLog(){
         getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
+    }
+
+    private void setFractionView(){
+
+        int min = 1;
+        int max = 10;
+
+        Random r = new Random();
+        int i1 = r.nextInt(max - min + 1) + min;
+        int i2 = r.nextInt(max - min + 1) + min;
+
+        fractionView.setFraction(i1, i2);
     }
 
     /**
@@ -398,7 +435,7 @@ public class ContactDetailFragment extends Fragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
-            // Two main queries to load the required information
+            // main queries to load the required information
             case ContactDetailQuery.QUERY_ID:
                 // This query loads main contact details, see
                 // ContactDetailQuery for more information.
@@ -459,6 +496,7 @@ public class ContactDetailFragment extends Fragment implements
 
                     //  using the contact name build the log of events
                     loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
+                    setFractionView();
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -1041,6 +1079,32 @@ private LinearLayout buildCallLogLayout(
                 (contactID, contactName, getActivity().getContentResolver(), mEventLog, this);
         contactLogsTask.execute();
     }
+
+
+            private void addItemsToChartSpinner() {
+               chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
+
+                List<String> list = new ArrayList<String>();
+
+                for(String s : dateSelection.Selections){
+                    list.add(s);
+                }
+
+                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_spinner_item, list);
+
+                //choose the style of the list.
+                dateAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+
+                chartSpinner.setAdapter(dateAdapter);
+            }
+            /*
+            public void addListenerOnSpinnerItemSelection() {
+                chartSpinner.setOnItemSelectedListener(new ContactsListActivity.CustomOnItemSelectedListener());
+            }
+            */
+
+
 
 }
 

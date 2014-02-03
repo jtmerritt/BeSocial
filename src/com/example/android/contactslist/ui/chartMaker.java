@@ -224,8 +224,8 @@ public class chartMaker {
         mRenderer.setMarginsColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
         mRenderer.setApplyBackgroundColor(true);
         mRenderer.setBackgroundColor(Color.parseColor("#F5F5F5"));//getResources().getColor(android.R.color.darker_gray));
-        mRenderer.setChartTitle("History");
-        mRenderer.setChartTitleTextSize(40);
+        //mRenderer.setChartTitle("History");
+        //mRenderer.setChartTitleTextSize(40);
         mRenderer.setAxisTitleTextSize(20);
         mRenderer.setLegendTextSize(18);
         mRenderer.setXLabels(0); //needs to be 0 for text labels
@@ -241,7 +241,7 @@ public class chartMaker {
         mRenderer.setBarSpacing(0.5);
         mRenderer.setLabelsTextSize(20);
 
-        int[] margins= {60,55,50,30}; //top,left ,bottom ,right
+        int[] margins= {5,55,40,30}; //top,left ,bottom ,right
         mRenderer.setMargins(margins);
         mRenderer.setYLabelsAlign(Paint.Align.RIGHT);
 
@@ -370,6 +370,7 @@ public class chartMaker {
                 1.1*(series_Phone.getMaxY() > series_SMS.getMaxY() ?
                         series_Phone.getMaxY() : series_SMS.getMaxY())
         );
+        mRenderer.setYAxisMin(0);
 
 
 

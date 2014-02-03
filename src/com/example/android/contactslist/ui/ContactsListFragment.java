@@ -59,6 +59,9 @@ import android.widget.TextView;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.notification.TimeNotification;
+import com.example.android.contactslist.notification.setAlarm;
+import com.example.android.contactslist.notification.FileIO;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 
@@ -521,6 +524,10 @@ public class ContactsListFragment extends ListFragment implements
             case ContactsGroupQuery.QUERY_ID:
                 mAdapter.swapCursor(data);
 
+                //TODO: test only
+                FileIO.logNames(getActivity(), data);
+                setAlarm.setAlarm(getActivity());
+
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected
                 // search item.
@@ -554,6 +561,8 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        //TODO: Fix. The contact list often gets reset to the full list of contacts.  Caused here?
+        // maybe need to save the group ID as part of the state
         if ((loader.getId() == ContactsQuery.QUERY_ID) ||
                 (loader.getId() == ContactsGroupQuery.QUERY_ID)){
             // When the loader is being reset, clear the cursor from the adapter. This allows the

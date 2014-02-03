@@ -30,6 +30,7 @@ import android.widget.Spinner;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.notification.Notification;
 import com.example.android.contactslist.util.Utils;
 
 import java.util.ArrayList;
@@ -224,7 +225,9 @@ public class ContactsListActivity extends FragmentActivity implements
             // the contact Uri
             Intent intent = new Intent(this, ContactDetailActivity.class);
             intent.setData(contactUri);
-            startActivity(intent);
+
+            Notification.simpleNotification(this);
+            //startActivity(intent);
         }
     }
 

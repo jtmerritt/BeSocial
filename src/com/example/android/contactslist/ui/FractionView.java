@@ -151,9 +151,9 @@ public class FractionView extends View {
 
     public boolean onTouchEvent(MotionEvent event) {
         translateAnimation = new TranslateAnimation(0, 10, 0, 10);
-        translateAnimation.setDuration(200);
+        translateAnimation.setDuration(100);
         translateAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
-        translateAnimation.setRepeatCount(4);
+        translateAnimation.setRepeatCount(2);
         translateAnimation.setRepeatMode(Animation.REVERSE);
         this.startAnimation(translateAnimation);
 

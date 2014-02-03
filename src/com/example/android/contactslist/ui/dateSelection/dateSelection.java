@@ -7,7 +7,8 @@ package com.example.android.contactslist.ui.dateSelection;
 public interface dateSelection {
 
     public String[] Selections =
-            {"3 months",
+            {"Short History",
+            "3 months",
             "6 months",
             "9 months",
             "Match Phone",

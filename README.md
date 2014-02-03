@@ -6,6 +6,14 @@ ___________________________________________________________________
 - Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
 - display text in the middle of the fraction chart indicating the value,
       toggling text with a tap.
+- set text of chart spinner to be centered
+- bring back the underscore shading under the tab buttons
+- Add a graphic (hourglass-like) to indicate that the data is still being collected
+- Implement date range function for chart
+    - Make the standard range up to 2 years
+    - if there is more data before, display a "back arror" button on the bottom.
+        When the button is pressed, redraw the chart with the previous set of data
+    - When displaying the previous set of data, show a "forward arrow" button.
 
 ***Medium Tasks***
 - Include multiple phone numbers in the call log collection
@@ -13,14 +21,25 @@ ___________________________________________________________________
 - Find a cluster analysis package.
 - Fix slow load of SMS log - memory problem
     - perhaps related, there are 2 instances of mEventLog
-- add spinner for chart function for choosing the displayed date range of the chart.
+- Make spinner choose the chart type (data display type)
+    - Spinner text becomes chart title.
 - add action listeners to tabs so they might load the data only when selected.
-- Try placing user photo and pie chart in action bar, then implement swipable tabs.
+-  Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
+- Create a screen of statistics
+    - Average days between events
+    - Max days between events
+    - Total word count
+    - Total call time
+    - Average Call time
+    - Reciprocity for each event Kind
 
 ***Large Tasks***
 - Only display data for one page-full at a time to speed things up.
 - Cloud-based retrieval/storage?
 - fix crash when setDisplayChartValues(true) for renderer_SMS
+- On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
+- Create an Options Menu
+    - follow guidlines for Notifications options:http://developer.android.com/design/patterns/notifications.html
 
 
 Notes
