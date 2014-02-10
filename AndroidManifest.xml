@@ -20,7 +20,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="9"
+        android:minSdkVersion="16"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -77,7 +77,6 @@
             android:name=".notification.timedUpdate"
             android:enabled="true">
             <intent-filter>
-                <action android:name="UPDATE_BESOCIAL"/>
                 <receiver android:name="com.example.android.contactslist.notification.timedUpdate" />
             </intent-filter>
         </receiver>

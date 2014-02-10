@@ -59,8 +59,7 @@ import android.widget.TextView;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.notification.TimeNotification;
-import com.example.android.contactslist.notification.setAlarm;
+import com.example.android.contactslist.notification.SetAlarm;
 import com.example.android.contactslist.notification.FileIO;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
@@ -526,7 +525,9 @@ public class ContactsListFragment extends ListFragment implements
 
                 //TODO: test only
                 FileIO.logNames(getActivity(), data);
-                setAlarm.setAlarm(getActivity());
+
+                SetAlarm alarm = new SetAlarm();
+                alarm.set_Alarm(getActivity());
 
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected

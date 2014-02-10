@@ -226,8 +226,8 @@ public class ContactsListActivity extends FragmentActivity implements
             Intent intent = new Intent(this, ContactDetailActivity.class);
             intent.setData(contactUri);
 
-            Notification.simpleNotification(this);
-            //startActivity(intent);
+            //Notification.simpleNotification(this);
+            startActivity(intent);
         }
     }
 

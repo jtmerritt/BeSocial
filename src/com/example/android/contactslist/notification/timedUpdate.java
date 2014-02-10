@@ -16,7 +16,7 @@ public class timedUpdate extends BroadcastReceiver {
 
     //static void timedUpdate(){
     //}
-
+    @Override
     public void onReceive(Context context, Intent intent) {
 
         Log.d("Alarm Receiver", "onReceive called");

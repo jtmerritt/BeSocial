@@ -23,18 +23,20 @@ public class FractionView extends View {
     private Paint mRedPaint;
     private RectF mSectorOval;
     private Paint mGreenPaint;
+    private Paint mTextPaint = new Paint();
 
-    private int mNumerator = 1;
-    private int mDenominator = 5;
-
+    private float mfraction = 1;
     private int cx = 0;
     private int cy = 0;
     private int radius = 0;
     private TranslateAnimation translateAnimation;
+    private final int textSize = 40;
+    private boolean mShowTextOnTouch = true;
 
 
 
-  public FractionView(Context context) {
+
+    public FractionView(Context context) {
     super(context);
       // build from code
     init();
@@ -70,6 +72,11 @@ public class FractionView extends View {
     mGreenPaint.setColor(getResources().getColor(android.R.color.holo_green_light));//Color.GREEN);
     mGreenPaint.setStyle(Paint.Style.FILL);
 
+    mTextPaint.setTextSize(0);
+    mTextPaint.setColor(Color.BLACK);
+    mTextPaint.setTextAlign(Paint.Align.CENTER);
+
+    //mTextPaint.setAlpha(0);
     /*
     translateAnimation = new TranslateAnimation(0, 0, 0,  300);
     translateAnimation.setDuration(1000);
@@ -85,21 +92,22 @@ public class FractionView extends View {
         // save state - so if you rotate the screen it will do the right thing.
         Bundle bundle = new Bundle();
         bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putInt("numerator", mNumerator);
-        bundle.putInt("denominator", mDenominator);
+        bundle.putFloat("fraction", mfraction);
+        bundle.putBoolean("showTextOnTouch", mShowTextOnTouch);
+
         return bundle;
     }
 
     public void onRestoreInstanceState(Parcelable state) {
         if (state instanceof Bundle) {
             Bundle bundle = (Bundle) state;
-            mNumerator = bundle.getInt("numerator");
-            mDenominator = bundle.getInt("denominator");
+            mfraction = bundle.getFloat("fraction");
+            mShowTextOnTouch = bundle.getBoolean("showTextOnTouch");
             super.onRestoreInstanceState(bundle.getParcelable("superState"));
         } else {
             super.onRestoreInstanceState(state);
         }
-        setFraction(mNumerator, mDenominator);
+        setFractionFloat(mfraction);
     }
 
     public void setFraction(int numerator, int denominator) {
@@ -108,13 +116,22 @@ public class FractionView extends View {
        // Prevent invalid state
         if (numerator > denominator) return;
 
-        mNumerator = numerator;
-        mDenominator = denominator;
+        mfraction = ((float)numerator)/((float)denominator);
         invalidate();
 
         if (mListener != null) {
             mListener.onChange(numerator, denominator);
         }
+
+    }
+
+    public void setFractionFloat(float fraction) {
+        if (fraction < 0) return;
+        // Prevent invalid state
+        if (fraction > 1) return;
+
+        mfraction = fraction;
+        invalidate();
 
     }
 
@@ -127,6 +144,11 @@ public class FractionView extends View {
       // canvas.drawCircle(cx, cy*2, radius, mCirclePaint);
       // canvas.drawCircle(cx*2, cy, radius, mCirclePaint);
 */
+
+       //for reasons unknown, breaking this operation into several lines was essential for operation
+       float displayValue = mfraction*100;
+       displayValue = Math.round(displayValue);
+       displayValue = displayValue/100;
 
        canvas.drawCircle(200, 100, 5, mGreenPaint);
        int width = getWidth() - getPaddingLeft() - getPaddingRight();
@@ -144,18 +166,32 @@ public class FractionView extends View {
 
        canvas.drawArc(mSectorOval, 270, getSweepAngle(), true, mRedPaint);
 
+       canvas.drawText(String.valueOf(displayValue), cx, cy+14, mTextPaint);  //Round to the nearest tenth
+
    }
     private float getSweepAngle() {
-        return mNumerator * 360f / mDenominator;
+        return (float)(mfraction * 360f);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        translateAnimation = new TranslateAnimation(0, 10, 0, 10);
-        translateAnimation.setDuration(100);
-        translateAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
-        translateAnimation.setRepeatCount(2);
-        translateAnimation.setRepeatMode(Animation.REVERSE);
-        this.startAnimation(translateAnimation);
+
+        if(event.getAction() == event.ACTION_DOWN){ //Only execute on Finger down action
+
+            translateAnimation = new TranslateAnimation(0, 10, 0, 10);
+            translateAnimation.setDuration(100);
+            translateAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
+            translateAnimation.setRepeatCount(2);
+            translateAnimation.setRepeatMode(Animation.REVERSE);
+            this.startAnimation(translateAnimation);
+
+            if(mShowTextOnTouch){
+                mTextPaint.setTextSize(textSize);  //show text
+                mShowTextOnTouch = false;
+            }else{
+                mTextPaint.setTextSize(0); // hide text
+             mShowTextOnTouch = true;
+            }
+        }
 
         /*
         if (event.getAction() != MotionEvent.ACTION_UP) {
@@ -164,7 +200,7 @@ public class FractionView extends View {
         //Change view when finger is lifted
         // Increment the numerator, cycling back to 0 when we have filled the
         // whole circle.
-        int numerator = mNumerator + 1;
+        int numerator = mfraction + 1;
         if (numerator > mDenominator) {
             numerator = 0;
         }

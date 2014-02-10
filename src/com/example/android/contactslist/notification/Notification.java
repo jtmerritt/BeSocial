@@ -96,8 +96,8 @@ public class Notification {
 
     private static void setNotificationContact(Context context) {
 
-        int j = 4;
-        Log.d("Alarm Receiver", "onReceive called");
+        int j = 2;
+        Log.d("Set Notification", "Contact Added");
 
         readBeSocialList(context);
 
