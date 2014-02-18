@@ -51,10 +51,32 @@
             >Enable Notifications</string>
     <string name="notification_checkbox_preference_summary"
         >Annoying vibrtioning allerts every 5 minutes</string>
-    <string name="take_out_cat_checkbox_preference_title"
-        >Take Out the Cat</string>
-    <string name="take_out_cat_checkbox_preference_summary"
-        >The cat isn\'t going to do it himself</string>
+    <string name="sync_with_web_sources_preference_title"
+        >Sync with Web</string>
+    <string name="sync_with_web_sources_preference_summary"
+        >Gather data from web sources?</string>
+
+    <string name="sync_with_internet_sources_frequency_preference_title"
+            >Web Access Frequency</string>
+    <string name="sync_with_internet_sources_frequency_preference_summary"
+        >How often would you like to access web data sources?</string>
+    <string-array name="string_array_list_of_web_sync_freq">
+        <item>Once per day</item>
+        <item>Twice per day</item>
+    </string-array>
+    <string name="web_access_freq_default"
+        >Once per day</string>
+
+    <string name="Facebook_web_sources_preference_title"
+            >Access Facebook</string>
+    <string name="Facebook_web_sources_preference_summary"
+        >Gather communications data from Facebook?</string>
+
+    <string name="Hangouts_web_sources_preference_title"
+        >Access Hangouts</string>
+    <string name="Hangouts_web_sources_preference_summary"
+        >Gather communications data from Hangouts?</string>
+
     <string name="choose_source_group_list_preference_title"
         >Source Contact Group</string>
     <string-array name="string_array_list_of_contact_groups">
@@ -63,5 +85,8 @@
     </string-array>
     <string name="contact_group_preference_default"
         >BeSocial</string>
-
+    <string-array name="contact_group_data">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
 </resources>

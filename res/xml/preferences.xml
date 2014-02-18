@@ -6,17 +6,39 @@
         android:title="@string/notification_checkbox_preference_title"
         android:summary="@string/notification_checkbox_preference_summary"
         android:defaultValue="false" />
+
     <CheckBoxPreference
-        android:key="take_out_cat_checkbox_preference_key"
-        android:title="@string/take_out_cat_checkbox_preference_title"
-        android:summary="@string/take_out_cat_checkbox_preference_summary"
+        android:key="sync_with_internet_sources_checkbox_preference_key"
+        android:title="@string/sync_with_web_sources_preference_title"
+        android:summary="@string/sync_with_web_sources_preference_summary"
         android:defaultValue="true" />
-    <!--<ListPreference
-        android:dependency="pref_sync"
-        android:key="pref_syncConnectionType"
+    <ListPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="sync_with_internet_sources_freq_preference_key"
+        android:title="@string/sync_with_internet_sources_frequency_preference_title"
+        android:summary="@string/sync_with_internet_sources_frequency_preference_summary"
+        android:dialogTitle="@string/sync_with_internet_sources_frequency_preference_summary"
+        android:entries="@array/string_array_list_of_web_sync_freq"
+        android:entryValues="@array/contact_group_data"
+        android:defaultValue="@string/web_access_freq_default" />
+    <CheckBoxPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="Facebook_web_sources_checkbox_preference_key"
+        android:title="@string/Facebook_web_sources_preference_title"
+        android:summary="@string/Facebook_web_sources_preference_summary"
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="Hangouts_web_sources_checkbox_preference_key"
+        android:title="@string/Hangouts_web_sources_preference_title"
+        android:summary="@string/Hangouts_web_sources_preference_summary"
+        android:defaultValue="false" />
+
+    <ListPreference
+        android:key="source_group_list_preference_key"
         android:title="@string/choose_source_group_list_preference_title"
         android:dialogTitle="@string/choose_source_group_list_preference_title"
         android:entries="@array/string_array_list_of_contact_groups"
         android:entryValues="@array/contact_group_data"
-        android:defaultValue="@string/contact_group_preference_default" /> -->
+        android:defaultValue="@string/contact_group_preference_default" />
 </PreferenceScreen>

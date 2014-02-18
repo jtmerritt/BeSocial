@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer-array name="contact_group_data">
+    <integer-array name="contact_group_data_int">
         <item>0</item>
         <item>1</item>
     </integer-array>

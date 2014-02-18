@@ -8,7 +8,9 @@ ___________________________________________________________________
       toggling text with a tap.
 - set text of chart spinner to be centered
 - bring back the underscore shading under the tab buttons
-- Add a graphic (hourglass-like) to indicate that the data is still being collected
+- Add Notification graphic to indicate that the data is still being collected
+- Implement tab listeners to only have tab data loaded when needed
+- Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
 - Implement date range function for chart
     - Make the standard range up to 2 years
     - if there is more data before, display a "back arror" button on the bottom.

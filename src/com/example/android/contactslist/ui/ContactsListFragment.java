@@ -547,13 +547,9 @@ public class ContactsListFragment extends ListFragment implements
 
                 //TODO: test only
                 FileIO.logNames(getActivity(), data);
+                SetAlarm alarm = new SetAlarm();
+                alarm.set_Alarm(getActivity());
 
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                Boolean start_alarm = sharedPref.getBoolean("notification_checkbox_preference_key", false);
-                if(start_alarm){
-                    SetAlarm alarm = new SetAlarm();
-                    alarm.set_Alarm(getActivity());
-                }
 
 
 
