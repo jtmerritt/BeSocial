@@ -73,6 +73,14 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                        android:value=".ui.ContactsListActivity" />
         </activity>
+        <activity android:name=".ui.UserPreferencesActivity"
+            android:label="@string/preferences_fragment"
+            android:enabled="true" >
+            <intent-filter>
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
+
+        </activity>
         <receiver
             android:name=".notification.timedUpdate"
             android:enabled="true">

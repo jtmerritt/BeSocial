@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="notification_checkbox_preference_key"
+        android:title="@string/notification_checkbox_preference_title"
+        android:summary="@string/notification_checkbox_preference_summary"
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:key="take_out_cat_checkbox_preference_key"
+        android:title="@string/take_out_cat_checkbox_preference_title"
+        android:summary="@string/take_out_cat_checkbox_preference_summary"
+        android:defaultValue="true" />
+    <!--<ListPreference
+        android:dependency="pref_sync"
+        android:key="pref_syncConnectionType"
+        android:title="@string/choose_source_group_list_preference_title"
+        android:dialogTitle="@string/choose_source_group_list_preference_title"
+        android:entries="@array/string_array_list_of_contact_groups"
+        android:entryValues="@array/contact_group_data"
+        android:defaultValue="@string/contact_group_preference_default" /> -->
+</PreferenceScreen>

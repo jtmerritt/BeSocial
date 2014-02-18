@@ -45,4 +45,23 @@
     <string name="no_address">No addresses found</string>
     <string name="no_intent_found">No application found to handle this action</string>
 
+
+    <string name="preferences_fragment">Preferences</string>
+    <string name="notification_checkbox_preference_title"
+            >Enable Notifications</string>
+    <string name="notification_checkbox_preference_summary"
+        >Annoying vibrtioning allerts every 5 minutes</string>
+    <string name="take_out_cat_checkbox_preference_title"
+        >Take Out the Cat</string>
+    <string name="take_out_cat_checkbox_preference_summary"
+        >The cat isn\'t going to do it himself</string>
+    <string name="choose_source_group_list_preference_title"
+        >Source Contact Group</string>
+    <string-array name="string_array_list_of_contact_groups">
+        <item>BeSocial</item>
+        <item>Starred in Android</item>
+    </string-array>
+    <string name="contact_group_preference_default"
+        >BeSocial</string>
+
 </resources>

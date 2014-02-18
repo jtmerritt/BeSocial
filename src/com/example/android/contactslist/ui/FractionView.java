@@ -165,6 +165,7 @@ public class FractionView extends View {
        mSectorOval.right = mSectorOval.left + size;
 
        canvas.drawArc(mSectorOval, 270, getSweepAngle(), true, mRedPaint);
+       // implement "Sweep" for indicator
 
        canvas.drawText(String.valueOf(displayValue), cx, cy+14, mTextPaint);  //Round to the nearest tenth
 

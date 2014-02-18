@@ -22,12 +22,15 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
@@ -56,6 +59,7 @@ import android.widget.QuickContactBadge;
 import android.widget.SearchView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
@@ -332,6 +336,9 @@ public class ContactsListFragment extends ListFragment implements
             searchItem.setVisible(false);
         }
 
+        MenuItem settingsItem = menu.add("Settings");
+
+
         // In version 3.0 and later, sets up and configures the ActionBar SearchView
         if (Utils.hasHoneycomb()) {
 
@@ -427,6 +434,8 @@ public class ContactsListFragment extends ListFragment implements
         }
     }
 
+
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -441,6 +450,7 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
             // Sends a request to the People app to display the create contact screen
             case R.id.menu_add_contact:
@@ -453,9 +463,21 @@ public class ContactsListFragment extends ListFragment implements
                     getActivity().onSearchRequested();
                 }
                 break;
+            default:
+                //Toast.makeText(getActivity(), "Options", Toast.LENGTH_SHORT).show();
+                //TODO: make setting menu initiate with the press of the ActionBar button
+                // Display the fragment as the main content.
+                Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
+                // Make it a subactivity so we know when it returns
+                startActivity(launchPreferencesIntent);
+
+
+
+
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -526,8 +548,14 @@ public class ContactsListFragment extends ListFragment implements
                 //TODO: test only
                 FileIO.logNames(getActivity(), data);
 
-                SetAlarm alarm = new SetAlarm();
-                alarm.set_Alarm(getActivity());
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                Boolean start_alarm = sharedPref.getBoolean("notification_checkbox_preference_key", false);
+                if(start_alarm){
+                    SetAlarm alarm = new SetAlarm();
+                    alarm.set_Alarm(getActivity());
+                }
+
+
 
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected
