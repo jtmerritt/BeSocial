@@ -6,7 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -60,14 +62,26 @@ public class SetAlarm {
     public void set_Alarm(Context c)
     {
         Context appContext = c.getApplicationContext();
-       // final Button button = buttons[2]; // replace with a button from your own UI
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
+        Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
+        if(access_web){
+
+
+            // final Button button = buttons[2]; // replace with a button from your own UI
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override public void onReceive( Context context, Intent _ )
             {
-                Log.d("Alarm Receiver", "onReceive called");
-                //Toast.makeText(context, "onReceive called", Toast.LENGTH_SHORT).show();
+                //Log.d("Alarm Receiver", "onReceive called");
+                Toast.makeText(context, "Accessing Web Data", Toast.LENGTH_SHORT).show();
                 //just send notification
-                Notification.simpleNotification(context);
+
+
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                Boolean enable_notification = sharedPref.getBoolean("notification_checkbox_preference_key", false);
+                if(enable_notification){
+                    Notification.simpleNotification(context);
+                }
             }
         };
 
@@ -81,6 +95,7 @@ public class SetAlarm {
                SystemClock.elapsedRealtime() + 1000 * 10,
                 1000 * 60 * 5,
                 pintent);
+    }
     }
 
 }

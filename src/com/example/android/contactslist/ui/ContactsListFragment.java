@@ -247,7 +247,9 @@ public class ContactsListFragment extends ListFragment implements
         // the action bar search view (see onQueryTextChange() in onCreateOptionsMenu()).
         if (mPreviouslySelectedSearchItem == 0) {
             // Initialize the loader, and create a loader identified by ContactsQuery.QUERY_ID
-            getLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+
+            //Normally the complete list of contacts would be shown below, but we want the default to be settable by groups
+            //getLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
         }
     }
 

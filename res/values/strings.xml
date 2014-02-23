@@ -78,15 +78,18 @@
         >Gather communications data from Hangouts?</string>
 
     <string name="choose_source_group_list_preference_title"
-        >Source Contact Group</string>
+        >Default Contact Group</string>
     <string-array name="string_array_list_of_contact_groups">
-        <item>BeSocial</item>
         <item>Starred in Android</item>
+        <item>BeSocial</item>
     </string-array>
     <string name="contact_group_preference_default"
-        >BeSocial</string>
+        >Starred in Android</string>
     <string-array name="contact_group_data">
         <item>0</item>
         <item>1</item>
     </string-array>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>

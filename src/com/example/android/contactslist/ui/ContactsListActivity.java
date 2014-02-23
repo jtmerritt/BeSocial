@@ -16,21 +16,33 @@
 
 package com.example.android.contactslist.ui;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
+import android.support.v4.widget.DrawerLayout;
+import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.notification.Notification;
 import com.example.android.contactslist.util.Utils;
 
 import java.util.ArrayList;
@@ -58,13 +70,15 @@ public class ContactsListActivity extends FragmentActivity implements
     // as the query is typed.
     private boolean isSearchResultView = false;
 
+    private String[] mContactGroupData;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
+
     private Spinner groupSpinner;
 
-    class ConatctData {
-        String phone, name;
-    }
-
-    private List<ConatctData> contactList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) {
@@ -101,10 +115,44 @@ public class ContactsListActivity extends FragmentActivity implements
             String title = getString(R.string.contacts_list_search_results_title, searchQuery);
             setTitle(title);
         }
-
+        // collect list of gmail contact groups
         loadGroups();
-        addItemsToGroupsSpinner();
-        addListenerOnSpinnerItemSelection();
+
+        //mContactGroupData = getResources().getStringArray(R.array.string_array_list_of_contact_groups);
+        // set Navigation Drawer to show gmail contact groups
+        addItemsToGroupsDrawerList();
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                getActionBar().setTitle(mTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                getActionBar().setTitle(mDrawerTitle);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        setDefaultContactGroup();
+
+        // add gmail contact groups to spinner menu
+        //addItemsToGroupsSpinner();
+        //addListenerOnSpinnerItemSelection();
 
         if (isTwoPaneLayout) {
             // If two pane layout, locate the contact detail fragment
@@ -112,6 +160,20 @@ public class ContactsListActivity extends FragmentActivity implements
                     getSupportFragmentManager().findFragmentById(R.id.contact_detail);
         }
     }
+
+    private void addItemsToGroupsDrawerList() {
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        List<String> list = new ArrayList<String>();
+
+        for (GroupInfo groupInfo:groups) {
+            list.add(groupInfo.toString());
+        }
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, list);
+        mDrawerList.setAdapter(dataAdapter);
+    }
+
 
     private class GroupInfo {
         String id;
@@ -149,8 +211,10 @@ public class ContactsListActivity extends FragmentActivity implements
         public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
 
             // this is where we figure out which was selected and then do query.
-            String groupName = groups.get(pos).toString();
-            int groupID = -1;
+
+            //TODO Delete
+            //String groupName = groups.get(pos).toString();
+            //int groupID = -1;
 
             //Call the ContactListFragment to display only the contacts in the selected group
             ContactsListFragment mContactsListFragment = (ContactsListFragment)
@@ -185,6 +249,7 @@ public class ContactsListActivity extends FragmentActivity implements
         final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
         final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
+        //TODO: Is this hashmap necessary?
         Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
 
         while (c.moveToNext()) {
@@ -194,6 +259,7 @@ public class ContactsListActivity extends FragmentActivity implements
             //only record groups of interest
             if(g.title.equals("Starred in Android") || (g.title.equals("BeSocial"))){
                 g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
+                //TODO references to m are probably superfluous.
                 if (g.count>0) {
                     // group with duplicate name?
                     GroupInfo g2 = m.get(g.title);
@@ -248,4 +314,70 @@ public class ContactsListActivity extends FragmentActivity implements
         // search results. Only used pre-HC.
         return !isSearchResultView && super.onSearchRequested();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle action buttons
+        switch(item.getItemId()) {
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /* The click listner for ListView in the navigation drawer */
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int pos) {
+        // update the main content by replacing fragments
+        // May be helpful for when dealing with new fragments: http://stackoverflow.com/questions/21059179/android-navigation-drawer-fragments
+        ContactsListFragment mContactsListFragment = (ContactsListFragment)
+                getSupportFragmentManager().findFragmentById(R.id.contact_list);
+
+        mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+
+        // update selected item and title, then close the drawer
+        mDrawerList.setItemChecked(pos, true);
+        setTitle(groups.get(pos).toString());
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    private void setDefaultContactGroup() {
+
+        int pos = 0;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //TODO: Actually read the preferences for which group gets displayed by default.
+        //There seems to be versioning problems regarding data types.
+        //int position = sharedPref.getInt("source_group_list_preference_key",0);
+        //pos = position;//Integer.parseInt(position);
+
+        // update the main content by replacing fragments
+        ContactsListFragment mContactsListFragment = (ContactsListFragment)
+                getSupportFragmentManager().findFragmentById(R.id.contact_list);
+
+        mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+
+        // update selected item and title
+        mDrawerList.setItemChecked(pos, true);
+        setTitle(groups.get(pos).toString());
+    }
+
+
+    @Override
+    public void setTitle(CharSequence title) {
+        mTitle = title;
+        getActionBar().setTitle(mTitle);
+    }
+
 }

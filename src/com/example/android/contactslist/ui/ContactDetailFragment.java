@@ -181,11 +181,13 @@ public class ContactDetailFragment extends Fragment implements
 
         // If the Uri contains data, load the contact's image and load contact details.
         if (contactLookupUri != null) {
+
             // Asynchronously loads the contact image
             mImageLoader.loadImage(mContactUri, mImageView);
 
             // Shows the contact photo ImageView and hides the empty view
             mImageView.setVisibility(View.VISIBLE);
+
             mEmptyView.setVisibility(View.GONE);
 
             // Shows the edit contact action/menu item
@@ -270,11 +272,12 @@ public class ContactDetailFragment extends Fragment implements
                 inflater.inflate(R.layout.contact_detail_fragment, container, false);
 
         // Gets handles to view objects in the layout
-        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_call_details_layout);
         mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_sms_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
+        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+
 
         //********************* chart
         mChartLayout = (LinearLayout) detailView.findViewById(R.id.chart);
