@@ -19,6 +19,7 @@ package com.example.android.contactslist.ui;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.GravityCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +39,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.QuickContactBadge;
 import android.widget.Spinner;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
@@ -49,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * FragmentActivity to hold the main {@link ContactsListFragment}. On larger screen devices which
@@ -78,6 +83,9 @@ public class ContactsListActivity extends FragmentActivity implements
     private CharSequence mTitle;
 
     private Spinner groupSpinner;
+    List<GroupInfo> groups = new ArrayList<GroupInfo>();
+    //ContactGroupsList contactGroupsList = new ContactGroupsList();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +124,12 @@ public class ContactsListActivity extends FragmentActivity implements
             setTitle(title);
         }
         // collect list of gmail contact groups
+        /*
+        contactGroupsList.setGroupsContentResolver(getContentResolver());
+        contactGroupsList.loadGroups();
+        groups = contactGroupsList.getGroupList();
+        */
+
         loadGroups();
 
         //mContactGroupData = getResources().getStringArray(R.array.string_array_list_of_contact_groups);
@@ -166,44 +180,55 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         List<String> list = new ArrayList<String>();
 
+        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_9,
+                GravityCompat.START);
+
         for (GroupInfo groupInfo:groups) {
             list.add(groupInfo.toString());
         }
+
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, list);
         mDrawerList.setAdapter(dataAdapter);
     }
+    /**
+     * Overrides newView() to inflate the list item views.
+     */
+    //@Override
+    public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+        // Inflates the list item layout.
+        final View itemLayout = null;
+         //       mInflater.inflate(R.layout.drawer_list_item, viewGroup, false);
 
+        // Creates a new ViewHolder in which to store handles to each view resource. This
+        // allows bindView() to retrieve stored references instead of calling findViewById for
+        // each instance of the layout.
+        final ViewHolder holder = new ViewHolder();
+        holder.text1 = (TextView) itemLayout.findViewById(android.R.id.text1);
+        //holder.text2 = (TextView) itemLayout.findViewById(android.R.id.text2);
+        //holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
 
-    private class GroupInfo {
-        String id;
-        String title;
-        int count;
+        // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
+        // available to bindView and other methods that receive a handle to the item view.
+        itemLayout.setTag(holder);
 
-        @Override
-        public String toString() {
-            return title + "("+count+")";
-        }
-
-        public int getId() {
-            return Integer.parseInt(id);
-        }
+        // Returns the item layout view
+        return itemLayout;
+    }
+    /**
+     * A class that defines fields for each resource ID in the list item layout. This allows
+     * ContactsAdapter.newView() to store the IDs once, when it inflates the layout, instead of
+     * calling findViewById in each iteration of bindView.
+     */
+    private class ViewHolder {
+        TextView text1;
+        //TextView text2;
+        //QuickContactBadge icon;
+        //FractionView fractionView;
     }
 
-    List<GroupInfo> groups = new ArrayList<GroupInfo>();
 
-    private void addItemsToGroupsSpinner() {
-        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
-        List<String> list = new ArrayList<String>();
 
-        for (GroupInfo groupInfo:groups) {
-            list.add(groupInfo.toString());
-        }
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, list);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        groupSpinner.setAdapter(dataAdapter);
-    }
 
 
     public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -229,51 +254,8 @@ public class ContactsListActivity extends FragmentActivity implements
         }
 
     }
-    public void addListenerOnSpinnerItemSelection() {
-        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
-        groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-    }
-    private void loadGroups() {
-        final String[] GROUP_PROJECTION = new String[] {
-                ContactsContract.Groups._ID,
-                ContactsContract.Groups.TITLE,
-                ContactsContract.Groups.SUMMARY_COUNT
-        };
 
-        Cursor c = getContentResolver().query(
-                ContactsContract.Groups.CONTENT_SUMMARY_URI,
-                GROUP_PROJECTION,
-                null,
-                null,
-                null);
-        final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
-        final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
-        //TODO: Is this hashmap necessary?
-        Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
-
-        while (c.moveToNext()) {
-            GroupInfo g = new GroupInfo();
-            g.id = c.getString(IDX_ID);
-            g.title = c.getString(IDX_TITLE);
-            //only record groups of interest
-            if(g.title.equals("Starred in Android") || (g.title.equals("BeSocial"))){
-                g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
-                //TODO references to m are probably superfluous.
-                if (g.count>0) {
-                    // group with duplicate name?
-                    GroupInfo g2 = m.get(g.title);
-                    if (g2==null) {
-                        m.put(g.title, g);
-                        groups.add(g);
-                    } else {
-                        g2.id+=","+g.id;
-                    }
-                }
-            }
-        }
-        c.close();
-    }
 
     /**
      * This interface callback lets the main contacts list fragment notify
@@ -380,4 +362,84 @@ public class ContactsListActivity extends FragmentActivity implements
         getActionBar().setTitle(mTitle);
     }
 
+    private void addItemsToGroupsSpinner() {
+        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
+        List<String> list = new ArrayList<String>();
+
+        for (GroupInfo groupInfo:groups) {
+            list.add(groupInfo.toString());
+        }
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, list);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        groupSpinner.setAdapter(dataAdapter);
+    }
+
+    public void addListenerOnSpinnerItemSelection() {
+        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
+        groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+    }
+
+    public class GroupInfo {
+        String id;
+        String title;
+        int count;
+
+        @Override
+        public String toString() {
+            return title + "("+count+")";
+        }
+
+        public int getId() {
+            return Integer.parseInt(id);
+        }
+    }
+    public void loadGroups() {
+        final String[] GROUP_PROJECTION = new String[] {
+                ContactsContract.Groups._ID,
+                ContactsContract.Groups.TITLE,
+                ContactsContract.Groups.SUMMARY_COUNT
+        };
+
+        Cursor c = getContentResolver().query(
+                ContactsContract.Groups.CONTENT_SUMMARY_URI,
+                GROUP_PROJECTION,
+                null,
+                null,
+                null);
+        final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
+        final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
+
+        //TODO: Is this hashmap necessary?
+        Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
+
+        while (c.moveToNext()) {
+            GroupInfo g = new GroupInfo();
+            g.id = c.getString(IDX_ID);
+            g.title = c.getString(IDX_TITLE);
+            //only record groups of interest
+            if(g.title.equals("Starred in Android") ||
+                    g.title.equals("BeSocial") ||
+                    g.title.contains("Weeks") ||
+                    g.title.contains("Week") ||
+                    g.title.contains("Days") ||
+                    g.title.contains("Day") ||
+                    g.title.contains("Collaborators")
+                    ){
+                g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
+                //TODO references to m are probably superfluous.
+                if (g.count>0) {
+                    // group with duplicate name?
+                    GroupInfo g2 = m.get(g.title);
+                    if (g2==null) {
+                        m.put(g.title, g);
+                        groups.add(g);
+                    } else {
+                        g2.id+=","+g.id;
+                    }
+                }
+            }
+        }
+        c.close();
+    }
 }
