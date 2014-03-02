@@ -36,8 +36,8 @@
 
             <ImageView
                 android:id="@+id/contact_image"
-                android:layout_width="265dp"
-                android:layout_height="fill_parent"
+                android:layout_width="197dp"
+                android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_contact_picture_180_holo_light"
                 android:contentDescription="@string/imageview_description"
@@ -51,7 +51,7 @@
 
                 <com.example.android.contactslist.ui.FractionView
                     android:layout_width="match_parent"
-                    android:layout_height="151dp"
+                    android:layout_height="119dp"
                     android:id="@+id/fraction"
                     android:paddingBottom="5dp"
                     android:orientation="vertical"
@@ -95,33 +95,31 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent">
 
-                    <!--
-                    <include layout="@layout/tab1" />
 
-                    <include layout="@layout/tab2" />
-                    -->
+                    <LinearLayout
+                        android:id="@+id/tab_action"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:orientation="vertical">
+
+                    </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/tab_chart"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:orientation="vertical">
-
                         <Spinner
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:id="@+id/chart_spinner"
                             android:gravity="center"
                             android:ellipsize="marquee"/>
-
                         <LinearLayout
-                            android:id="@+id/chart"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingBottom="5dp"
-                            android:orientation="vertical">
-
-                        </LinearLayout>
+                            android:id="@+id/pchart"
+                            android:orientation="vertical"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"></LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -205,7 +203,7 @@
     <TextView android:id="@id/android:empty"
         android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:text="@string/no_contact_selected"
         android:fontFamily="sans-serif-light"
         android:visibility="gone"

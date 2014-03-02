@@ -115,10 +115,12 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mDetailsLayout;
     private LinearLayout mDetailsCallLogLayout;
     private LinearLayout mDetailsSMSLogLayout;
+    private LinearLayout mActionTab;
+    private LinearLayout mChartLayout;
+    private LinearLayout mPChartView;
     private TextView mEmptyView;
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
-    private LinearLayout mChartLayout;
     private GraphicalView gView = null;
     private String mContactNameString;
     private FractionView fractionView = null;
@@ -275,13 +277,13 @@ public class ContactDetailFragment extends Fragment implements
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_call_details_layout);
         mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_sms_details_layout);
+        mActionTab = (LinearLayout) detailView.findViewById(R.id.tab_action);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
 
 
-        //********************* chart
-        mChartLayout = (LinearLayout) detailView.findViewById(R.id.chart);
-        //chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
+        //***********9********** chart
+        mPChartView = (LinearLayout) detailView.findViewById(R.id.pchart);
 
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
@@ -312,7 +314,6 @@ public class ContactDetailFragment extends Fragment implements
         }
 
 
-
         TabHost tabHost=(TabHost)getActivity().findViewById(R.id.tabHost);
         tabHost.setup();
 
@@ -332,32 +333,22 @@ public class ContactDetailFragment extends Fragment implements
         spec4.setIndicator("Stats");
         spec4.setContent(R.id.tab_stats);
 
+        TabSpec spec5=tabHost.newTabSpec("Tab Action");
+        spec5.setIndicator("Action");
+        spec5.setContent(R.id.tab_action);
 
+        tabHost.addTab(spec5);
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
         tabHost.addTab(spec4);
 
-        tabHost.setCurrentTab(0);
-
-        //setup spinner which is just above the chart
-        addItemsToChartSpinner();
+        tabHost.setCurrentTab(1);
 
 
-        chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-
-                // this is where we figure out which was selected and then do query.
-                //applyRangeGraphicalView(pos);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-
+        // Inflates the tab_action view with the new fragment.
+        mActionTab.addView(buildActionLayout());
+        mPChartView.addView(buildChartLayout());
     }
 
     public void displayCallLog(){
@@ -1053,6 +1044,172 @@ private LinearLayout buildCallLogLayout(
         return SMSLogLayout;
     }
 
+            private LinearLayout buildActionLayout() {
+
+                // Inflates the tab_action view with the new fragment.
+                final LinearLayout actionLayout =
+                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                                R.layout.contact_detail_action_fragment, mActionTab, false);
+
+                // Gets handles to the view objects in the layout
+                final ImageButton callButton =
+                        (ImageButton) actionLayout.findViewById(R.id.imageButton_call);
+                callButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        startPhoneCall();
+                    }
+                });
+
+
+                final ImageButton smsButton =
+                        (ImageButton) actionLayout.findViewById(R.id.imageButton_chat);
+                smsButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        startSMS();
+                    }});
+
+
+                final ImageButton emailButton =
+                        (ImageButton) actionLayout.findViewById(R.id.imageButton_email);
+                emailButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        startEmail();
+                    }
+                });
+
+                final ImageButton newEventButton =
+                        (ImageButton) actionLayout.findViewById(R.id.imageButton_new_event);
+                newEventButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getActivity(), "Logging Activity", Toast.LENGTH_SHORT).show();
+                        //enterNewEventIntoDataBase();
+                    }});
+
+                return actionLayout;
+            }
+
+            private void startPhoneCall() {
+                Intent implicitIntent = new Intent();
+                implicitIntent.setAction(Intent.ACTION_DIAL);
+                implicitIntent.setData(Uri.parse("tel:3105310531"));
+
+                try{
+                    startActivity(implicitIntent);
+                }catch (Exception e)
+                {}
+            }
+
+            private void startSMS() {
+                Intent implicitIntent = new Intent();
+                implicitIntent.setAction(Intent.ACTION_VIEW);
+                implicitIntent.setData(Uri.parse("smsto:3105310531"));
+                implicitIntent.putExtra("sms_body", "Good Morning ! how r U ?");
+                //Uri.fromParts("sms", number, null)
+                // or use the SMS manager to send sms directly
+
+                try{
+                    startActivity(implicitIntent);
+                }catch (Exception e)
+                {}
+            }
+
+            private void startEmail() {
+                Intent implicitIntent = new Intent();
+                implicitIntent.setAction(Intent.ACTION_SENDTO);
+                implicitIntent.setData(Uri.parse("mailto:tmacdona@gmail.com"));
+
+                try{
+                    startActivity(implicitIntent);
+                }catch (Exception e)
+                {}
+            }
+
+            private LinearLayout buildChartLayout() {
+
+                // Inflates the tab_action view with the new fragment.
+                final LinearLayout chartLayout =
+                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                                R.layout.chart_fragment, mPChartView, false);
+
+                mChartLayout = (LinearLayout) chartLayout.findViewById(R.id.chart);
+                chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
+
+
+                // Gets handles to the view objects in the layout
+                final ImageButton previousButton =
+                        (ImageButton) chartLayout.findViewById(R.id.imageButton_previous_chart_time);
+                previousButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        //startPhoneCall();
+                    }});
+
+                final ImageButton nextButton =
+                        (ImageButton) chartLayout.findViewById(R.id.imageButton_next_chart_time);
+                nextButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        //startSMS();
+                    }});
+
+                final ImageButton full_screenButton =
+                        (ImageButton) chartLayout.findViewById(R.id.imageButton_switch_to_full_screen);
+                full_screenButton.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+                        //startEmail();
+                    }
+                });
+
+                //setup spinner which is just above the chart
+
+                   addItemsToChartSpinner();
+
+
+                chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+
+                        // this is where we figure out which was selected and then do query.
+                        //applyRangeGraphicalView(pos);
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> arg0) {
+                        // TODO Auto-generated method stub
+                    }
+                });
+
+                return chartLayout;
+            }
+
+            private void addItemsToChartSpinner() {
+
+                List<String> list = new ArrayList<String>();
+
+                for(String s : dateSelection.Selections){
+                    list.add(s);
+                }
+
+                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_spinner_item, list);
+
+                //choose the style of the list.
+                dateAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+
+                chartSpinner.setAdapter(dateAdapter);
+            }
+
     public void finishedLoading() {
 
         //Build the chart view
@@ -1082,25 +1239,6 @@ private LinearLayout buildCallLogLayout(
                 (contactID, contactName, getActivity().getContentResolver(), mEventLog, this);
         contactLogsTask.execute();
     }
-
-
-            private void addItemsToChartSpinner() {
-               chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
-
-                List<String> list = new ArrayList<String>();
-
-                for(String s : dateSelection.Selections){
-                    list.add(s);
-                }
-
-                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
-                        android.R.layout.simple_spinner_item, list);
-
-                //choose the style of the list.
-                dateAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
-
-                chartSpinner.setAdapter(dateAdapter);
-            }
             /*
             public void addListenerOnSpinnerItemSelection() {
                 chartSpinner.setOnItemSelectedListener(new ContactsListActivity.CustomOnItemSelectedListener());

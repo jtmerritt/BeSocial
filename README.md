@@ -7,9 +7,8 @@ ___________________________________________________________________
 - display text in the middle of the fraction chart indicating the value,
       toggling text with a tap.
 - set text of chart spinner to be centered
-- bring back the underscore shading under the tab buttons
-- Add Notification graphic to indicate that the data is still being collected
-- Implement tab listeners to only have tab data loaded when needed
+- Add Notification graphic to indicate that the data is still being collected - “Progress Bar” “Dialogs” “Intermediate” - for a dialog box with the cirular progress indicator
+- Implement tab listeners to only have tab data loaded when needed - “Slow Adaptor” to load items to a scrolling list on the fly
 - Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
 - Implement date range function for chart
     - Make the standard range up to 2 years
@@ -67,3 +66,4 @@ ___________________________________________________________________
 - Break up ContactDetailFragment into multiple files.
     - Done: Data collection
     - Done: Chart generation
+- bring back the underscore shading under the tab buttons

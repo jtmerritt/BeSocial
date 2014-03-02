@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:paddingBottom="5dp"
+        android:orientation="vertical">
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:id="@+id/imageButton_previous_chart_time"
+            android:layout_weight="0.04"
+            android:src="@drawable/ic_action_previous_item" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:id="@+id/imageButton_next_chart_time"
+            android:layout_weight="0.04"
+            android:src="@drawable/ic_action_next_item"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/imageButton_previous_chart_time" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:id="@+id/imageButton_switch_to_full_screen"
+            android:layout_weight="0.04"
+            android:src="@drawable/ic_action_full_screen"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+
+</LinearLayout>
