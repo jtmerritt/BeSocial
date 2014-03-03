@@ -318,23 +318,23 @@ public class ContactDetailFragment extends Fragment implements
         tabHost.setup();
 
         TabSpec spec1=tabHost.newTabSpec("Tab Chart");
-        spec1.setIndicator("Chart");
+        spec1.setIndicator("", getResources().getDrawable(R.drawable.ic_action_statistics));
         spec1.setContent(R.id.tab_chart);
 
         TabSpec spec2=tabHost.newTabSpec("Tab Call");
-        spec2.setIndicator("Call Log");
+        spec2.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
         spec2.setContent(R.id.tab_call);
 
         TabSpec spec3=tabHost.newTabSpec("Tab SMS");
-        spec3.setIndicator("SMS Log");
+        spec3.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
         spec3.setContent(R.id.tab_sms);
 
         TabSpec spec4=tabHost.newTabSpec("Tab Statistics");
-        spec4.setIndicator("Stats");
+        spec4.setIndicator("", getResources().getDrawable(R.drawable.ic_action_settings));
         spec4.setContent(R.id.tab_stats);
 
         TabSpec spec5=tabHost.newTabSpec("Tab Action");
-        spec5.setIndicator("Action");
+        spec5.setIndicator("", getResources().getDrawable(R.drawable.ic_action_send_now));
         spec5.setContent(R.id.tab_action);
 
         tabHost.addTab(spec5);
@@ -343,7 +343,7 @@ public class ContactDetailFragment extends Fragment implements
         tabHost.addTab(spec3);
         tabHost.addTab(spec4);
 
-        tabHost.setCurrentTab(1);
+        tabHost.setCurrentTab(0);
 
 
         // Inflates the tab_action view with the new fragment.

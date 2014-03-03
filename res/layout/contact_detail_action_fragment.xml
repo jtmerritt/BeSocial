@@ -80,39 +80,59 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="253dp"
-        android:layout_weight="0.45">
+        android:layout_weight="0.45"
+        android:paddingStart="60dp">
 
 <!-- This view is for editing the notes in the google contact field -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Notes"
+            android:text="Statistics"
             android:id="@+id/textNotesTitle"
             android:textStyle="bold"
             android:textAlignment="center"
             android:layout_gravity="center_horizontal"
-            android:layout_alignBottom="@+id/imageSave"
-            android:layout_centerHorizontal="true" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageSave"
-            android:layout_weight="0.04"
-            android:src="@drawable/ic_action_save"
-            android:layout_marginTop="25dp"
             android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="29dp" />
 
-        <EditText
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/editText"
+            android:layout_height="wrap_content"
+            android:text="Average time between contact: 12 days"
+            android:id="@+id/textView2"
             android:layout_below="@+id/textNotesTitle"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Longest interval without contact: 31 days"
+            android:id="@+id/textView3"
+            android:layout_below="@+id/textView2"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Average Phone call length: 0 Minutes"
+            android:id="@+id/textView4"
+            android:layout_below="@+id/textView3"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reciprocity: 46% Incoming, 54% Outgoing"
+            android:id="@+id/textView5"
+            android:layout_below="@+id/textView4"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
     </RelativeLayout>
 
 

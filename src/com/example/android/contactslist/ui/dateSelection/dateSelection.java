@@ -7,12 +7,12 @@ package com.example.android.contactslist.ui.dateSelection;
 public interface dateSelection {
 
     public String[] Selections =
-            {"Short History",
-            "3 months",
-            "6 months",
-            "9 months",
-            "Match Phone",
-            "Maximum"};
+            {"Handset",
+            "Gmail",
+            "FaceBook",
+            "Google Hangouts",
+            "Skype",
+            "Personal"};
 
 
     // The query column numbers which map to each value in the Selections array
