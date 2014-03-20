@@ -237,10 +237,6 @@ public class ContactsListActivity extends FragmentActivity implements
 
             // this is where we figure out which was selected and then do query.
 
-            //TODO Delete
-            //String groupName = groups.get(pos).toString();
-            //int groupID = -1;
-
             //Call the ContactListFragment to display only the contacts in the selected group
             ContactsListFragment mContactsListFragment = (ContactsListFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_list);
@@ -336,7 +332,7 @@ public class ContactsListActivity extends FragmentActivity implements
 
     private void setDefaultContactGroup() {
 
-        int pos = 0;
+        int pos = 3;
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         //TODO: Actually read the preferences for which group gets displayed by default.
@@ -362,7 +358,7 @@ public class ContactsListActivity extends FragmentActivity implements
         getActionBar().setTitle(mTitle);
     }
 
-    private void addItemsToGroupsSpinner() {
+/*    private void addItemsToGroupsSpinner() {
         groupSpinner = (Spinner) findViewById(R.id.contactGroups);
         List<String> list = new ArrayList<String>();
 
@@ -379,7 +375,7 @@ public class ContactsListActivity extends FragmentActivity implements
         groupSpinner = (Spinner) findViewById(R.id.contactGroups);
         groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
     }
-
+*/
     public class GroupInfo {
         String id;
         String title;

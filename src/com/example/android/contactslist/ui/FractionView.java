@@ -4,34 +4,44 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.graphics.RectF;
 
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
 import com.example.android.contactslist.R;
 
 public class FractionView extends View {
 
+    private String TAG = "FractionView";
     private Paint mCirclePaint;
     private Paint mRedPaint;
     private RectF mSectorOval;
     private Paint mGreenPaint;
+    private Paint mBackgroundPaint;
     private Paint mTextPaint = new Paint();
 
     private float mfraction = 1;
+    private int mDaysRemaining;
+    private int mTotalDays;
+    private String mDisplayString_1;
+    private String mDisplayString_2;
     private int cx = 0;
     private int cy = 0;
     private int radius = 0;
+    private int touchCount = 0;
     private TranslateAnimation translateAnimation;
-    private final int textSize = 40;
-    private boolean mShowTextOnTouch = true;
+    private int textSize = 25;
+    private boolean mLargeCanvas = false;
 
 
 
@@ -57,34 +67,29 @@ public class FractionView extends View {
   }
 
   private void init() {
+
+    mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    mBackgroundPaint.setColor(Color.parseColor("#F5F5F5"));
+    mBackgroundPaint.setStyle(Paint.Style.FILL);
+
     setBackgroundColor(Color.parseColor("#F5F5F5"));//Color.LTGRAY);
-    mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mCirclePaint.setColor(Color.CYAN);
-    mCirclePaint.setStyle(Paint.Style.FILL);
+    //TODO Choose better color or transpanrancy for background
 
     mRedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mRedPaint.setColor(getResources().getColor(android.R.color.holo_red_dark));//Color.RED);
+    mRedPaint.setColor(getResources().getColor(android.R.color.holo_green_light));//Color.RED);
     mRedPaint.setStyle(Paint.Style.FILL);
 
     mSectorOval = new RectF();
 
     mGreenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mGreenPaint.setColor(getResources().getColor(android.R.color.holo_green_light));//Color.GREEN);
+    mGreenPaint.setColor(getResources().getColor(android.R.color.holo_red_dark));//Color.GREEN);
     mGreenPaint.setStyle(Paint.Style.FILL);
 
     mTextPaint.setTextSize(0);
     mTextPaint.setColor(Color.BLACK);
     mTextPaint.setTextAlign(Paint.Align.CENTER);
-
-    //mTextPaint.setAlpha(0);
-    /*
-    translateAnimation = new TranslateAnimation(0, 0, 0,  300);
-    translateAnimation.setDuration(1000);
-    translateAnimation.setInterpolator(new AccelerateInterpolator(1.0f));
-    translateAnimation.setRepeatCount(999);
-    translateAnimation.setRepeatMode(Animation.REVERSE);
-    this.startAnimation(translateAnimation);
-    */
+    mTextPaint.setTypeface(Typeface.SANS_SERIF);
+    mTextPaint.setAntiAlias(true);
 
   }
 
@@ -93,7 +98,6 @@ public class FractionView extends View {
         Bundle bundle = new Bundle();
         bundle.putParcelable("superState", super.onSaveInstanceState());
         bundle.putFloat("fraction", mfraction);
-        bundle.putBoolean("showTextOnTouch", mShowTextOnTouch);
 
         return bundle;
     }
@@ -102,7 +106,6 @@ public class FractionView extends View {
         if (state instanceof Bundle) {
             Bundle bundle = (Bundle) state;
             mfraction = bundle.getFloat("fraction");
-            mShowTextOnTouch = bundle.getBoolean("showTextOnTouch");
             super.onRestoreInstanceState(bundle.getParcelable("superState"));
         } else {
             super.onRestoreInstanceState(state);
@@ -110,19 +113,21 @@ public class FractionView extends View {
         setFractionFloat(mfraction);
     }
 
-    public void setFraction(int numerator, int denominator) {
-        if (numerator < 0) return;
-        if (denominator <= 0) return;
+    public void setFraction(int days_remaining, int total_days) {
+        if (days_remaining < 0) return;
+        if (total_days <= 0) return;
        // Prevent invalid state
-        if (numerator > denominator) return;
+        if (days_remaining > total_days) return;
 
-        mfraction = ((float)numerator)/((float)denominator);
+        mDaysRemaining = days_remaining;
+        mTotalDays = total_days;
+        mfraction = ((float)days_remaining)/((float)total_days);
         invalidate();
 
         if (mListener != null) {
-            mListener.onChange(numerator, denominator);
+            mListener.onChange(days_remaining, total_days);
         }
-
+        setDisplayStrings();
     }
 
     public void setFractionFloat(float fraction) {
@@ -136,21 +141,8 @@ public class FractionView extends View {
     }
 
    protected void onDraw(Canvas canvas) {
-        /*int cx = 30;
-        int cy = 30;
-        int radius = 20;
-        canvas.drawCircle(cx, cy, radius, mCirclePaint);
-      // canvas.drawCircle(cx*2, cy*2, radius, mCirclePaint);
-      // canvas.drawCircle(cx, cy*2, radius, mCirclePaint);
-      // canvas.drawCircle(cx*2, cy, radius, mCirclePaint);
-*/
 
-       //for reasons unknown, breaking this operation into several lines was essential for operation
-       float displayValue = mfraction*100;
-       displayValue = Math.round(displayValue);
-       displayValue = displayValue/100;
-
-       canvas.drawCircle(200, 100, 5, mGreenPaint);
+       setPadding(7, 7, 7, 7);
        int width = getWidth() - getPaddingLeft() - getPaddingRight();
        int height = getHeight() - getPaddingTop() - getPaddingBottom();
        int size = Math.min(width, height);
@@ -164,34 +156,94 @@ public class FractionView extends View {
        mSectorOval.bottom = mSectorOval.top + size;
        mSectorOval.right = mSectorOval.left + size;
 
+       mLargeCanvas = size > 199; // define a large canvase as greater than 199p on the shortest dimension
+       //Log.d(TAG, "Width: " + width + " Height: " + height + " X: " + cx + " Y: " + cy + " PaddingTop: " + getPaddingTop() + " PaddingBottom: " + getPaddingBottom());
+
        canvas.drawArc(mSectorOval, 270, getSweepAngle(), true, mRedPaint);
        // implement "Sweep" for indicator
 
-       canvas.drawText(String.valueOf(displayValue), cx, cy+14, mTextPaint);  //Round to the nearest tenth
+       canvas.drawCircle(cx, cy, (radius-7), mBackgroundPaint);  //Define thickness of the ring
+
+       // set the display text
+       if(mLargeCanvas){
+          canvas.drawText(mDisplayString_1, cx, cy+14, mTextPaint);
+      }else{
+           Path circle = new Path();
+           circle.addCircle(cx, cy, radius, Path.Direction.CW);
+           canvas.drawTextOnPath(mDisplayString_1, circle, height-30, 30, mTextPaint);
+       }
+
+
 
    }
     private float getSweepAngle() {
         return (float)(mfraction * 360f);
     }
 
+    private void setDisplayStrings(){
+        //for reasons unknown, breaking this operation into several lines was essential for operation
+        /*
+       float displayValue = mfraction*100;
+       displayValue = Math.round(displayValue);
+       displayValue = displayValue/100;
+       mDisplayString = String.valueOf(displayValue);
+       */
+
+        mDisplayString_1 = String.valueOf(mDaysRemaining);
+
+        if(mLargeCanvas){
+            textSize = 40;
+            mTextPaint.setTextSize(textSize);
+            mDisplayString_1 += "  day";
+        }else{
+            mDisplayString_1 += "  d a y ";
+        }
+
+        if(mDaysRemaining !=1){
+            mDisplayString_1 += "s";
+        }
+
+        mDisplayString_2 = "t o  g o";
+
+        //mDisplayString = String.valueOf(mTotalDays-mDaysRemaining) + "  days  lapsed";
+
+    }
+
     public boolean onTouchEvent(MotionEvent event) {
 
         if(event.getAction() == event.ACTION_DOWN){ //Only execute on Finger down action
 
+            float ScaleFrom = (float)0.9;
+            float ScaleTo = (float)1.15;
+
+            ScaleAnimation scaleAnimation = new ScaleAnimation(ScaleFrom, ScaleTo, ScaleFrom, ScaleTo, cx, cy);
+            scaleAnimation.setDuration(100);
+            scaleAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
+            this.startAnimation(scaleAnimation);
+
+            /*
             translateAnimation = new TranslateAnimation(0, 10, 0, 10);
             translateAnimation.setDuration(100);
             translateAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
             translateAnimation.setRepeatCount(2);
             translateAnimation.setRepeatMode(Animation.REVERSE);
             this.startAnimation(translateAnimation);
+            */
+            setDisplayStrings();
+            switch ((touchCount%2 )){
+                 case 1:
+                     mTextPaint.setTextSize(0); // hide text
+                     break;
+                case 2:
+                    mTextPaint.setTextSize(textSize);  //show text
+                    break;
+                case 0:
+                default:
+                    mTextPaint.setTextSize(textSize);  //show text
 
-            if(mShowTextOnTouch){
-                mTextPaint.setTextSize(textSize);  //show text
-                mShowTextOnTouch = false;
-            }else{
-                mTextPaint.setTextSize(0); // hide text
-             mShowTextOnTouch = true;
             }
+            invalidate();
+            touchCount++;
         }
 
         /*

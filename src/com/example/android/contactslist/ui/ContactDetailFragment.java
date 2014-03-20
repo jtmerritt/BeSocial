@@ -22,6 +22,7 @@ import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -31,6 +32,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
@@ -363,16 +365,24 @@ public class ContactDetailFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
     }
 
-    private void setFractionView(){
+    private void setFractionView(String lookupKey, Long lastTimeContacted){
+        // TODO: Fix the implementation of getting the due date
+        //  There shouldn't have to be a separate call to the contcts contract.
 
-        int min = 1;
-        int max = 10;
+        // set the fraction view with current state of contact countdown
+        // based on contact due date stored at the contact Event date
+        DateCalculations dateCalc =
+                new DateCalculations(getActivity(),  lookupKey);
+        dateCalc.getContactDueDate();
 
-        Random r = new Random();
-        int i1 = r.nextInt(max - min + 1) + min;
-        int i2 = r.nextInt(max - min + 1) + min;
+        int days_left = dateCalc.getDaysUntilContactDueDate();
+        int days_in_span =dateCalc.getDaysFromLastContactUntilDueDate(lastTimeContacted);
 
-        fractionView.setFraction(i1, i2);
+        Log.d(TAG, "Day Left - " + days_left);
+
+        //final int six_weeks = 42;//days
+
+        fractionView.setFraction(days_left, days_in_span);
     }
 
     /**
@@ -435,7 +445,9 @@ public class ContactDetailFragment extends Fragment implements
                 // ContactDetailQuery for more information.
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
-                        null, null, null);
+                        null,//ContactDetailQuery.SELECTION,
+                        null,//ContactDetailQuery.ARGS,
+                        null);
             case ContactAddressQuery.QUERY_ID:
                 // This query loads contact address details, see
                 // ContactAddressQuery for more information.
@@ -488,9 +500,14 @@ public class ContactDetailFragment extends Fragment implements
                         getActivity().setTitle(mContactNameString);
                     }
 
+                    setFractionView(data.getString(ContactDetailQuery.LOOKUP_KEY),
+                            data.getLong(ContactDetailQuery.LAST_TIME_CONTACTED));
+                    //According to some sources, Last_time_contacted value isn't properly maintained on all handsets
+
+
                     //  using the contact name build the log of events
                     loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
-                    setFractionView();
+
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -859,6 +876,7 @@ public class ContactDetailFragment extends Fragment implements
         // A unique query ID to distinguish queries being run by the
         // LoaderManager.
         final static int QUERY_ID = 1;
+        //final String contact_due_date_label = "Contact Due";
 
         // The query projection (columns to fetch from the provider)
         @SuppressLint("InlinedApi")
@@ -866,12 +884,23 @@ public class ContactDetailFragment extends Fragment implements
                 Contacts._ID,
                 Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
                 // TODO: Can the phone number also be included here?
-
+                Contacts.LOOKUP_KEY,
+                Contacts.LAST_TIME_CONTACTED,
+                //ContactsContract.CommonDataKinds.Event.LABEL
         };
+
+
+        final String SELECTION =
+                ContactsContract.Data.MIMETYPE + "= ? "
+                + " AND " + ContactsContract.CommonDataKinds.Event.LABEL + "= ? ";
+        //final String ARGS[] = {ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, contact_due_date_label};
 
         // The query column numbers which map to each value in the projection
         final static int ID = 0;
         final static int DISPLAY_NAME = 1;
+        final static int LOOKUP_KEY = 2;
+        final static int LAST_TIME_CONTACTED = 3;
+        final static int DATE_LABEL =4;
     }
 
     /**

@@ -16,7 +16,7 @@
 -->
 <resources>
 
-    <string name="app_name">Be Social</string>
+    <string name="app_name">Socia</string>
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>
@@ -82,12 +82,14 @@
     <string-array name="string_array_list_of_contact_groups">
         <item>Starred in Android</item>
         <item>BeSocial</item>
+        <item>6 Weeks</item>
     </string-array>
     <string name="contact_group_preference_default"
         >Starred in Android</string>
     <string-array name="contact_group_data">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
     </string-array>
 
     <string name="drawer_open">Open navigation drawer</string>

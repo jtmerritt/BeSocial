@@ -91,11 +91,21 @@ public class SetAlarm {
         AlarmManager manager = (AlarmManager)(appContext.getSystemService( Context.ALARM_SERVICE ));
 
         // set alarm to fire 5 sec (1000*5) from now (SystemClock.elapsedRealtime())
+            /*
         manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-               SystemClock.elapsedRealtime() + 1000 * 10,
-                1000 * 60 * 5,
+               SystemClock.elapsedRealtime() + (long) AlarmManager.INTERVAL_FIFTEEN_MINUTES/15,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pintent);
+                */
+
+            manager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 15000, pintent);
+
+
+        //TODO: setup a listener for the preferences menu to turn off the alarm.
+        //manager.cancel(pintent);
     }
     }
+
+
 
 }

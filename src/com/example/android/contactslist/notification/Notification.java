@@ -37,12 +37,13 @@ public class Notification {
         int mId = 1;
         setNotificationContact(context);
 
+        //int[] pattern = context.getResources().getIntArray(R.array.alert_vibrate_pattern_int);
         long[] pattern = {500, 100, 100, 100};
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.quickcontact_badge_small_unpressed)
-                        .setContentTitle("BeSocial")
+                        .setSmallIcon(R.drawable.ic_action_statistics)
+                        .setContentTitle(context.getResources().getString(R.string.app_name))
                         .setVibrate(pattern)
                         .setLights(Color.CYAN, 500, 500)
                         .setContentText(mContactName + " misses you.");
@@ -51,7 +52,7 @@ public class Notification {
                 new NotificationCompat.InboxStyle();
         String string = "Item ";
 // Sets a title for the Inbox style big view
-        inboxStyle.setBigContentTitle("Event tracker details:");
+        inboxStyle.setBigContentTitle(mContactName + " misses you.");
 
         // Moves events into the big view
         for (int i=0; i < 6; i++) {
@@ -96,7 +97,7 @@ public class Notification {
 
     private static void setNotificationContact(Context context) {
 
-        int j = 2;
+        int j = 3;
         Log.d("Set Notification", "Contact Added");
 
         readBeSocialList(context);
@@ -104,10 +105,10 @@ public class Notification {
         // Generates the contact lookup Uri
 
         mContactUri = ContactsContract.Contacts.getLookupUri(
-                ContactList.get(j).getContactIDLong(),
-                ContactList.get(j).getContactKeyString());
+                ContactList.get(j).getIDLong(),
+                ContactList.get(j).getKeyString());
 
-        mContactName = ContactList.get(j).getContactName();
+        mContactName = ContactList.get(j).getName();
     }
 
     private static void readBeSocialList(Context context){
@@ -129,9 +130,9 @@ public class Notification {
                 contact = line.split(",");
                 ContactInfo ContactInfo = new ContactInfo();
 
-                ContactInfo.ContactName = contact[0];
-                ContactInfo.ContactID =  Long.parseLong(contact[1]);
-                ContactInfo.ContactKey = contact[2];
+                ContactInfo.setName(contact[0]);
+                ContactInfo.setIDString(contact[1]);
+                ContactInfo.setKey(contact[2]);
 
                 ContactList.add(ContactInfo);
                 //total.append(line); // all lines run together. better as list

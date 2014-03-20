@@ -5,4 +5,13 @@
         <item>1</item>
     </integer-array>
 
+    <integer-array name="alert_vibrate_pattern_int"> <!--milliSecs-->
+        <item>500</item>
+        <item>100</item>
+        <item>100</item>
+        <item>500</item>
+    </integer-array>
+
+
+
 </resources>

@@ -34,6 +34,7 @@ import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
+import android.provider.ContactsContract.CommonDataKinds.Event;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -71,6 +72,9 @@ import com.example.android.contactslist.util.Utils;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 import java.util.Random;
 
@@ -95,7 +99,7 @@ import java.util.Random;
 public class ContactsListFragment extends ListFragment implements
         AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    // Defines a tag for identifying log entries
+    // Defines a  for identifying log entries
     private static final String TAG = "ContactsListFragment";
 
     // Bundle key for saving previously selected search result item
@@ -466,8 +470,6 @@ public class ContactsListFragment extends ListFragment implements
                 }
                 break;
             default:
-                //Toast.makeText(getActivity(), "Options", Toast.LENGTH_SHORT).show();
-                //TODO: make setting menu initiate with the press of the ActionBar button
                 // Display the fragment as the main content.
                 Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
                 // Make it a subactivity so we know when it returns
@@ -522,14 +524,21 @@ public class ContactsListFragment extends ListFragment implements
             case ContactsGroupQuery.QUERY_ID:
                 if(mGroupID != -1){
                     contentUri = ContactsGroupQuery.CONTENT_URI;
+
+                    final String parameters[] = {String.valueOf(mGroupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
+
+
                     return new CursorLoader(getActivity(),
                         contentUri,
                         ContactsGroupQuery.PROJECTION,
-                        ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "=" + mGroupID,
-                        null,
+                            //TODO: It would be nice if the due date could also be captured here, instead of having to make another call
+                            // The result is a very rough interface
+                        ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
+                                //+ " AND " + ContactsContract.Data.MIMETYPE + "= ? "
+                               // + " AND " + Event.LABEL + "= ? ",
+                            parameters,
 
                         ContactsGroupQuery.SORT_ORDER);
-
                 }
 
         default:
@@ -588,7 +597,6 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        //TODO: Fix. The contact list often gets reset to the full list of contacts.  Caused here?
         // maybe need to save the group ID as part of the state
         if ((loader.getId() == ContactsQuery.QUERY_ID) ||
                 (loader.getId() == ContactsGroupQuery.QUERY_ID)){
@@ -775,16 +783,6 @@ public class ContactsListFragment extends ListFragment implements
 
             holder.fractionView = (FractionView) itemLayout.findViewById(R.id.fraction);
 
-            int min = 1;
-            int max = 10;
-
-            Random r = new Random();
-            int i1 = r.nextInt(max - min + 1) + min;
-            int i2 = r.nextInt(max - min + 1) + min;
-
-            holder.fractionView.setFraction(i1, i2);
-
-
 
             // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
             // available to bindView and other methods that receive a handle to the item view.
@@ -860,6 +858,22 @@ public class ContactsListFragment extends ListFragment implements
             // Loads the thumbnail image pointed to by photoUri into the QuickContactBadge in a
             // background worker thread
             mImageLoader.loadImage(photoUri, holder.icon);
+
+            long lastTimeContacted = cursor.getLong(ContactsQuery.LAST_TIME_CONTACTED);
+            //According to some sources, this value isn't properly maintained on all handsets
+
+            // set the fraction view with current state of contact countdown
+            // based on contact due date stored at the contact Event date
+            DateCalculations dateCalc =
+                    new DateCalculations(context,  cursor.getString(ContactsQuery.LOOKUP_KEY));
+            dateCalc.getContactDueDate();
+            int days_left = dateCalc.getDaysUntilContactDueDate();
+            int days_in_span =dateCalc.getDaysFromLastContactUntilDueDate(lastTimeContacted);
+            Log.d(TAG, "Days since contact - " + (days_in_span-days_left));
+
+            //final int six_weeks = 42;//days
+
+            holder.fractionView.setFraction(days_left, days_in_span);
         }
 
         /**
@@ -984,7 +998,7 @@ public class ContactsListFragment extends ListFragment implements
         final static String[] PROJECTION = {
 
                 // The contact's row id
-                Contacts._ID, //extra collumn is to make this projection match up with thatfor ContactsGroupQuery
+                Contacts._ID, //extra collumn is to make this projection match up with that of ContactsGroupQuery
                 //TODO: should probably make this above statement not a cludge
                 Contacts._ID,
 
@@ -1006,6 +1020,8 @@ public class ContactsListFragment extends ListFragment implements
                 // android.provider.ContactsContract.Contacts.
                 Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
 
+                Contacts.LAST_TIME_CONTACTED ,
+
                 // The sort order column for the returned Cursor, used by the AlphabetIndexer
                 SORT_ORDER,
         };
@@ -1015,7 +1031,8 @@ public class ContactsListFragment extends ListFragment implements
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
         final static int PHOTO_THUMBNAIL_DATA = 4;
-        final static int SORT_KEY = 5;
+        final static int LAST_TIME_CONTACTED = 5;
+        final static int SORT_KEY = 6;
     }
 
     public void setGroupQuery(int groupID) {
@@ -1054,7 +1071,6 @@ public class ContactsListFragment extends ListFragment implements
         final static String[] PROJECTION = {
 
                 ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
-                //ContactsContract.CommonDataKinds.GroupMembership.CONTACT_ID,
 
                 // The contact's row id
                 Contacts._ID,
@@ -1077,6 +1093,9 @@ public class ContactsListFragment extends ListFragment implements
                 // android.provider.ContactsContract.Contacts.
                 Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
 
+                Contacts.LAST_TIME_CONTACTED ,
+
+
                 // The sort order column for the returned Cursor, used by the AlphabetIndexer
                 SORT_ORDER,
         };
@@ -1087,8 +1106,13 @@ public class ContactsListFragment extends ListFragment implements
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
         final static int PHOTO_THUMBNAIL_DATA = 4;
-        final static int SORT_KEY = 5;
+        final static int LAST_TIME_CONTACTED = 5;
+        final static int SORT_KEY = 6;
     }
+
+
+
+
 
 
 }

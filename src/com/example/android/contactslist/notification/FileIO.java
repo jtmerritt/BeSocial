@@ -84,16 +84,15 @@ public class FileIO {
             String line;
             while ((line = r.readLine()) != null) {
                 contact = line.split(",");
-                ContactInfo ContactInfo = new ContactInfo();
+                ContactInfo contactInfo = new ContactInfo();
 
-                ContactInfo.ContactName = contact[0];
-                ContactInfo.ContactID =  Long.parseLong(contact[1]);
-                ContactInfo.ContactKey = contact[2];
+                contactInfo.setName(contact[0]);
+                contactInfo.setIDLong(Long.parseLong(contact[1]));
+                contactInfo.setKey(contact[2]);
 
-                mContactList.add(ContactInfo);
+                mContactList.add(contactInfo);
                 //total.append(line); // all lines run together. better as list
             }
-
 
 
             inputStream.close();

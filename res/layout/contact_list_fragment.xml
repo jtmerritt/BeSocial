@@ -20,15 +20,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <Spinner
+    <!--<Spinner
         android:id="@+id/contactGroups"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content" />-->
 
     <FrameLayout
              android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:layout_below="@id/contactGroups">
+             android:layout_height="match_parent">
+             <!--android:layout_below="@id/contactGroups"-->
 
         <!-- Use standard android.R class list id instead of app specific id. This is just useful for
              consistency. -->
