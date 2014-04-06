@@ -11,8 +11,8 @@ ___________________________________________________________________
 - Implement tab listeners to only have tab data loaded when needed - “Slow Adaptor” to load items to a scrolling list on the fly
 - Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
 - Implement date range function for chart
-    - Make the standard range up to 2 years
-    - if there is more data before, display a "back arror" button on the bottom.
+    - Make the standard range up to 1 year
+    - if there is more data before, display a "back arrow" button on the bottom.
         When the button is pressed, redraw the chart with the previous set of data
     - When displaying the previous set of data, show a "forward arrow" button.
 

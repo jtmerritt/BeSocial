@@ -54,6 +54,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -127,6 +128,7 @@ public class ContactDetailFragment extends Fragment implements
     private String mContactNameString;
     private FractionView fractionView = null;
     private Spinner chartSpinner = null;
+    private chartMaker mChartMaker;
 
 
 
@@ -1179,7 +1181,9 @@ private LinearLayout buildCallLogLayout(
                     // perform function when pressed
                     @Override
                     public void onClick(View v) {
-                        //startPhoneCall();
+                        //make call to adjust the date range back by one year
+                        mChartMaker.adjustChartRange(true);
+                        gView.repaint();
                     }});
 
                 final ImageButton nextButton =
@@ -1188,8 +1192,21 @@ private LinearLayout buildCallLogLayout(
                     // perform function when pressed
                     @Override
                     public void onClick(View v) {
-                        //startSMS();
+                        //make call to adjust the date range forward by one year
+                        mChartMaker.adjustChartRange(false);
+                        gView.repaint();
                     }});
+
+
+                final CheckBox autoScale =
+                        (CheckBox) chartLayout.findViewById(R.id.autoScale);
+                autoScale.setOnClickListener(new View.OnClickListener() {
+                    // perform function when pressed
+                    @Override
+                    public void onClick(View v) {
+
+                    }});
+
 
                 final ImageButton full_screenButton =
                         (ImageButton) chartLayout.findViewById(R.id.imageButton_switch_to_full_screen);
@@ -1242,11 +1259,11 @@ private LinearLayout buildCallLogLayout(
     public void finishedLoading() {
 
         //Build the chart view
-        chartMaker chartMakerTask = new chartMaker(
+        mChartMaker = new chartMaker(
                 //contactID, contactName,
                 getActivity().getContentResolver(),
                 mEventLog, this);
-        gView = chartMakerTask.getBarChartView(getActivity());
+        gView = mChartMaker.getBarChartView(getActivity());
 
         try
         {

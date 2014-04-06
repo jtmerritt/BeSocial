@@ -42,6 +42,15 @@ public class chartMaker {
     private String contactName;
     private ContentResolver mContentResolver;
     private ContactDetailFragmentCallback mContactDetailFragmentCallback;
+    private double mChartMin; //Time ms
+    private double mChartMax;
+    private double mDataMin; //Time ms
+    private double mDataMax;
+    final long ONE_YEAR = (long)1000*(long)3600*(long)24*(long)365; //mS per year
+    private double mYAxisMax;
+    TimeSeries mSeriesPhone = null;
+    TimeSeries mSeriesSMS = null;
+    XYMultipleSeriesRenderer mRenderer;
 
 
     public chartMaker(
@@ -60,11 +69,8 @@ public class chartMaker {
 // Time Chart
     public GraphicalView getTimeChartView(Context context) {
 
-        double plotMin; //Time ms
-        double plotMax;
-
-        TimeSeries series_Phone = new TimeSeries("Phone");
-        TimeSeries series_SMS = new TimeSeries("SMS");
+        mSeriesPhone = new TimeSeries("Phone");
+        mSeriesSMS = new TimeSeries("SMS");
 
 
         // transfer the eventLog to the dataset
@@ -78,12 +84,12 @@ public class chartMaker {
 
                     // place each point in the data series
                     case 1: //phone class
-                        series_Phone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                        mSeriesPhone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
 
                         break;
                     case 2: //SMS class
-                        series_SMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                        mSeriesSMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
                                 mEventLog.get(j).getEventWordCount()); /*Length of the call in Minutes*/
                         break;
                     default:
@@ -95,10 +101,10 @@ public class chartMaker {
 
 
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        dataset.addSeries(series_Phone);
-        series_Phone.setTitle("Call Durration");
-        dataset.addSeries(series_SMS);
-        series_SMS.setTitle("SMS Word Count");
+        dataset.addSeries(mSeriesPhone);
+        mSeriesPhone.setTitle("Call Durration");
+        dataset.addSeries(mSeriesSMS);
+        mSeriesSMS.setTitle("SMS Word Count");
 
         XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
 
@@ -148,24 +154,22 @@ public class chartMaker {
         //*****************time ranges*************
 
         // Choose the most expansive date range to include all the data
-        plotMin = (series_Phone.getMinX() < series_SMS.getMinX() ?
-                series_Phone.getMinX() : series_SMS.getMinX())
+        mChartMin = (mSeriesPhone.getMinX() < mSeriesSMS.getMinX() ?
+                mSeriesPhone.getMinX() : mSeriesSMS.getMinX())
                 - dateSelection.THREE_DAY;
-        plotMax = (series_Phone.getMaxX() > series_SMS.getMaxX() ?
-                series_Phone.getMaxX() : series_SMS.getMaxX())
+        mChartMax = (mSeriesPhone.getMaxX() > mSeriesSMS.getMaxX() ?
+                mSeriesPhone.getMaxX() : mSeriesSMS.getMaxX())
                 + dateSelection.THREE_DAY;
-        mRenderer.setPanLimits(new double[] {plotMin, plotMax, 0 , 0});
-        mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
+        mRenderer.setPanLimits(new double[] {mChartMin, mChartMax, 0 , 0});
+        mRenderer.setZoomLimits(new double[] {mChartMin, mChartMax, 0 , 0});
 
         return ChartFactory.getTimeChartView(context, dataset, mRenderer, "MM-dd");
     }
 
 
-    //*****Bar Chart*****************
+//*****Bar Chart*****************
     public GraphicalView getBarChartView(Context context) {
 
-        double plotMin; //Time ms
-        double plotMax;
         double plotBuffer =0;
 
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
@@ -185,16 +189,16 @@ public class chartMaker {
         cookChartData(chart_range);
 
         // Define chart
-        TimeSeries series_Phone = new TimeSeries("Phone");
-        TimeSeries series_SMS = new TimeSeries("SMS");
+        mSeriesPhone = new TimeSeries("Phone");
+        mSeriesSMS = new TimeSeries("SMS");
 
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        dataset.addSeries(series_Phone);
-        series_Phone.setTitle("Call Durration (Min)");
-        dataset.addSeries(series_SMS);
-        series_SMS.setTitle("SMS Word Count");
+        dataset.addSeries(mSeriesPhone);
+        mSeriesPhone.setTitle("Call Durration (Min)");
+        dataset.addSeries(mSeriesSMS);
+        mSeriesSMS.setTitle("SMS Word Count");
 
-        XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
+        mRenderer = new XYMultipleSeriesRenderer(); // Holds a collection of XYSeriesRenderer and customizes the graph
 
         XYSeriesRenderer renderer_Phone = new XYSeriesRenderer(); // This will be used to customize line 1
         XYSeriesRenderer renderer_SMS = new XYSeriesRenderer(); // This will be used to customize line 2
@@ -287,13 +291,13 @@ public class chartMaker {
                     // place each point in the data series
                     case EventInfo.PHONE_CLASS: //phone class
                         eventDuration = mBarChartEventLog.get(j).getEventDuration();
-                        series_Phone.add(mBarChartEventLog.get(j).getEventDate() , /*date of call. Time of day?*/
+                        mSeriesPhone.add(mBarChartEventLog.get(j).getEventDate() , /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
                         );
                         break;
 
                     case EventInfo.SMS_CLASS: //SMS class
-                        series_SMS.add(mBarChartEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                        mSeriesSMS.add(mBarChartEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
                                 mBarChartEventLog.get(j).getEventWordCount()); /*Length of message*/
                         break;
 
@@ -353,34 +357,70 @@ public class chartMaker {
         }
 
         // Choose the most expansive date range to include all the data
-        plotMin = (series_Phone.getMinX() < series_SMS.getMinX() ?
-                series_Phone.getMinX() : series_SMS.getMinX())
+        mDataMin = (mSeriesPhone.getMinX() < mSeriesSMS.getMinX() ?
+                mSeriesPhone.getMinX() : mSeriesSMS.getMinX())
                 - plotBuffer;
-        plotMax = (series_Phone.getMaxX() > series_SMS.getMaxX() ?
-                series_Phone.getMaxX() : series_SMS.getMaxX())
+        mDataMax = (mSeriesPhone.getMaxX() > mSeriesSMS.getMaxX() ?
+                mSeriesPhone.getMaxX() : mSeriesSMS.getMaxX())
                 + plotBuffer;
-        mRenderer.setPanLimits(new double[] {plotMin, plotMax, 0 , 0});
-        mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
+        mChartMax = mDataMax;
+
+        //check if there is data beyond 1 year ago.
+        // If yes, then limit the chart to 1 year.
+        mChartMin = mDataMin > (mDataMax-(double)ONE_YEAR) ?
+                mDataMin : mDataMax-(double)ONE_YEAR;
+
+        mRenderer.setPanLimits(new double[] {mChartMin, mChartMax, 0 , 0});
+        mRenderer.setZoomLimits(new double[] {mChartMin, mChartMax, 0 , 0});
         mRenderer.setPanEnabled(false, false);
         mRenderer.setZoomEnabled(false, false);
-        mRenderer.setXAxisMax(plotMax);
-        mRenderer.setXAxisMin(plotMin);
+        mRenderer.setXAxisMax(mChartMax);
+        mRenderer.setXAxisMin(mChartMin);
+
         mRenderer.setYAxisMax(
                 //Choose the larger of the 2 bounds
-                1.1*(series_Phone.getMaxY() > series_SMS.getMaxY() ?
-                        series_Phone.getMaxY() : series_SMS.getMaxY())
+                mYAxisMax = 1.1*(mSeriesPhone.getMaxY() > mSeriesSMS.getMaxY() ?
+                        mSeriesPhone.getMaxY() : mSeriesSMS.getMaxY())
         );
+
         mRenderer.setYAxisMin(0);
-
-
-
-
-
+        
         return ChartFactory.getBarChartView(context, dataset, mRenderer, BarChart.Type.DEFAULT);
     }
 
+    public void adjustChartRange(boolean back){
 
-    void cookChartData(int bucket_size)
+        if(back) {
+            //check if there is more data beyond the earliest time of the chart
+            if (mChartMin > mDataMin) {
+                mChartMin = mChartMin - (double) ONE_YEAR;
+                mChartMax = mChartMax - (double) ONE_YEAR;
+            }
+        }else {
+            if (mChartMax < mDataMax) {
+                mChartMin = mChartMin + (double) ONE_YEAR;
+                mChartMax = mChartMax + (double) ONE_YEAR;
+            }
+
+        }
+        mRenderer.setXAxisMax(mChartMax);
+        mRenderer.setXAxisMin(mChartMin);
+    }
+
+    //TODO Make this autoscale thing work
+    public void setAutoScaleFullY(boolean full){
+        if(full) {
+            mRenderer.setYAxisMax(mYAxisMax);
+        }else{
+            mRenderer.setYAxisMax(
+                    //Choose the larger of the 2 bounds
+                    1.1*(mSeriesPhone.getMaxY() > mSeriesSMS.getMaxY() ?
+                            mSeriesPhone.getMaxY() : mSeriesSMS.getMaxY())
+            );
+        }
+    }
+    
+    private void cookChartData(int bucket_size)
     {
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
         Calendar cal = Calendar.getInstance();
@@ -447,7 +487,7 @@ public class chartMaker {
     }
 
 
-    void bucketEventInfoByDate(EventInfo info, List<EventInfo> Log)
+    private void bucketEventInfoByDate(EventInfo info, List<EventInfo> Log)
     {
         int j;
         boolean newElement = true;
@@ -506,8 +546,8 @@ public class chartMaker {
                case dateSelection.S_MAX_TIME:
                case dateSelection.S_DEFAULT:
                default:
-                   mChartLayout.get mRenderer.setPanLimits(new double[]{plotMin, plotMax, 0, 0});
-                   mRenderer.setZoomLimits(new double[] {plotMin, plotMax, 0 , 0});
+                   mChartLayout.get mRenderer.setPanLimits(new double[]{mChartMin, mChartMax, 0, 0});
+                   mRenderer.setZoomLimits(new double[] {mChartMin, mChartMax, 0 , 0});
                    break;
            }
 

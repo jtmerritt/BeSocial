@@ -81,7 +81,7 @@
         >Default Contact Group</string>
     <string-array name="string_array_list_of_contact_groups">
         <item>Starred in Android</item>
-        <item>BeSocial</item>
+        <item>Socia</item>
         <item>6 Weeks</item>
     </string-array>
     <string name="contact_group_preference_default"

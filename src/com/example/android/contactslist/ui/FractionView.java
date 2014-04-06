@@ -68,6 +68,7 @@ public class FractionView extends View {
 
   private void init() {
 
+      //TODO: fix background color to match rest of UI.  For some reason the color code does not produce the right color.
     mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     mBackgroundPaint.setColor(Color.parseColor("#F5F5F5"));
     mBackgroundPaint.setStyle(Paint.Style.FILL);
@@ -114,10 +115,17 @@ public class FractionView extends View {
     }
 
     public void setFraction(int days_remaining, int total_days) {
-        if (days_remaining < 0) return;
-        if (total_days <= 0) return;
-       // Prevent invalid state
-        if (days_remaining > total_days) return;
+        // Prevent invalid state
+        //TODO: Create a special display case for the due date being in the past.  Color things black?
+        if ((days_remaining < 0)){
+            days_remaining = 0;
+        }
+        if(total_days <= 0){
+            total_days = 0;
+        }
+        if((days_remaining > total_days)){
+            total_days += days_remaining;
+        }
 
         mDaysRemaining = days_remaining;
         mTotalDays = total_days;
@@ -165,13 +173,13 @@ public class FractionView extends View {
        canvas.drawCircle(cx, cy, (radius-7), mBackgroundPaint);  //Define thickness of the ring
 
        // set the display text
-       if(mLargeCanvas){
+       //if(mLargeCanvas){
           canvas.drawText(mDisplayString_1, cx, cy+14, mTextPaint);
-      }else{
+      /*}else{
            Path circle = new Path();
            circle.addCircle(cx, cy, radius, Path.Direction.CW);
            canvas.drawTextOnPath(mDisplayString_1, circle, height-30, 30, mTextPaint);
-       }
+       }*/
 
 
 
@@ -190,14 +198,14 @@ public class FractionView extends View {
        */
 
         mDisplayString_1 = String.valueOf(mDaysRemaining);
+        mDisplayString_1 += " day";
 
         if(mLargeCanvas){
             textSize = 40;
             mTextPaint.setTextSize(textSize);
-            mDisplayString_1 += "  day";
-        }else{
+        }/*else{
             mDisplayString_1 += "  d a y ";
-        }
+        }*/
 
         if(mDaysRemaining !=1){
             mDisplayString_1 += "s";
