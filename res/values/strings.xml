@@ -98,4 +98,7 @@
 
      <string name="contact_action_fragment_title"
             >Reach Out</string>
+
+     <string name="footer_text"
+             >Update Database</string>
 </resources>

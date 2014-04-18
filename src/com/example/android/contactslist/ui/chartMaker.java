@@ -4,10 +4,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.View;
 
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
+import com.example.android.contactslist.util.EventInfo;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
@@ -84,13 +84,13 @@ public class chartMaker {
 
                     // place each point in the data series
                     case 1: //phone class
-                        mSeriesPhone.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
+                        mSeriesPhone.add(mEventLog.get(j).getDate(), /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
 
                         break;
                     case 2: //SMS class
-                        mSeriesSMS.add(mEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
-                                mEventLog.get(j).getEventWordCount()); /*Length of the call in Minutes*/
+                        mSeriesSMS.add(mEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                                mEventLog.get(j).getWordCount()); /*Length of the call in Minutes*/
                         break;
                     default:
                         break;
@@ -261,7 +261,7 @@ public class chartMaker {
             {
 
                 //Collect the bucket date depending on the preference
-                cal.setTimeInMillis(mBarChartEventLog.get(j).getEventDate());
+                cal.setTimeInMillis(mBarChartEventLog.get(j).getDate());
                 switch(chart_range){
                     case 1:
                         cal.set(Calendar.DAY_OF_WEEK, 1);
@@ -282,7 +282,7 @@ public class chartMaker {
 
                         break;
                     default:
-                        bucket_time = mBarChartEventLog.get(j).getEventDate();
+                        bucket_time = mBarChartEventLog.get(j).getDate();
                 }
 
                 // add into the correct data set
@@ -290,15 +290,15 @@ public class chartMaker {
 
                     // place each point in the data series
                     case EventInfo.PHONE_CLASS: //phone class
-                        eventDuration = mBarChartEventLog.get(j).getEventDuration();
-                        mSeriesPhone.add(mBarChartEventLog.get(j).getEventDate() , /*date of call. Time of day?*/
+                        eventDuration = mBarChartEventLog.get(j).getDuration();
+                        mSeriesPhone.add(mBarChartEventLog.get(j).getDate() , /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
                         );
                         break;
 
                     case EventInfo.SMS_CLASS: //SMS class
-                        mSeriesSMS.add(mBarChartEventLog.get(j).getEventDate(), /*date of call. Time of day?*/
-                                mBarChartEventLog.get(j).getEventWordCount()); /*Length of message*/
+                        mSeriesSMS.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                                mBarChartEventLog.get(j).getWordCount()); /*Length of message*/
                         break;
 
                     case EventInfo.EMAIL_CLASS:
@@ -434,7 +434,7 @@ public class chartMaker {
             {
                 EventInfo ChartEventInfo = new EventInfo();
                 //set eventDate back to the start of the bucket depending on the preference
-                cal.setTimeInMillis(mEventLog.get(j).getEventDate());
+                cal.setTimeInMillis(mEventLog.get(j).getDate());
                 switch(bucket_size){
                     case 1:
                         cal.set(Calendar.DAY_OF_WEEK, 1);
@@ -468,15 +468,15 @@ public class chartMaker {
                 switch(mEventLog.get(j).getEventClass()){
                     // place each point in the data series
                     case EventInfo.PHONE_CLASS: //phone class
-                        ChartEventInfo.eventDuration = mEventLog.get(j).getEventDuration(); /*Length of the call in seconds*/
+                        ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
 
                         break;
 
                     case EventInfo.SMS_CLASS: //SMS class
                     case EventInfo.EMAIL_CLASS:
                     default:
-                        ChartEventInfo.eventWordCount = mEventLog.get(j).getEventWordCount(); /*Length of the call in Minutes*/
-                        ChartEventInfo.eventCharCount = mEventLog.get(j).getEventCharCount();
+                        ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
+                        ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
                 }
 
 
@@ -504,9 +504,9 @@ public class chartMaker {
                         )
 
                 {
-                    Log.get(j).eventDuration += info.getEventDuration();
-                    Log.get(j).eventCharCount += info.getEventCharCount();
-                    Log.get(j).eventWordCount += info.getEventWordCount();
+                    Log.get(j).eventDuration += info.getDuration();
+                    Log.get(j).eventCharCount += info.getCharCount();
+                    Log.get(j).eventWordCount += info.getWordCount();
 
                     newElement = false;
 

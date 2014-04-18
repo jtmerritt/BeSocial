@@ -1,5 +1,8 @@
 TODO:
 ___________________________________________________________________
+Maybe have a ContentProvider for the contact database but not the event database.
+Swipe geusture for changing date range on data plot. Also, pinch for incremental zoom.
+
 ***Small Tasks***
 
 - Titles on pages for "Call log", "SMS log", "Email Log"

@@ -174,7 +174,12 @@ public class FractionView extends View {
 
        // set the display text
        //if(mLargeCanvas){
-          canvas.drawText(mDisplayString_1, cx, cy+14, mTextPaint);
+       if(mDisplayString_1 != null){  //Check if there is actually text here
+           // TODO fix this kludge
+           canvas.drawText(mDisplayString_1, cx, cy+14, mTextPaint);
+       }else{
+           canvas.drawText("Error", cx, cy+14, mTextPaint);
+       }
       /*}else{
            Path circle = new Path();
            circle.addCircle(cx, cy, radius, Path.Direction.CW);

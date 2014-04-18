@@ -32,6 +32,8 @@ import android.provider.ContactsContract;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -189,7 +191,31 @@ public class ContactsListActivity extends FragmentActivity implements
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, list);
+
+
+        //Add a footer to the droor
+        mDrawerList.setFooterDividersEnabled(true);
+
+        //set up the footer
+        TextView footerView =
+                (TextView) LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.droor_footer_view, mDrawerList, false);
+
+        mDrawerList.addFooterView(footerView);
+
+
+        footerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Log.d("OnClickListener: ", "Entered");
+                Toast.makeText(getApplicationContext(), "Clicked!!!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
         mDrawerList.setAdapter(dataAdapter);
+
     }
     /**
      * Overrides newView() to inflate the list item views.
@@ -329,6 +355,22 @@ public class ContactsListActivity extends FragmentActivity implements
         setTitle(groups.get(pos).toString());
         mDrawerLayout.closeDrawer(mDrawerList);
     }
+
+
+    private void selectDatabaseUpdate() {
+        // update the main content by replacing fragments
+        // May be helpful for when dealing with new fragments: http://stackoverflow.com/questions/21059179/android-navigation-drawer-fragments
+        ContactsListFragment mContactsListFragment = (ContactsListFragment)
+                getSupportFragmentManager().findFragmentById(R.id.contact_list);
+
+        //mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+
+        // update selected item and title, then close the drawer
+        //mDrawerList.setItemChecked(pos, true);
+        setTitle("Update Database");
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
 
     private void setDefaultContactGroup() {
 

@@ -1,13 +1,15 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.util;
 
 
 public class EventInfo {
    //Primarily for phonecalls
     public String eventContactName;
+    public String eventContactKey;
     public long eventDuration;
+    public long rowId;
 
     // Primarily for SMS
-    public String eventID;
+    public String eventID; //TODO Why string?
     public long eventDate;  /*date of SMS. Time of day?*/
     public String eventContactAddress;
     public long eventContactID;  /*name of SMSer, if available. Person who sends it*/
@@ -37,7 +39,7 @@ public class EventInfo {
             CallLog.Calls.INCOMING_TYPE = 1
             CallLog.Calls.MISSED_TYPE = 3
 
-           3 SMS typs
+           3 SMS type
              OUTGOING_TYPE = 2
              INCOMING_TYPE = 1
              Draft = 3
@@ -48,23 +50,23 @@ public class EventInfo {
 
     }
 
-    //        @Override
+    public long getRowId() { return rowId; }
     public String getEventID() {
         return eventID;
     }
-    public String getEventAddress() {
+    public String getAddress() {
         return eventContactAddress;
     }
-    public long getEventContactID() {
+    public long getContactID() {
         return eventContactID;
     }
-    public long getEventDate() {
+    public long getDate() {
         return eventDate;
     }
-    public long getEventWordCount() {
+    public long getWordCount() {
         return eventWordCount;
     }
-    public long getEventCharCount() {
+    public long getCharCount() {
         return eventCharCount;
     }
     public int getEventClass() {
@@ -73,6 +75,17 @@ public class EventInfo {
     public int getEventType() {
         return eventType;
     }
+    public long getDuration() {
+        return eventDuration;
+    }
+    public String getContactName() {
+        return eventContactName;
+    }
+    public String getContactKey() {
+        return eventContactKey;
+    }
+
+
 
     // For phone calls
     public String getCallerName() {
@@ -85,9 +98,6 @@ public class EventInfo {
         return eventType;
     }
     public long getCallDuration() {
-        return eventDuration;
-    }
-    public long getEventDuration() {
         return eventDuration;
     }
     public String getCallTypeSting() {
@@ -117,6 +127,42 @@ public class EventInfo {
             default:
                 return "";
         }
+    }
+
+
+    public void setRowId(long id) { rowId = id; }
+    public void setEventID(String id) {
+         eventID = id;
+    }
+    public void setAddress(String addy) {
+        eventContactAddress = addy;
+    }
+    public void setContactID(long contactID) {
+        eventContactID = contactID;
+    }
+    public void setDate(long date) {
+        eventDate = date;
+    }
+    public void setWordCount(long count) {
+        eventWordCount = count;
+    }
+    public void setCharCount(long count) {
+        eventCharCount = count;
+    }
+    public void setEventClass(int event_class) {
+        eventClass = event_class;
+    }
+    public void setEventType(int type) {
+        eventType = type;
+    }
+    public void setDuration(long duration) {
+        eventDuration = duration;
+    }
+    public void setContactName(String name) {
+       eventContactName = name;
+    }
+    public void setContactKey(String key) {
+        eventContactKey = key;
     }
 
 }

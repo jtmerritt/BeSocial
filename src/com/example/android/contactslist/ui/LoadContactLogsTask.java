@@ -1,6 +1,7 @@
 package com.example.android.contactslist.ui;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -9,6 +10,9 @@ import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
+import com.example.android.contactslist.util.EventInfo;
+import com.example.android.contactslist.util.SocialEventsContract;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -21,15 +25,20 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     private ContentResolver mContentResolver;
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private ContactDetailFragmentCallback mContactDetailFragmentCallback;
+    private Context mContext; // only added so this class can call on the event database
 
 
-    public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver, List<EventInfo> eventLog, ContactDetailFragmentCallback contactDetailFragmentCallback) {
+    public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver,
+                               List<EventInfo> eventLog,
+                               ContactDetailFragmentCallback contactDetailFragmentCallback,
+                               Context context  // only added so this class can call on the event database
+    ) {
         contactID = cID;
         contactName = cName;
         mContentResolver = contentResolver;
         mEventLog = eventLog;
         mContactDetailFragmentCallback = contactDetailFragmentCallback;
-
+        mContext = context;
     }
 
     //Stripping the phone number strings of non-numerical digits takes a very long time and a lot of memory
@@ -178,6 +187,12 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     private void loadContactCallLogs() {
 
         int j=0;
+        long dbRowID = (long)0;
+
+        //TEMP Load stuff into database
+        SocialEventsContract db = new SocialEventsContract(mContext);
+
+
 
 	/*Query Call Log Content Provider*/
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
@@ -222,8 +237,14 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                     eventInfo.eventType = eventType;
                     eventInfo.eventClass = eventInfo.PHONE_CLASS;
 
+
     		        /*Add it into the ArrayList*/
                     mEventLog.add(eventInfo);
+
+                    //incert event into database
+                    dbRowID = db.addIfNewEvent(eventInfo);
+                    Log.d("Insert: ", "Row ID: " + dbRowID);
+
                 }
                 j++;
             }
@@ -231,6 +252,20 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 	/*Close the cursor*/
             callLogCursor.close();
         }
+
+        //Read from database
+        List<EventInfo> events = db.getAllEvents();
+        for (EventInfo event : events) {
+            String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+                    + " ,Type: " + event.getEventType();
+            // Writing Contacts to log
+            Log.d("db Read: ", log);
+
+
+        }
+
+        //db.deleteAllEvents();
+
     }
 
 

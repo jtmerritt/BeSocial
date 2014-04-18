@@ -22,7 +22,6 @@ import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -68,6 +67,7 @@ import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
+import com.example.android.contactslist.util.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 
@@ -380,7 +380,7 @@ public class ContactDetailFragment extends Fragment implements
         int days_left = dateCalc.getDaysUntilContactDueDate();
         int days_in_span =dateCalc.getDaysFromLastContactUntilDueDate(lastTimeContacted);
 
-        Log.d(TAG, "Day Left - " + days_left);
+        //Log.d(TAG, "Days Left - " + days_left);
 
         //final int six_weeks = 42;//days
 
@@ -618,8 +618,8 @@ public class ContactDetailFragment extends Fragment implements
                                 final LinearLayout layout = buildSMSLogLayout(
                                     mContactNameString,
                                         //TODO: This date may not be in the correct format.
-                                    mEventLog.get(j).getEventDate(), /*date & time of SMS*/
-                                    mEventLog.get(j).getEventWordCount(), /*Length of the SMS in Minutes*/
+                                    mEventLog.get(j).getDate(), /*date & time of SMS*/
+                                    mEventLog.get(j).getWordCount(), /*Length of the SMS in Minutes*/
                                     mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
 
 
@@ -1282,8 +1282,9 @@ private LinearLayout buildCallLogLayout(
         mEventLog.clear();
         // KS TODO: look into possibility of sending parameters in execute instead
         AsyncTask<Void, Void, Integer> contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, getActivity().getContentResolver(), mEventLog, this);
+                (contactID, contactName, getActivity().getContentResolver(), mEventLog, this, getActivity());
         contactLogsTask.execute();
+
     }
             /*
             public void addListenerOnSpinnerItemSelection() {

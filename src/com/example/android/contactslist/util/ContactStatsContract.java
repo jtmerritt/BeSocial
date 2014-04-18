@@ -82,6 +82,14 @@ public class ContactStatsContract {
 | Date Contact Due      |  Long                         | 555555555555555555         |
 | Max Contact Interval  |  Int                          |  60                        |
 +-----------------------+------------+------------------------------+---+--------+--+
+
+Others to include:
+Decay rate
+average time between contact
+longest time without contact
+Average call length
+Reciprocity by event count
+
 */
         // If you change the database schema, you must increment the database version.
         public static final int DATABASE_VERSION = 1;
