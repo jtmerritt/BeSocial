@@ -61,12 +61,17 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         List<String> phoneNumberList = new ArrayList<String>();
         phoneNumberList.clear();
 
+        SocialEventsContract db = new SocialEventsContract(mContext);
+        long dbRowID = (long)0;
+
 
         // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
         Cursor phoneCursor = mContentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                new String[] { contactID.toString() }, null);
+                new String[] { contactID.toString() },
+                null);
 
         if(phoneCursor.moveToFirst()){
 
@@ -157,6 +162,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
                     //Add it into the ArrayList
                        mEventLog.add(EventInfo);
+                        dbRowID = db.addIfNewEvent(EventInfo);
 
 
                     }
@@ -193,19 +199,20 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         SocialEventsContract db = new SocialEventsContract(mContext);
 
 
+        final String parameters[] = {contactName};
 
 	/*Query Call Log Content Provider*/
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
         // http://developer.android.com/reference/android/provider/CallLog.Calls.html
         Cursor callLogCursor = mContentResolver.query(
-                ContactCallLogQuery.ContentURI,
+                ContactCallLogQuery.ContentURI, //android.provider.CallLog.Calls.CONTENT_URI;
                 null, //ContactCallLogQuery.PROJECTION,
-                null,
-                null,
+                android.provider.CallLog.Calls.CACHED_NAME + "= ? ",//null,
+                parameters,//null,
                 "date ASC" /*android.provider.CallLog.Calls.DEFAULT_SORT_ORDER*/);
 
 	/*Check if cursor is not null*/
-        if (callLogCursor != null) {
+        if (callLogCursor.moveToFirst()) { //changed from !=null
 
 	/*Loop through the cursor*/
             while (callLogCursor.moveToNext()) {
@@ -241,10 +248,15 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     		        /*Add it into the ArrayList*/
                     mEventLog.add(eventInfo);
 
-                    //incert event into database
+                    //insert event into database
                     dbRowID = db.addIfNewEvent(eventInfo);
-                    Log.d("Insert: ", "Row ID: " + dbRowID);
-
+                    //Log.d("Insert: ", "Row ID: " + dbRowID);
+                    /*
+                    String log = "Date: "+eventInfo.getDate()+" ,Name: " + eventInfo.getContactName()
+                            + " ,Type: " + eventInfo.getEventType();
+                    // Writing Contacts to log
+                    Log.d("db Read: ", log);
+                    */
                 }
                 j++;
             }
@@ -253,6 +265,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
             callLogCursor.close();
         }
 
+        /*
         //Read from database
         List<EventInfo> events = db.getAllEvents();
         for (EventInfo event : events) {
@@ -263,7 +276,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
 
         }
-
+*/
         //db.deleteAllEvents();
 
     }
@@ -283,7 +296,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
     protected void onPostExecute(Integer result) {
         // do something
-        int nine = 9;
         mContactDetailFragmentCallback.finishedLoading();
     }
 
@@ -295,36 +307,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         //create URI for the SMS query
         // final String contentParsePhrase = "content://sms/";  //for all messages
         final static Uri ContentURI= android.provider.CallLog.Calls.CONTENT_URI;
-
-        // The query projection (columns to fetch from the provider)
-        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
-        final static String[] PROJECTION = {
-                "_id",      //message ID
-                "date",     //date of message long
-                "duration",
-                "cached_name",
-                "address", // phone number long
-                "person", //ID of person who sent message
-                "body", //body of message
-                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbound, Outbound, Missed/draft
-        };
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        // Except they never quite worked in this context.
-        final static String SELECTION = null;
-        final String SELECTION_ARGS[] = null;
-        final String SORT_ORDER = "date ASC";   //example: "DATE desc"
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DATE = 1;
-        final static int ADDRESS = 2;
-        final static int CONTACT_NAME = 3;
-        final static int BODY = 4;
-        final static int STATUS = 5;
-        final static int TYPE = 6;
     }
 
     public interface ContactSMSLogQuery {

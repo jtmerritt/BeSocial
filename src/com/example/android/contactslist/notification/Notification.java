@@ -43,7 +43,7 @@ public class Notification {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_action_statistics)
-                        .setContentTitle(context.getResources().getString(R.string.app_name))
+                        .setContentTitle(context.getString( R.string.app_name))
                         .setVibrate(pattern)
                         .setLights(Color.CYAN, 500, 500)
                         .setContentText(mContactName + " misses you.");

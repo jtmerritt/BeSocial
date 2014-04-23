@@ -48,9 +48,20 @@
 
     <string name="preferences_fragment">Preferences</string>
     <string name="notification_checkbox_preference_title"
-            >Enable Notifications</string>
+            >Enabel Broadcast receiver</string>
     <string name="notification_checkbox_preference_summary"
         >Annoying vibrtioning allerts every 5 minutes</string>
+
+    <string name="update_db_preference_title"
+            >Update Database</string>
+    <string name="update_db_preference_summary"
+        >Load available data into database</string>
+
+    <string name="sync_with_local_sources_preference_title"
+            >Sync with phone and SMS logs</string>
+    <string name="sync_with_local_sources_preference_summary"
+        >Gather data from local phone and SMS logs sources?</string>
+
     <string name="sync_with_web_sources_preference_title"
         >Sync with Web</string>
     <string name="sync_with_web_sources_preference_summary"

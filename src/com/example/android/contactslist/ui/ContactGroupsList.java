@@ -16,6 +16,7 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
 
     private ArrayList<GroupInfo> mGroups;
     private ContentResolver mContentResolver;
+    private GroupInfo largestGroup;
 
     public void ContactGroupsLists(){
     }
@@ -43,7 +44,7 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
             return Integer.parseInt(id);
         }
     }
-    public void loadGroups() {
+    public ArrayList<GroupInfo> loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
                 ContactsContract.Groups.TITLE,
@@ -67,8 +68,11 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
             g.id = c.getString(IDX_ID);
             g.title = c.getString(IDX_TITLE);
             //only record groups of interest
+            //mContactGroupData = getResources().getStringArray(R.array.string_array_list_of_contact_groups);
+
             if(g.title.equals("Starred in Android") ||
                     g.title.equals("BeSocial") ||
+                    g.title.equals("Socia") ||
                     g.title.contains("Weeks") ||
                     g.title.contains("Week") ||
                     g.title.contains("Days") ||
@@ -86,9 +90,25 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
                     } else {
                         g2.id+=","+g.id;
                     }
+
+                    if(largestGroup == null){
+                        largestGroup = g;
+                    }
+                    if(g.count > largestGroup.count){
+                        largestGroup = g;
+                    }
                 }
             }
         }
         c.close();
+        return mGroups;
+    }
+
+    public GroupInfo getLargestGroup(){
+        if(largestGroup.title != null) {
+            return largestGroup;
+        }else{
+            return null;
+        }
     }
 }

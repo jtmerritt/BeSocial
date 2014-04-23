@@ -62,10 +62,10 @@ public class SetAlarm {
     public void set_Alarm(Context c)
     {
         Context appContext = c.getApplicationContext();
-
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
-        Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
-        if(access_web){
+        Boolean update_db = sharedPref.getBoolean("update_db_checkbox_preference_key", false);
+
+        if(update_db){
 
 
             // final Button button = buttons[2]; // replace with a button from your own UI
@@ -73,13 +73,21 @@ public class SetAlarm {
             @Override public void onReceive( Context context, Intent _ )
             {
                 //Log.d("Alarm Receiver", "onReceive called");
-                Toast.makeText(context, "Accessing Web Data", Toast.LENGTH_SHORT).show();
-                //just send notification
-
-
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
+                Boolean enable_local_sources_read = sharedPref.getBoolean("sync_with_local_sources_checkbox_preference_key", false);
                 Boolean enable_notification = sharedPref.getBoolean("notification_checkbox_preference_key", false);
-                if(enable_notification){
+
+                if(access_web) {  //things to do when accessing data on-line
+                    Toast.makeText(context, "Accessing Web Data", Toast.LENGTH_SHORT).show();
+                }
+                if(enable_local_sources_read){ //Things to do when accessing local data
+                    Toast.makeText(context, "Accessing Local Data", Toast.LENGTH_SHORT).show();
+                    Updates local_updates = new Updates();
+                    local_updates.updateDB(context);
+
+                }
+                if(enable_notification){  //Things to do when notifying user of updates
                     Notification.simpleNotification(context);
                 }
             }
@@ -98,10 +106,12 @@ public class SetAlarm {
                 pintent);
                 */
 
-            manager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 15000, pintent);
+            //manager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 15000, pintent);
+            manager.set(AlarmManager.ELAPSED_REALTIME, 10000,pintent);
 
 
-        //TODO: setup a listener for the preferences menu to turn off the alarm.
+
+            //TODO: setup a listener for the preferences menu to turn off the alarm.
         //manager.cancel(pintent);
     }
     }

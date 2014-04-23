@@ -85,8 +85,9 @@ public class ContactsListActivity extends FragmentActivity implements
     private CharSequence mTitle;
 
     private Spinner groupSpinner;
-    List<GroupInfo> groups = new ArrayList<GroupInfo>();
-    //ContactGroupsList contactGroupsList = new ContactGroupsList();
+    ContactGroupsList contactGroupsList = new ContactGroupsList();
+    List<ContactGroupsList.GroupInfo> mGroups;// = new ArrayList<GroupInfo>();
+
 
 
     @Override
@@ -125,16 +126,12 @@ public class ContactsListActivity extends FragmentActivity implements
             String title = getString(R.string.contacts_list_search_results_title, searchQuery);
             setTitle(title);
         }
-        // collect list of gmail contact groups
-        /*
+
+        // collect list of applicable gmail contact groups
         contactGroupsList.setGroupsContentResolver(getContentResolver());
-        contactGroupsList.loadGroups();
-        groups = contactGroupsList.getGroupList();
-        */
+        mGroups = contactGroupsList.loadGroups();
 
-        loadGroups();
 
-        //mContactGroupData = getResources().getStringArray(R.array.string_array_list_of_contact_groups);
         // set Navigation Drawer to show gmail contact groups
         addItemsToGroupsDrawerList();
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -185,7 +182,7 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_9,
                 GravityCompat.START);
 
-        for (GroupInfo groupInfo:groups) {
+        for (ContactGroupsList.GroupInfo groupInfo:mGroups) {
             list.add(groupInfo.toString());
         }
 
@@ -267,7 +264,7 @@ public class ContactsListActivity extends FragmentActivity implements
             ContactsListFragment mContactsListFragment = (ContactsListFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-            mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+            mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
         }
 
         @Override
@@ -348,11 +345,11 @@ public class ContactsListActivity extends FragmentActivity implements
         ContactsListFragment mContactsListFragment = (ContactsListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-        mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+        mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(pos, true);
-        setTitle(groups.get(pos).toString());
+        setTitle(mGroups.get(pos).toString());
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
@@ -386,11 +383,11 @@ public class ContactsListActivity extends FragmentActivity implements
         ContactsListFragment mContactsListFragment = (ContactsListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-        mContactsListFragment.setGroupQuery(groups.get(pos).getId()); //passing the integer ID
+        mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
 
         // update selected item and title
         mDrawerList.setItemChecked(pos, true);
-        setTitle(groups.get(pos).toString());
+        setTitle(mGroups.get(pos).toString());
     }
 
 
@@ -418,66 +415,4 @@ public class ContactsListActivity extends FragmentActivity implements
         groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
     }
 */
-    public class GroupInfo {
-        String id;
-        String title;
-        int count;
-
-        @Override
-        public String toString() {
-            return title + "("+count+")";
-        }
-
-        public int getId() {
-            return Integer.parseInt(id);
-        }
-    }
-    public void loadGroups() {
-        final String[] GROUP_PROJECTION = new String[] {
-                ContactsContract.Groups._ID,
-                ContactsContract.Groups.TITLE,
-                ContactsContract.Groups.SUMMARY_COUNT
-        };
-
-        Cursor c = getContentResolver().query(
-                ContactsContract.Groups.CONTENT_SUMMARY_URI,
-                GROUP_PROJECTION,
-                null,
-                null,
-                null);
-        final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
-        final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
-
-        //TODO: Is this hashmap necessary?
-        Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
-
-        while (c.moveToNext()) {
-            GroupInfo g = new GroupInfo();
-            g.id = c.getString(IDX_ID);
-            g.title = c.getString(IDX_TITLE);
-            //only record groups of interest
-            if(g.title.equals("Starred in Android") ||
-                    g.title.equals("BeSocial") ||
-                    g.title.contains("Weeks") ||
-                    g.title.contains("Week") ||
-                    g.title.contains("Days") ||
-                    g.title.contains("Day") ||
-                    g.title.contains("Collaborators")
-                    ){
-                g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
-                //TODO references to m are probably superfluous.
-                if (g.count>0) {
-                    // group with duplicate name?
-                    GroupInfo g2 = m.get(g.title);
-                    if (g2==null) {
-                        m.put(g.title, g);
-                        groups.add(g);
-                    } else {
-                        g2.id+=","+g.id;
-                    }
-                }
-            }
-        }
-        c.close();
-    }
 }
