@@ -33,14 +33,20 @@ import java.util.List;
 
 /**
  * Created by Tyson Macdonald on 1/24/14.
+ *
+ * Database updates from the contentProvider, phone_log backup, SMS log backups, google+, etc
+ *
  */
+
+
+
 
 // Based on example at http://developer.android.com/guide/topics/ui/notifiers/notifications.html
     //the page has more info on updating and removing notifications in code
 public class Updates implements ContactDetailFragmentCallback {
-    private static List<ContactInfo> mContactList = new ArrayList<ContactInfo>();
-    private static Uri mContactUri;
-    private static String mContactName = "Janet";
+    //private static List<ContactInfo> mContactList = new ArrayList<ContactInfo>();
+    //private static Uri mContactUri;
+    //private static String mContactName = "Janet";
     private Context mContext;
     private String contactName;
 
@@ -105,7 +111,7 @@ public class Updates implements ContactDetailFragmentCallback {
         }else{
             Toast.makeText(mContext, "No Contacts Available", Toast.LENGTH_SHORT).show();
         }
-        Log.d("Iterate Contacts: ", "Number iterations: " + i);
+        //Log.d("Iterate Contacts: ", "Number iterations: " + i);
         // And now we should have a list of contacts in the group
     }
 
@@ -121,32 +127,9 @@ public class Updates implements ContactDetailFragmentCallback {
 
 
     public void finishedLoading() {
-        Log.d("db Loaded: ", "All Done!");
+        Log.d("db Loaded: ", "All Done with contact!");
 
         // Toast.makeText(mContext, "Finished Loading " + contactName, Toast.LENGTH_SHORT).show();
-    }
-
-    private void phone_update(Context context){
-        int mId = 1;
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_action_statistics)
-                        .setContentTitle(context.getString( R.string.app_name))
-                        .setContentText("Updating Phone Logs");
-
-        NotificationCompat.InboxStyle inboxStyle =
-                new NotificationCompat.InboxStyle();
-
-// Moves the big view style object into the notification object.
-        mBuilder.setStyle(inboxStyle);
-
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
-        mNotificationManager.notify(mId, mBuilder.build());
-
     }
 
 
@@ -196,6 +179,30 @@ public class Updates implements ContactDetailFragmentCallback {
         final static int ID = 1;
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
+    }
+
+
+    private void phone_update(Context context){
+        int mId = 1;
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_action_statistics)
+                        .setContentTitle(context.getString( R.string.app_name))
+                        .setContentText("Updating Phone Logs");
+
+        NotificationCompat.InboxStyle inboxStyle =
+                new NotificationCompat.InboxStyle();
+
+// Moves the big view style object into the notification object.
+        mBuilder.setStyle(inboxStyle);
+
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+// mId allows you to update the notification later on.
+        mNotificationManager.notify(mId, mBuilder.build());
+
     }
 
 }

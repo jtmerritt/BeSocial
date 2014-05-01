@@ -22,10 +22,12 @@ import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -63,17 +65,20 @@ import android.widget.Toast;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 
+import com.commonsware.cwac.loaderex.acl.SQLCipherCursorLoader;
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
 import com.example.android.contactslist.util.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
+import com.example.android.contactslist.util.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.achartengine.GraphicalView;
+import com.commonsware.cwac.loaderex.SQLiteCursorLoader;
 
 
 /**
@@ -129,6 +134,9 @@ public class ContactDetailFragment extends Fragment implements
     private FractionView fractionView = null;
     private Spinner chartSpinner = null;
     private chartMaker mChartMaker;
+    private SocialEventsContract.EventLogDbHandler mDbHelper = null;
+    private Context mContext;
+    private SQLiteCursorLoader mSQLoader = null;
 
 
 
@@ -267,6 +275,10 @@ public class ContactDetailFragment extends Fragment implements
         // Tell the image loader to set the image directly when it's finished loading
         // rather than fading in
         mImageLoader.setImageFadeIn(false);
+
+        mContext = getActivity().getApplicationContext();
+
+        mDbHelper = new SocialEventsContract.EventLogDbHandler(mContext);
     }
 
     @Override
@@ -355,11 +367,11 @@ public class ContactDetailFragment extends Fragment implements
         mPChartView.addView(buildChartLayout());
     }
 
-    public void displayCallLog(){
+    public void xdisplayCallLog(){
         getLoaderManager().restartLoader(LoadContactLogsTask.ContactCallLogQuery.QUERY_ID, null, this);
     }
 
-    public void displaySMSLog(){
+    public void xdisplaySMSLog(){
         getLoaderManager().restartLoader(LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID, null, this);
     }
 
@@ -469,6 +481,19 @@ public class ContactDetailFragment extends Fragment implements
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
                         null, null, null);
+            case SQLiteQuery.QUERY_ID:
+                mSQLoader = new SQLiteCursorLoader(mContext, mDbHelper,
+                        "SELECT _ID, title, value " + "FROM constants ORDER BY title",
+                        null);
+                //TODO: figure out how to use Loaderex
+                //https://github.com/commonsguy/cwac-loaderex/blob/master/demo/src/com/commonsware/cwac/loaderex/demo/ConstantsBrowser.java
+
+                //return mSQLoader;
+
+
+
+
+            mDbHelper.close();
         }
         return null;
     }
@@ -552,44 +577,6 @@ public class ContactDetailFragment extends Fragment implements
                     // one log is possible, so move each one to a
                     // LinearLayout in a Scrollview so multiple addresses can
                     // be scrolled by the user.
-
-                    // Each LinearLayout has the same LayoutParams so this can
-                    // be created once and used for each address.
-                    final LinearLayout.LayoutParams CallLoglayoutParams =
-                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                    // Clears out the details layout first in case the details
-                    // layout has CallLogs from a previous data load still
-                    // added as children.
-
-                    // Loops through all the rows in the Cursor
-                    if (!mEventLog.isEmpty()) {
-
-                        int j=mEventLog.size();
-                        do {
-                            // Implentation reverses the display order of the call log.
-                            j--;
-
-                            // If the item in the event log is for phone calls, display it.
-                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
-                                // Builds the address layout
-                                final LinearLayout layout = buildCallLogLayout(
-                                    mContactNameString,  /*name of caller, if available.*/
-                                    mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                    mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                    mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
-
-
-                                // Adds the new address layout to the details layout
-                                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-                            }
-                        } while (j>0);
-
-                    } else {
-                        // If nothing found, adds an empty address layout
-                        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
-                    }
                 }
                 break;
             case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
@@ -598,39 +585,6 @@ public class ContactDetailFragment extends Fragment implements
                     // one log is possible, so move each one to a
                     // LinearLayout in a Scrollview so multiple addresses can
                     // be scrolled by the user.
-
-                    // Each LinearLayout has the same LayoutParams so this can
-                    // be created once and used for each SMS.
-                    final LinearLayout.LayoutParams SMSLoglayoutParams =
-                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                    // Loops through all the rows in the Cursor
-                    if (!mEventLog.isEmpty()) {
-                        int j=mEventLog.size();
-                        do {
-                            // Implentation reverses the display order of the SMS log.
-                            j--;
-                            //If the item in the event Log is for SMS, display it.
-                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).SMS_CLASS) {
-
-                                // Builds the address layout
-                                final LinearLayout layout = buildSMSLogLayout(
-                                    mContactNameString,
-                                        //TODO: This date may not be in the correct format.
-                                    mEventLog.get(j).getDate(), /*date & time of SMS*/
-                                    mEventLog.get(j).getWordCount(), /*Length of the SMS in Minutes*/
-                                    mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
-
-
-                                // Adds the new SMS layout to the details layout
-                                mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
-                            }
-                        } while (j>0);
-                    } else {
-                        // If nothing found, adds an empty address layout
-                        mDetailsSMSLogLayout.addView(buildEmptySMSLogLayout(), SMSLoglayoutParams);
-                    }
                 }
                 break;
         }
@@ -905,6 +859,38 @@ public class ContactDetailFragment extends Fragment implements
         final static int DATE_LABEL =4;
     }
 
+
+
+            public interface SQLiteQuery {
+                // A unique query ID to distinguish queries being run by the
+                // LoaderManager.
+                final static int QUERY_ID = 6;
+                //final String contact_due_date_label = "Contact Due";
+
+                // The query projection (columns to fetch from the provider)
+                @SuppressLint("InlinedApi")
+                final static String[] PROJECTION = {
+                        Contacts._ID,
+                        Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
+                        Contacts.LOOKUP_KEY,
+                        Contacts.LAST_TIME_CONTACTED,
+                        //ContactsContract.CommonDataKinds.Event.LABEL
+                };
+
+
+                final String SELECTION =
+                        ContactsContract.Data.MIMETYPE + "= ? "
+                                + " AND " + ContactsContract.CommonDataKinds.Event.LABEL + "= ? ";
+                //final String ARGS[] = {ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, contact_due_date_label};
+
+                // The query column numbers which map to each value in the projection
+                final static int ID = 0;
+                final static int DISPLAY_NAME = 1;
+                final static int LOOKUP_KEY = 2;
+                final static int LAST_TIME_CONTACTED = 3;
+                final static int DATE_LABEL =4;
+            }
+
     /**
      * This interface defines constants used by address retrieval queries.
      */
@@ -945,6 +931,47 @@ public class ContactDetailFragment extends Fragment implements
     }
 
 /********call log layout**************************/
+
+private void displayCallLog(){
+    // Each LinearLayout has the same LayoutParams so this can
+    // be created once and used for each address.
+    final LinearLayout.LayoutParams CallLoglayoutParams =
+            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+    // Clears out the details layout first in case the details
+    // layout has CallLogs from a previous data load still
+    // added as children.
+
+    // Loops through all the rows in the Cursor
+    if (!mEventLog.isEmpty()) {
+
+        int j=mEventLog.size();
+        do {
+            // Implentation reverses the display order of the call log.
+            j--;
+
+            // If the item in the event log is for phone calls, display it.
+            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
+                // Builds the address layout
+                final LinearLayout layout = buildCallLogLayout(
+                        mContactNameString,  /*name of caller, if available.*/
+                        mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
+                        mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
+                        mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
+
+
+                // Adds the new address layout to the details layout
+                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
+            }
+        } while (j>0);
+
+    } else {
+        // If nothing found, adds an empty address layout
+        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+    }
+}
+
 
 private LinearLayout buildCallLogLayout(
         String eventContactName,  /*name of caller, if available.*/
@@ -1032,6 +1059,42 @@ private LinearLayout buildCallLogLayout(
 
     /********SMS log layout**************************/
 
+    private void displaySMSLog(){
+        // Each LinearLayout has the same LayoutParams so this can
+        // be created once and used for each SMS.
+        final LinearLayout.LayoutParams SMSLoglayoutParams =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // Loops through all the rows in the Cursor
+        if (!mEventLog.isEmpty()) {
+            int j=mEventLog.size();
+            do {
+                // Implentation reverses the display order of the SMS log.
+                j--;
+                //If the item in the event Log is for SMS, display it.
+                if(mEventLog.get(j).getEventClass() == mEventLog.get(j).SMS_CLASS) {
+
+                    // Builds the address layout
+                    final LinearLayout layout = buildSMSLogLayout(
+                            mContactNameString,
+                            //TODO: This date may not be in the correct format.
+                            mEventLog.get(j).getDate(), /*date & time of SMS*/
+                            mEventLog.get(j).getWordCount(), /*Length of the SMS in Minutes*/
+                            mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
+
+
+                    // Adds the new SMS layout to the details layout
+                    mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
+                }
+            } while (j>0);
+        } else {
+            // If nothing found, adds an empty address layout
+            mDetailsSMSLogLayout.addView(buildEmptySMSLogLayout(), SMSLoglayoutParams);
+        }
+    }
+
+
     private LinearLayout buildSMSLogLayout(
             String SMSerName,  /*name of SMSer, if available.*/
             long EventDate, /*date of SMS. Time of day?*/
@@ -1075,6 +1138,9 @@ private LinearLayout buildCallLogLayout(
         return SMSLogLayout;
     }
 
+
+
+            /* INTERFACE ELEMENTS*/
             private LinearLayout buildActionLayout() {
 
                 // Inflates the tab_action view with the new fragment.
@@ -1276,7 +1342,7 @@ private LinearLayout buildCallLogLayout(
         //Display all the data
         displayCallLog();
         displaySMSLog();
-        displayAddressLog();
+        //displayAddressLog();
     }
     private void loadContactLogs(String contactName, long contactID){
         mEventLog.clear();

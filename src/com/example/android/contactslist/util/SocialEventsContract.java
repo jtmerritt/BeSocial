@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.example.android.contactslist.notification.ContactInfo;
 import com.example.android.contactslist.ui.LoadContactLogsTask;
@@ -30,6 +31,9 @@ public class SocialEventsContract {
         mDbHelper = new EventLogDbHandler (mContext);
     }
 
+    public void closeSocialEventsContract(){
+        mDbHelper.close();
+    }
     /* Inner class that defines the table contents */
     public static abstract class TableEntry implements BaseColumns {
         //By implementing the BaseColumns interface, your inner class can inherit a primary key field called _ID
@@ -67,13 +71,16 @@ public class SocialEventsContract {
         public static final String COLUMN_NAME_NULLABLE = null;
     }
 
+
+
+
     /*
     Note: Because they can be long-running, be sure that
     getWritableDatabase() or getReadableDatabase() are called in a background thread,
     such as with AsyncTask or IntentService.
      */
 
-    public class EventLogDbHandler extends SQLiteOpenHelper {
+    public static class EventLogDbHandler extends SQLiteOpenHelper {
 
  /*
 +-----------------------+------------+------------------------------+---+--------+--+
@@ -84,12 +91,12 @@ public class SocialEventsContract {
 | Event TIME            |  Long                         | 555555555555555555         |
 | Contact Name          |  TEXT                         | Chintan Khetiya            |
 | Contact Key           |  TEXT                         | 787                        |
-| CONTACT Address        |  TEXT                         | 555*555-5555/ TYSON@GMAIL.COM
-| Class                 |  Int                           |   1                          |
-| Type                  |  Int                           |   1                          |
-| Word Count            |  Long                           | 5555         |
-| Char Count            |  Long                          |  555555555555555555        |
-| Duration              |  Long                          |  555555555555555555        |
+| CONTACT Address       |  TEXT                         | 555*555-5555/ TYSON@GMAIL.COM
+| Class                 |  Int                          |   1                          |
+| Type                  |  Int                          |   1                          |
+| Word Count            |  Long                         | 5555         |
+| Char Count            |  Long                         |  555555555555555555        |
+| Duration              |  Long                         |  555555555555555555        |
 | Location Lon          |  
 | Location Lat          |
 +-----------------------+------------+------------------------------+---+--------+--+
@@ -197,7 +204,16 @@ Reciprocity by event count
 
     public long checkEventExists(EventInfo event){
 
+        String contactName = event.getContactName();
+        String cursorContactName = null;
+        long rowId;
+
+        if (contactName == null){
+            Log.d(" Check Event Exists", "Name is null");
+        }
+
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
 
         //What best to search for?
         String selection = TableEntry.KEY_EVENT_TIME;
@@ -229,22 +245,30 @@ Reciprocity by event count
                 sortOrder                                 // The sort order
         );
 
-        String contactName = event.getContactName();
-        String cursorContactName = null;
-
-        // organize the contact info and pass it back
-        if (cursor.moveToFirst()) {
-            do {
-                cursorContactName = cursor.getString(1);
-                if (contactName.equals(cursorContactName)
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    cursorContactName = cursor.getString(1);
+                    if ((contactName == null && cursorContactName == null)
+                            || contactName.equals(cursorContactName)
                         //|| (event.getDate() == cursor.getLong(TableEntry.EVENT_TIME))
-                        ) {
-                    return cursor.getLong(TableEntry.ROW_ID);
-                }
-            }while(cursor.moveToNext());
+                            ) {
+                        rowId = cursor.getLong(TableEntry.ROW_ID);
+                        cursor.close();
+                        db.close();
+                        return rowId;  //return the id of the clashing event
+                    }
+                } while (cursor.moveToNext());
+            }
+        }catch (Exception e){
+            Log.d(" Check Event Exists", "Dead Cursor");
+            cursor.close();
+            db.close();
+            return 0;  // There is an error
         }
        cursor.close();
-        return -1;
+        db.close();
+        return -1;  //no record of this event, so it's probably new
     }
 
     public long addIfNewEvent(EventInfo event){

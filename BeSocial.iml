@@ -28,6 +28,7 @@
         <jarDirectory url="file://$APPLICATION_HOME_DIR$/sdk/extras/android/support/v13" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="CWAC-LoaderEx" level="project" />
   </component>
 </module>
 

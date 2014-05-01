@@ -157,6 +157,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                         EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
                         EventInfo.eventType = eventType;
                         EventInfo.eventClass = EventInfo.SMS_CLASS;
+                        EventInfo.setContactName(contactName);
 
 
 
