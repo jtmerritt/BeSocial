@@ -533,7 +533,9 @@ public class ContactDetailFragment extends Fragment implements
 
 
                     //  using the contact name build the log of events
-                    loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
+                    //loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
+
+                    loadChartView();
 
                 }
                 break;
@@ -1322,22 +1324,30 @@ private LinearLayout buildCallLogLayout(
                 chartSpinner.setAdapter(dateAdapter);
             }
 
+
+            public void loadChartView(){
+                //Build the chart view
+                mChartMaker = new chartMaker(
+                        //contactID, contactName,
+                        mContactNameString,
+                        getActivity().getContentResolver(),
+                        //mEventLog,
+                        getActivity(),
+                        this);
+                gView = mChartMaker.getBarChartView();
+
+                try
+                {
+                    //add the chart view to the fragment.
+                    mChartLayout.addView(gView);
+                }
+                catch (Exception e)
+                {}
+            }
+
     public void finishedLoading() {
 
-        //Build the chart view
-        mChartMaker = new chartMaker(
-                //contactID, contactName,
-                getActivity().getContentResolver(),
-                mEventLog, this);
-        gView = mChartMaker.getBarChartView(getActivity());
 
-        try
-        {
-            //add the chart view to the fragment.
-            mChartLayout.addView(gView);
-        }
-        catch (Exception e)
-        {}
 
         //Display all the data
         displayCallLog();

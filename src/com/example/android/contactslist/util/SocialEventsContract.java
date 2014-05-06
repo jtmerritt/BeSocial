@@ -493,4 +493,80 @@ Reciprocity by event count
         // return count
         return count;
     }
+
+    public List<EventInfo> getEventsInDateRange(String contactName, long startDate, long endDate){
+        List<EventInfo> eventList = new ArrayList<EventInfo>();
+
+        // Select All Query
+        String where = TableEntry.KEY_CONTACT_NAME + " = ? AND "
+                + TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
+        //String where = TableEntry.KEY_EVENT_TIME + " >= ? AND "
+         //       + TableEntry.KEY_EVENT_TIME + " < ?";
+
+        String[] whereArgs = {contactName, Long.toString(startDate), Long.toString(endDate)};
+
+
+        // How you want the results sorted in the resulting Cursor
+        String sortOrder =
+                TableEntry.KEY_EVENT_TIME + " DESC";
+
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        // Define a projection that specifies which columns from the database
+        // you will actually use after this query.
+        String[] projection = {
+                TableEntry._ID,
+                TableEntry.KEY_ANDROID_EVENT_ID,
+                TableEntry.KEY_EVENT_TIME,
+                TableEntry.KEY_CONTACT_NAME,
+                TableEntry.KEY_CONTACT_KEY,
+                TableEntry.KEY_CONTACT_ADDRESS,
+                TableEntry.KEY_CLASS,
+                TableEntry.KEY_TYPE,
+                TableEntry.KEY_WORD_COUNT,
+                TableEntry.KEY_CHAR_COUNT,
+                TableEntry.KEY_DURATION
+                //...
+        };
+
+        Cursor cursor = db.query(
+                TableEntry.TABLE_NAME,  // The table to query
+                projection,                               // The columns to return
+                where,                                // The columns for the WHERE clause
+                whereArgs,                            // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                sortOrder                                 // The sort order
+        );
+
+        EventInfo event = null;
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                event = new EventInfo();
+                event.setRowId(cursor.getLong(TableEntry.ROW_ID));
+                event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
+                event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
+                event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
+                event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
+                event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
+                event.setEventClass(cursor.getInt(TableEntry.CLASS));
+                event.setEventType(cursor.getInt(TableEntry.TYPE));
+                event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
+                event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
+                event.setDuration(cursor.getInt(TableEntry.DURATION));
+                // Adding contact to list
+                eventList.add(event);
+
+               // Log.d("getEventsInDateRange ", "col_date: " + event.getDate());
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        // return contact list
+        return eventList;
+
+    }
+
 }

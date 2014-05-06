@@ -252,18 +252,21 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                     //insert event into database
                     dbRowID = db.addIfNewEvent(eventInfo);
                     //Log.d("Insert: ", "Row ID: " + dbRowID);
-                    /*
+
                     String log = "Date: "+eventInfo.getDate()+" ,Name: " + eventInfo.getContactName()
                             + " ,Type: " + eventInfo.getEventType();
                     // Writing Contacts to log
                     Log.d("db Read: ", log);
-                    */
+
                 }
                 j++;
             }
 
 	/*Close the cursor*/
             callLogCursor.close();
+
+            db.closeSocialEventsContract();
+
         }
 
         /*
