@@ -494,17 +494,30 @@ Reciprocity by event count
         return count;
     }
 
-    public List<EventInfo> getEventsInDateRange(String contactName, long startDate, long endDate){
+    public List<EventInfo> getEventsInDateRange(String contactName, int dataFeedClass, long startDate, long endDate){
         List<EventInfo> eventList = new ArrayList<EventInfo>();
 
         // Select All Query
         String where = TableEntry.KEY_CONTACT_NAME + " = ? AND "
+                + TableEntry.KEY_CLASS + " = ? AND "
                 + TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
         //String where = TableEntry.KEY_EVENT_TIME + " >= ? AND "
          //       + TableEntry.KEY_EVENT_TIME + " < ?";
 
-        String[] whereArgs = {contactName, Long.toString(startDate), Long.toString(endDate)};
+        String[] whereArgs = {contactName,
+                Integer.toString(dataFeedClass),
+                Long.toString(startDate), Long.toString(endDate)};
 
+        if(dataFeedClass == 0){
+            // return data from all classes (sources)
+            where = TableEntry.KEY_CONTACT_NAME + " = ? AND "
+                    + TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
+
+            String[] Args = {contactName,
+                    Long.toString(startDate), Long.toString(endDate)};
+
+            whereArgs = Args;
+        }
 
         // How you want the results sorted in the resulting Cursor
         String sortOrder =

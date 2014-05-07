@@ -112,4 +112,18 @@
 
      <string name="footer_text"
              >Update Database</string>
+
+         <string name="no_data"
+             >No Data</string>
+
+    <!--List Data Feeds -->
+    <string-array name="data_feed_list_for_chart_selection">
+        <item>All Communications</item>
+        <item>Phone</item>
+        <item>SMS</item>
+        <item>Gmail</item>
+        <item>Facebook</item>
+        <item>Google Hangouts</item>
+        <item>Skype</item>
+    </string-array>
 </resources>

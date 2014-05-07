@@ -6,23 +6,6 @@ package com.example.android.contactslist.ui.dateSelection;
 
 public interface dateSelection {
 
-    public String[] Selections =
-            {"Handset",
-            "Gmail",
-            "FaceBook",
-            "Google Hangouts",
-            "Skype",
-            "Personal"};
-
-
-    // The query column numbers which map to each value in the Selections array
-    final static int S_THREE_MONTHS = 0;
-    final static int S_SIX_MONTHS = 1;
-    final static int S_NINE_MONTHS = 2;
-    final static int S_MATCH_PHONE = 3;
-    final static int S_MAX_TIME = 4;
-    final static int S_DEFAULT = S_MAX_TIME;
-
     final static long ONE_DAY = 81300000;
     final static long THREE_DAY = ONE_DAY * 3;
     final static long ONE_WEEK = ONE_DAY * 7;

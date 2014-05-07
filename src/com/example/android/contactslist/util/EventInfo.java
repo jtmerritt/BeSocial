@@ -21,6 +21,9 @@ public class EventInfo {
     final public static int PHONE_CLASS = 1;
     final public static int SMS_CLASS = 2;
     final public static int EMAIL_CLASS = 3;
+    final public static int FACEBOOK = 4;
+    final public static int GOOGLE_HANGOUTS = 5;
+    final public static int SKYPE = 6;
 
     public void clear(){
         eventContactName = null;
@@ -112,6 +115,13 @@ public class EventInfo {
                 return "SMS";
             case EMAIL_CLASS:
                 return "Email";
+            case FACEBOOK:
+                return "Facebook";
+            case GOOGLE_HANGOUTS:
+                return "Google Hangouts";
+            case SKYPE:
+                return "Skype";
+
             default:
                 return "Unknown";
         }

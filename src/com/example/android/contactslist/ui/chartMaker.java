@@ -4,8 +4,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.widget.Toast;
 
 import com.example.android.contactslist.ContactDetailFragmentCallback;
+import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
 import com.example.android.contactslist.util.EventInfo;
 import com.example.android.contactslist.util.SocialEventsContract;
@@ -48,6 +50,8 @@ public class chartMaker {
     private double mDateMin; //Time ms
     private double mDateMax;
     private double mDateNow;
+    private double mXMargin = 0.005;
+    private int mDataFeedClass;
     private Context mContext;
     final long ONE_YEAR = (long)1000*(long)3600*(long)24*(long)365; //mS per year
     private double mYAxisMax;
@@ -77,6 +81,9 @@ public class chartMaker {
         mDateMin = mDateNow - (double)ONE_YEAR;
 
         mChartRange = 2;
+
+        //set default data feed class
+        mDataFeedClass = 0; //all data
 
     }
 
@@ -169,113 +176,6 @@ public class chartMaker {
         return ChartFactory.getTimeChartView(mContext, dataset, mRenderer, "MM-dd");
     }
 
-
-    private boolean setNewDataSet(){
-
-        long bucket_time;
-        long eventDuration;
-        mBarChartEventLog = new ArrayList<EventInfo>();
-
-
-        //Calendar http://developer.android.com/reference/java/util/Calendar.html
-        Calendar cal = Calendar.getInstance();
-        cal.setFirstDayOfWeek(Calendar.MONDAY);
-
-        // format date string
-        DateFormat formatMonth = new SimpleDateFormat("MMM''yy");
-        String formattedDate1 = null;
-
-        //grab contact relevant event data from db
-        SocialEventsContract db = new SocialEventsContract(mContext);
-        mEventLog = db.getEventsInDateRange(mContactName, (long)mDateMin, (long)mDateMax);
-        db.closeSocialEventsContract();
-
-        //exit if there is no data
-        if(mEventLog.size() == 0){
-            return false;
-            //do not clear the data logs that are already displayed
-        }
-
-        //clear the series
-        mDisplaySeries.clear();
-        //mSeriesSMS.clear();
-
-        cookChartData(mChartRange);
-
-
-
-        // transfer the eventLog to the dataset
-        int j=mBarChartEventLog.size();
-
-        if(j == 0){
-            return false;
-            //do not clear the data logs that are already displayed
-        }
-
-        do {
-            // Implentation reverses the display order of the call log.
-            j--;
-            if (j >= 0)
-            {
-
-                // add into the data set
-                eventDuration = mBarChartEventLog.get(j).getDuration();
-                mDisplaySeries.add(mBarChartEventLog.get(j).getDate() , /*date of call. Time of day?*/
-                        secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
-                );
-
-
-                //Collect the bucket date depending on the preference
-                cal.setTimeInMillis(mBarChartEventLog.get(j).getDate());
-
-                // adding text lables for the x-axis
-                switch(mChartRange){
-                    case 1:
-                        cal.set(Calendar.DAY_OF_WEEK, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    case 2:  //This is done differently
-                        cal.set(Calendar.DAY_OF_MONTH, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    case 3:
-                        cal.set(Calendar.DAY_OF_YEAR, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    default:
-                        bucket_time = mBarChartEventLog.get(j).getDate();
-                        mRenderer.addXTextLabel(bucket_time, "!");
-                }
-                Date date = new Date(bucket_time);
-                formattedDate1 = formatMonth.format(date);
-                mRenderer.addXTextLabel(bucket_time, formattedDate1);
-
-            }
-        } while (j>0);
-
-
-        switch(mChartRange){
-            case 1:
-                mRenderer.setXTitle("Week");
-
-                break;
-            case 2:
-                mRenderer.setXTitle("Time");
-
-                break;
-            case 3:
-                mRenderer.setXTitle("Year");
-
-                break;
-            default:
-                mRenderer.setXTitle("Time");
-        }
-
-        return true;
-    }
     
 //*****Bar Chart*****************
     public GraphicalView getBarChartView() {
@@ -350,21 +250,153 @@ public class chartMaker {
         mRenderer.setZoomEnabled(false, false);
 
 
+
         //grab data from database for the set person in the time range
         // and set it into the plot
-        if (setNewDataSet() != false){
+        if (setNewDataSet() == true){
 
             mRenderer.setYAxisMax(
                     //Choose the larger of the 2 bounds
                     mYAxisMax = 1.1*(mDisplaySeries.getMaxY()) // > mSeriesSMS.getMaxY() ?
                             ///mDisplaySeries.getMaxY() : mSeriesSMS.getMaxY())
             );
+        }else{
+            mRenderer.setYAxisMax(1);
+            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
         }
 
-
         mRenderer.setYAxisMin(0);
-        
+        mRenderer.setXAxisMin(mDateMin - (double)ONE_YEAR*mXMargin);
+        mRenderer.setXAxisMax(mDateMax + (double)ONE_YEAR*mXMargin);
+
         return ChartFactory.getBarChartView(mContext, dataset, mRenderer, BarChart.Type.DEFAULT);
+    }
+
+    private boolean setNewDataSet(){
+
+        long bucket_time;
+        long eventDuration;
+        long wordCount;
+        mBarChartEventLog = new ArrayList<EventInfo>();
+
+
+        //Calendar http://developer.android.com/reference/java/util/Calendar.html
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+
+        // format date string
+        DateFormat formatMonth = new SimpleDateFormat("MMM''yy");
+        String formattedDate1 = null;
+
+        //grab contact relevant event data from db
+        SocialEventsContract db = new SocialEventsContract(mContext);
+        mEventLog = db.getEventsInDateRange(mContactName, mDataFeedClass, (long)mDateMin, (long)mDateMax);
+        db.closeSocialEventsContract();
+
+        //exit if there is no data
+        if(mEventLog.size() == 0){
+            return false;
+            //do not clear the data logs that are already displayed
+        }
+
+        //clear the series
+        mDisplaySeries.clear();
+        //mSeriesSMS.clear();
+
+        cookChartData(mChartRange);
+
+
+
+        // transfer the eventLog to the dataset
+        int j=mBarChartEventLog.size();
+
+        if(j == 0){
+            return false;
+            //do not clear the data logs that are already displayed
+        }
+
+        do {
+            // Implentation reverses the display order of the call log.
+            j--;
+            if (j >= 0)
+            {
+
+                // add into the data set
+                switch(mDataFeedClass){
+                    case EventInfo.PHONE_CLASS:
+                    case EventInfo.SKYPE:
+                        eventDuration = mBarChartEventLog.get(j).getDuration();
+                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                                secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
+                        );
+                        break;
+                    case EventInfo.SMS_CLASS:
+                    case EventInfo.GOOGLE_HANGOUTS:
+                    case EventInfo.EMAIL_CLASS:
+                    case EventInfo.FACEBOOK:
+                        wordCount = mBarChartEventLog.get(j).getWordCount();
+                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                                (double)wordCount /*Length of messages*/
+                        );
+                        break;
+                    default:
+                        eventDuration = mBarChartEventLog.get(j).getDuration();
+                        wordCount = mBarChartEventLog.get(j).getWordCount();
+                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                                (double)wordCount/(double)100 +(double)eventDuration /*Length of event*/
+                        );
+                }
+
+                //Collect the bucket date depending on the preference
+                cal.setTimeInMillis(mBarChartEventLog.get(j).getDate());
+
+                // adding text lables for the x-axis
+                switch(mChartRange){
+                    case 1:
+                        cal.set(Calendar.DAY_OF_WEEK, 1);
+                        bucket_time = cal.getTimeInMillis();
+                        break;
+
+                    case 2:  //This is done differently
+                        cal.set(Calendar.DAY_OF_MONTH, 1);
+                        bucket_time = cal.getTimeInMillis();
+                        break;
+
+                    case 3:
+                        cal.set(Calendar.DAY_OF_YEAR, 1);
+                        bucket_time = cal.getTimeInMillis();
+                        break;
+
+                    default:
+                        bucket_time = mBarChartEventLog.get(j).getDate();
+                        mRenderer.addXTextLabel(bucket_time, "!");
+                }
+                Date date = new Date(bucket_time);
+                formattedDate1 = formatMonth.format(date);
+                mRenderer.addXTextLabel(bucket_time, formattedDate1);
+
+            }
+        } while (j>0);
+
+
+        switch(mChartRange){
+            case 1:
+                mRenderer.setXTitle("Week");
+
+                break;
+            case 2:
+                mRenderer.setXTitle("Time");
+
+                break;
+            case 3:
+                mRenderer.setXTitle("Year");
+
+                break;
+            default:
+                mRenderer.setXTitle("Time");
+        }
+
+        return true;
     }
 
     public void adjustChartRange(boolean back){
@@ -383,8 +415,6 @@ public class chartMaker {
                 //exit if we're already displaying the most recent data
                 return;
             }
-
-
         }
 
         //grab data from database for the set person in the time range
@@ -394,11 +424,12 @@ public class chartMaker {
             // and exit
             mDateMax += (double) ONE_YEAR;
             mDateMin += (double) ONE_YEAR;
+            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        //mRenderer.setXAxisMax(mChartMax);
-        //mRenderer.setXAxisMin(mChartMin);
+        mRenderer.setXAxisMin(mDateMin - (double)ONE_YEAR*mXMargin);
+        mRenderer.setXAxisMax(mDateMax + (double)ONE_YEAR*mXMargin);
         mRenderer.setYAxisMax(
                 //Choose the larger of the 2 bounds
                 mYAxisMax = 1.1*(mDisplaySeries.getMaxY())// > mSeriesSMS.getMaxY() ?
@@ -406,6 +437,20 @@ public class chartMaker {
         );
     }
 
+
+    public void selectDataFeed(int pos)
+    {
+        mDataFeedClass = pos;
+
+        if(setNewDataSet() == true) {
+            mRenderer.setXAxisMin(mDateMin - (double) ONE_YEAR * mXMargin);
+            mRenderer.setXAxisMax(mDateMax + (double) ONE_YEAR * mXMargin);
+            mRenderer.setYAxisMax(mYAxisMax = 1.1 * (mDisplaySeries.getMaxY()));
+        }else{
+            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
+        }
+
+    }
    
     
     private void cookChartData(int bucket_size)
@@ -443,6 +488,9 @@ public class chartMaker {
                 cal.set(Calendar.MILLISECOND, 0);
 
                 ChartEventInfo.eventDate = cal.getTimeInMillis();
+
+
+
                 ChartEventInfo.eventID = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US);
 
                 //Date date2 = new Date(ChartEventInfo.eventDate);
@@ -453,20 +501,31 @@ public class chartMaker {
                 ChartEventInfo.eventClass = mEventLog.get(j).getEventClass();
                 ChartEventInfo.eventType = mEventLog.get(j).getEventType();
 
-                switch(mEventLog.get(j).getEventClass()){
-                    // place each point in the data series
-                    case EventInfo.PHONE_CLASS: //phone class
+
+                switch(ChartEventInfo.eventClass){
+                    case EventInfo.PHONE_CLASS:
+                    case EventInfo.SKYPE:
                         ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
-
+                        ChartEventInfo.eventWordCount = 0; /*Length of the call in Minutes*/
+                        ChartEventInfo.eventCharCount = 0;
                         break;
-
-                    case EventInfo.SMS_CLASS: //SMS class
+                    case EventInfo.SMS_CLASS:
+                    case EventInfo.GOOGLE_HANGOUTS:
                     case EventInfo.EMAIL_CLASS:
-                    default:
+                    case EventInfo.FACEBOOK:
+                        ChartEventInfo.eventDuration = 0; /*Length of the call in seconds*/
                         ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
                         ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
+                        break;
+                    default:
+                        ChartEventInfo.eventDuration = 0; /*Length of the call in seconds*/
+                        ChartEventInfo.eventWordCount = 0; /*Length of the call in Minutes*/
+                        ChartEventInfo.eventCharCount = 0;
                 }
 
+                ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
+                ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
+                ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
 
                 bucketEventInfoByDate(ChartEventInfo, mBarChartEventLog);
             }
@@ -518,30 +577,5 @@ public class chartMaker {
         return  (minute + second/60);
     }
 
-/*
-       public void applyRangeGraphicalView(int index){
-
-           // set zoom and pan limits
-           switch(index){
-               case dateSelection.S_MATCH_PHONE:
-                   break;
-               case dateSelection.S_THREE_MONTHS:
-                   break;
-               case dateSelection.S_SIX_MONTHS:
-                   break;
-               case dateSelection.S_NINE_MONTHS:
-                   break;
-               case dateSelection.S_MAX_TIME:
-               case dateSelection.S_DEFAULT:
-               default:
-                   mChartLayout.get mRenderer.setPanLimits(new double[]{mChartMin, mChartMax, 0, 0});
-                   mRenderer.setZoomLimits(new double[] {mChartMin, mChartMax, 0 , 0});
-                   break;
-           }
-
-
-
-       }
-    */
 
 }

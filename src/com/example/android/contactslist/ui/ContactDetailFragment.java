@@ -214,6 +214,7 @@ public class ContactDetailFragment extends Fragment implements
             // multiple times.
 
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
+            xdisplaySMSLog();
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
 
         } else {
@@ -587,6 +588,44 @@ public class ContactDetailFragment extends Fragment implements
                     // one log is possible, so move each one to a
                     // LinearLayout in a Scrollview so multiple addresses can
                     // be scrolled by the user.
+
+                    // Each LinearLayout has the same LayoutParams so this can
+                    // be created once and used for each address.
+                    final LinearLayout.LayoutParams CallLoglayoutParams =
+                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                    // Clears out the details layout first in case the details
+                    // layout has CallLogs from a previous data load still
+                    // added as children.
+
+                    // Loops through all the rows in the Cursor
+                    if (!mEventLog.isEmpty()) {
+
+                        int j=mEventLog.size();
+                        do {
+                            // Implentation reverses the display order of the call log.
+                            j--;
+
+                            // If the item in the event log is for phone calls, display it.
+                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
+                                // Builds the address layout
+                                final LinearLayout layout = buildCallLogLayout(
+                                        mContactNameString,  /*name of caller, if available.*/
+                                        mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
+                                        mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
+                                        mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
+
+
+                                // Adds the new address layout to the details layout
+                                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
+                            }
+                        } while (j>0);
+
+                    } else {
+                        // If nothing found, adds an empty address layout
+                        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+                    }
                 }
                 break;
         }
@@ -1293,10 +1332,10 @@ private LinearLayout buildCallLogLayout(
 
                 chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
-                        // this is where we figure out which was selected and then do query.
-                        //applyRangeGraphicalView(pos);
+                        mChartMaker.selectDataFeed(pos);
+                        gView.repaint();
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> arg0) {
@@ -1309,19 +1348,14 @@ private LinearLayout buildCallLogLayout(
 
             private void addItemsToChartSpinner() {
 
-                List<String> list = new ArrayList<String>();
-
-                for(String s : dateSelection.Selections){
-                    list.add(s);
-                }
-
-                ArrayAdapter<String> dateAdapter = new ArrayAdapter<String>(getActivity(),
-                        android.R.layout.simple_spinner_item, list);
+                //set the adapter to the string-array in the strings resource
+                ArrayAdapter<String> chartFeedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_spinner_item, getResources().getStringArray(R.array.data_feed_list_for_chart_selection));
 
                 //choose the style of the list.
-                dateAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+                chartFeedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
 
-                chartSpinner.setAdapter(dateAdapter);
+                chartSpinner.setAdapter(chartFeedSelectionAdapter);
             }
 
 
