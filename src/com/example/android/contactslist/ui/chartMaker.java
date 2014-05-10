@@ -248,7 +248,7 @@ public class chartMaker {
         //mRenderer.setZoomLimits(new double[] {mChartMin, mChartMax, 0 , 0});
         mRenderer.setPanEnabled(false, false);
         mRenderer.setZoomEnabled(false, false);
-
+        mRenderer.setZoomButtonsVisible(false);
 
 
         //grab data from database for the set person in the time range
@@ -268,6 +268,7 @@ public class chartMaker {
         mRenderer.setYAxisMin(0);
         mRenderer.setXAxisMin(mDateMin - (double)ONE_YEAR*mXMargin);
         mRenderer.setXAxisMax(mDateMax + (double)ONE_YEAR*mXMargin);
+
 
         return ChartFactory.getBarChartView(mContext, dataset, mRenderer, BarChart.Type.DEFAULT);
     }
@@ -458,6 +459,7 @@ public class chartMaker {
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
         Calendar cal = Calendar.getInstance();
         cal.setFirstDayOfWeek(Calendar.MONDAY);
+        EventInfo ChartEventInfo;
 
         int j=mEventLog.size();
         do {
@@ -465,7 +467,6 @@ public class chartMaker {
             j--;
             if (j >= 0)
             {
-                EventInfo ChartEventInfo = new EventInfo();
                 //set eventDate back to the start of the bucket depending on the preference
                 cal.setTimeInMillis(mEventLog.get(j).getDate());
                 switch(bucket_size){
@@ -487,45 +488,30 @@ public class chartMaker {
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
 
-                ChartEventInfo.eventDate = cal.getTimeInMillis();
-
-
+                ChartEventInfo = new EventInfo("", "",
+                        mEventLog.get(j).getEventClass(), mEventLog.get(j).getEventType(),
+                        cal.getTimeInMillis(), "",
+                        0,0,0  //set all counts to zero
+                        );
 
                 ChartEventInfo.eventID = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US);
 
-                //Date date2 = new Date(ChartEventInfo.eventDate);
-                //formattedDate2 = format.format(date2);
-
 
                 // add into the correct data set
-                ChartEventInfo.eventClass = mEventLog.get(j).getEventClass();
-                ChartEventInfo.eventType = mEventLog.get(j).getEventType();
-
-
                 switch(ChartEventInfo.eventClass){
                     case EventInfo.PHONE_CLASS:
                     case EventInfo.SKYPE:
                         ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
-                        ChartEventInfo.eventWordCount = 0; /*Length of the call in Minutes*/
-                        ChartEventInfo.eventCharCount = 0;
                         break;
                     case EventInfo.SMS_CLASS:
                     case EventInfo.GOOGLE_HANGOUTS:
                     case EventInfo.EMAIL_CLASS:
                     case EventInfo.FACEBOOK:
-                        ChartEventInfo.eventDuration = 0; /*Length of the call in seconds*/
                         ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
                         ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
                         break;
                     default:
-                        ChartEventInfo.eventDuration = 0; /*Length of the call in seconds*/
-                        ChartEventInfo.eventWordCount = 0; /*Length of the call in Minutes*/
-                        ChartEventInfo.eventCharCount = 0;
                 }
-
-                ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
-                ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
-                ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
 
                 bucketEventInfoByDate(ChartEventInfo, mBarChartEventLog);
             }

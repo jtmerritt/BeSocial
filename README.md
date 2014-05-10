@@ -1,10 +1,13 @@
 TODO:
 ___________________________________________________________________
 Maybe have a ContentProvider for the contact database but not the event database.
-Swipe geusture for changing date range on data plot. Also, pinch for incremental zoom.
+Swipe geusture for changing date range on data plot.
 
 ***Small Tasks***
-
+- change span of chart based on chart taps
+- disallow viewPager for chartView - http://stackoverflow.com/questions/19359516/achartengine-with-panning-inside-a-viewpager
+- Save output of chart engine as bitmap? http://stackoverflow.com/questions/3107527/android-save-view-to-jpg-or-png
+- Background fetching data from the database for the chart
 - Titles on pages for "Call log", "SMS log", "Email Log"
 - Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
 - display text in the middle of the fraction chart indicating the value,
@@ -20,30 +23,22 @@ Swipe geusture for changing date range on data plot. Also, pinch for incremental
     - When displaying the previous set of data, show a "forward arrow" button.
 
 ***Medium Tasks***
-- Include multiple phone numbers in the call log collection
-- Fix bugs for chart
 - Find a cluster analysis package.
-- Fix slow load of SMS log - memory problem
-    - perhaps related, there are 2 instances of mEventLog
-- Make spinner choose the chart type (data display type)
-    - Spinner text becomes chart title.
 - add action listeners to tabs so they might load the data only when selected.
 -  Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
-- Create a screen of statistics
+- Populate the screen of statistics with real data
     - Average days between events
     - Max days between events
     - Total word count
     - Total call time
     - Average Call time
     - Reciprocity for each event Kind
+- Create interface for manually adding events
 
 ***Large Tasks***
-- Only display data for one page-full at a time to speed things up.
-- Cloud-based retrieval/storage?
+- Cloud-based backup?
 - fix crash when setDisplayChartValues(true) for renderer_SMS
 - On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
-- Create an Options Menu
-    - follow guidlines for Notifications options:http://developer.android.com/design/patterns/notifications.html
 
 
 Notes

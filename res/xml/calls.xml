@@ -1,0 +1,503 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><!--File Created By Call Logs Backup & Restore v3.22 on 16/01/2014 23:33:05--><?xml-stylesheet type="text/xsl" href="calls.xsl"?>
+<calls count="500">
+  <call number="13109365631" duration="91" date="1373429140735" type="2" readable_date="Jul 9, 2013 9:05:40 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1373432578923" type="3" readable_date="Jul 9, 2013 10:02:58 PM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="68" date="1373440361413" type="2" readable_date="Jul 10, 2013 12:12:41 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="1836" date="1373440438234" type="2" readable_date="Jul 10, 2013 12:13:58 AM" contact_name="Janet Zander" />
+  <call number="17072057698" duration="28" date="1373471564623" type="1" readable_date="Jul 10, 2013 8:52:44 AM" contact_name="Candice Achenbach" />
+  <call number="12099521006" duration="0" date="1373472910098" type="3" readable_date="Jul 10, 2013 9:15:10 AM" contact_name="(Unknown)" />
+  <call number="16176972037" duration="0" date="1373478823389" type="2" readable_date="Jul 10, 2013 10:53:43 AM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="0" date="1373478844077" type="2" readable_date="Jul 10, 2013 10:54:04 AM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="47" date="1373478920385" type="2" readable_date="Jul 10, 2013 10:55:20 AM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="105" date="1373480519445" type="1" readable_date="Jul 10, 2013 11:21:59 AM" contact_name="Bex Merhar" />
+  <call number="13109365631" duration="83" date="1373487751559" type="2" readable_date="Jul 10, 2013 1:22:31 PM" contact_name="Janet Zander" />
+  <call number="16176972037" duration="156" date="1373489959191" type="1" readable_date="Jul 10, 2013 1:59:19 PM" contact_name="Bex Merhar" />
+  <call number="-1" duration="0" date="1373490680468" type="3" readable_date="Jul 10, 2013 2:11:20 PM" contact_name="(Unknown)" />
+  <call number="16176972037" duration="0" date="1373496153437" type="2" readable_date="Jul 10, 2013 3:42:33 PM" contact_name="Bex Merhar" />
+  <call number="13109365631" duration="881" date="1373496173200" type="2" readable_date="Jul 10, 2013 3:42:53 PM" contact_name="Janet Zander" />
+  <call number="16176972037" duration="197" date="1373500295463" type="1" readable_date="Jul 10, 2013 4:51:35 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="0" date="1373502177230" type="2" readable_date="Jul 10, 2013 5:22:57 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="44" date="1373502177536" type="2" readable_date="Jul 10, 2013 5:22:57 PM" contact_name="Bex Merhar" />
+  <call number="13109365631" duration="36" date="1373502240073" type="2" readable_date="Jul 10, 2013 5:24:00 PM" contact_name="Janet Zander" />
+  <call number="16268627478" duration="0" date="1373572542407" type="3" readable_date="Jul 11, 2013 12:55:42 PM" contact_name="Kristy Hilands" />
+  <call number="17072057698" duration="0" date="1373576115718" type="3" readable_date="Jul 11, 2013 1:55:15 PM" contact_name="Candice Achenbach" />
+  <call number="+491753182274" duration="0" date="1373585277556" type="3" readable_date="Jul 11, 2013 4:27:57 PM" contact_name="Julia Bossmann" />
+  <call number="+18056377243" duration="144" date="1373589523828" type="2" readable_date="Jul 11, 2013 5:38:43 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="0" date="1373654739201" type="3" readable_date="Jul 12, 2013 11:45:39 AM" contact_name="Candice Achenbach" />
+  <call number="3105082725" duration="0" date="1373693026042" type="2" readable_date="Jul 12, 2013 10:23:46 PM" contact_name="Simone Syed" />
+  <call number="3105082725" duration="0" date="1373693342525" type="2" readable_date="Jul 12, 2013 10:29:02 PM" contact_name="Simone Syed" />
+  <call number="4083730620" duration="0" date="1373834356064" type="2" readable_date="Jul 14, 2013 1:39:16 PM" contact_name="Darryl Hunt" />
+  <call number="+14157259763" duration="0" date="1373834400926" type="2" readable_date="Jul 14, 2013 1:40:00 PM" contact_name="Mike Wright" />
+  <call number="+14157259763" duration="0" date="1373834456443" type="2" readable_date="Jul 14, 2013 1:40:56 PM" contact_name="Mike Wright" />
+  <call number="8007529669" duration="62" date="1373850406465" type="2" readable_date="Jul 14, 2013 6:06:46 PM" contact_name="Seven Crown Resorts" />
+  <call number="+18056377243" duration="33" date="1373856495219" type="2" readable_date="Jul 14, 2013 7:48:15 PM" contact_name="(Unknown)" />
+  <call number="13603676666" duration="0" date="1373955090922" type="3" readable_date="Jul 15, 2013 11:11:30 PM" contact_name="Cedric" />
+  <call number="611" duration="426" date="1373989870671" type="2" readable_date="Jul 16, 2013 8:51:10 AM" contact_name="(Unknown)" />
+  <call number="17607058888" duration="0" date="1374029995126" type="3" readable_date="Jul 16, 2013 7:59:55 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="46" date="1374030073686" type="2" readable_date="Jul 16, 2013 8:01:13 PM" contact_name="(Unknown)" />
+  <call number="13234284434" duration="1757" date="1374169109208" type="1" readable_date="Jul 18, 2013 10:38:29 AM" contact_name="Paul Grasshoff" />
+  <call number="-1" duration="0" date="1374279617931" type="3" readable_date="Jul 19, 2013 5:20:17 PM" contact_name="(Unknown)" />
+  <call number="16176972037" duration="0" date="1374362629884" type="3" readable_date="Jul 20, 2013 4:23:49 PM" contact_name="Bex Merhar" />
+  <call number="3109365631" duration="30" date="1374390583501" type="2" readable_date="Jul 21, 2013 12:09:43 AM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="35" date="1374457039473" type="2" readable_date="Jul 21, 2013 6:37:19 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1374466534708" type="3" readable_date="Jul 21, 2013 9:15:34 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="2661" date="1374466577670" type="2" readable_date="Jul 21, 2013 9:16:17 PM" contact_name="Janet Zander" />
+  <call number="19512020236" duration="3" date="1374690410494" type="1" readable_date="Jul 24, 2013 11:26:50 AM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="15" date="1374690539000" type="2" readable_date="Jul 24, 2013 11:28:59 AM" contact_name="(Unknown)" />
+  <call number="14158193660" duration="149" date="1374879581266" type="1" readable_date="Jul 26, 2013 3:59:41 PM" contact_name="Liz Flannery" />
+  <call number="-1" duration="0" date="1375204907827" type="1" readable_date="Jul 30, 2013 10:21:47 AM" contact_name="(Unknown)" />
+  <call number="-1" duration="479" date="1375213158113" type="1" readable_date="Jul 30, 2013 12:39:18 PM" contact_name="(Unknown)" />
+  <call number="17607058888" duration="31" date="1375224908763" type="1" readable_date="Jul 30, 2013 3:55:08 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="26" date="1375225683301" type="2" readable_date="Jul 30, 2013 4:08:03 PM" contact_name="(Unknown)" />
+  <call number="-1" duration="77" date="1375225904543" type="1" readable_date="Jul 30, 2013 4:11:44 PM" contact_name="(Unknown)" />
+  <call number="-1" duration="11" date="1375226022659" type="1" readable_date="Jul 30, 2013 4:13:42 PM" contact_name="(Unknown)" />
+  <call number="-1" duration="301" date="1375226142294" type="1" readable_date="Jul 30, 2013 4:15:42 PM" contact_name="(Unknown)" />
+  <call number="-1" duration="312" date="1375226519179" type="1" readable_date="Jul 30, 2013 4:21:59 PM" contact_name="(Unknown)" />
+  <call number="14153780171" duration="0" date="1375382856523" type="3" readable_date="Aug 1, 2013 11:47:36 AM" contact_name="Laura Salcido" />
+  <call number="+18056377243" duration="52" date="1375382941533" type="2" readable_date="Aug 1, 2013 11:49:01 AM" contact_name="(Unknown)" />
+  <call number="14153780171" duration="522" date="1375383043437" type="2" readable_date="Aug 1, 2013 11:50:43 AM" contact_name="Laura Salcido" />
+  <call number="13109365631" duration="4330" date="1375391158078" type="1" readable_date="Aug 1, 2013 2:05:58 PM" contact_name="Janet Zander" />
+  <call number="+552124170773" duration="0" date="1375392884404" type="3" readable_date="Aug 1, 2013 2:34:44 PM" contact_name="(Unknown)" />
+  <call number="16504655702" duration="48" date="1375398665708" type="1" readable_date="Aug 1, 2013 4:11:05 PM" contact_name="Zack Wexler-Beron" />
+  <call number="6268627478" duration="21" date="1375399717647" type="2" readable_date="Aug 1, 2013 4:28:37 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="0" date="1375409517222" type="3" readable_date="Aug 1, 2013 7:11:57 PM" contact_name="Kristy Hilands" />
+  <call number="17072057698" duration="77" date="1375466573935" type="1" readable_date="Aug 2, 2013 11:02:53 AM" contact_name="Candice Achenbach" />
+  <call number="16176972037" duration="0" date="1375566158805" type="3" readable_date="Aug 3, 2013 2:42:38 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="69" date="1375568233399" type="2" readable_date="Aug 3, 2013 3:17:13 PM" contact_name="Bex Merhar" />
+  <call number="14157259763" duration="0" date="1375568796780" type="3" readable_date="Aug 3, 2013 3:26:36 PM" contact_name="Mike Wright" />
+  <call number="+18056377243" duration="30" date="1375569311641" type="2" readable_date="Aug 3, 2013 3:35:11 PM" contact_name="(Unknown)" />
+  <call number="14157259763" duration="24" date="1375570103337" type="2" readable_date="Aug 3, 2013 3:48:23 PM" contact_name="Mike Wright" />
+  <call number="19165328377" duration="0" date="1375834718825" type="3" readable_date="Aug 6, 2013 5:18:38 PM" contact_name="Tessa Jorgenson" />
+  <call number="+18056377243" duration="104" date="1375835171602" type="2" readable_date="Aug 6, 2013 5:26:11 PM" contact_name="(Unknown)" />
+  <call number="19165328377" duration="97" date="1375838119304" type="2" readable_date="Aug 6, 2013 6:15:19 PM" contact_name="Tessa Jorgenson" />
+  <call number="16176972037" duration="0" date="1375846032993" type="1" readable_date="Aug 6, 2013 8:27:12 PM" contact_name="Bex Merhar" />
+  <call number="19165328377" duration="10" date="1375846988324" type="2" readable_date="Aug 6, 2013 8:43:08 PM" contact_name="Tessa Jorgenson" />
+  <call number="3109365631" duration="8" date="1375857261781" type="2" readable_date="Aug 6, 2013 11:34:21 PM" contact_name="Janet Zander" />
+  <call number="14153780171" duration="29" date="1375917241865" type="2" readable_date="Aug 7, 2013 4:14:01 PM" contact_name="Laura Salcido" />
+  <call number="14153780171" duration="1143" date="1375918139096" type="1" readable_date="Aug 7, 2013 4:28:59 PM" contact_name="Laura Salcido" />
+  <call number="+14083963209" duration="0" date="1375945725373" type="2" readable_date="Aug 8, 2013 12:08:45 AM" contact_name="Shevek Anarres" />
+  <call number="6268627478" duration="3629" date="1376005341878" type="2" readable_date="Aug 8, 2013 4:42:21 PM" contact_name="Kristy Hilands" />
+  <call number="4158193660" duration="777" date="1376014178469" type="2" readable_date="Aug 8, 2013 7:09:38 PM" contact_name="Liz Flannery" />
+  <call number="14153780171" duration="0" date="1376107438796" type="3" readable_date="Aug 9, 2013 9:03:58 PM" contact_name="Laura Salcido" />
+  <call number="16502153320" duration="15" date="1376371217720" type="1" readable_date="Aug 12, 2013 10:20:17 PM" contact_name="Loredana Afanasiev" />
+  <call number="6176972037" duration="337" date="1376372468083" type="2" readable_date="Aug 12, 2013 10:41:08 PM" contact_name="Bex Merhar" />
+  <call number="17196484392" duration="0" date="1376680084739" type="3" readable_date="Aug 16, 2013 12:08:04 PM" contact_name="Robert Macdonald" />
+  <call number="+18056377243" duration="47" date="1376680151161" type="2" readable_date="Aug 16, 2013 12:09:11 PM" contact_name="(Unknown)" />
+  <call number="17196484392" duration="5672" date="1376680209113" type="2" readable_date="Aug 16, 2013 12:10:09 PM" contact_name="Robert Macdonald" />
+  <call number="13106143723" duration="0" date="1376682273300" type="3" readable_date="Aug 16, 2013 12:44:33 PM" contact_name="(Unknown)" />
+  <call number="13107049130" duration="12" date="1376759893666" type="1" readable_date="Aug 17, 2013 10:18:13 AM" contact_name="Bonnie M. Pauly" />
+  <call number="6504650448" duration="0" date="1376791746724" type="2" readable_date="Aug 17, 2013 7:09:06 PM" contact_name="Laura Goossens" />
+  <call number="8643548607" duration="33" date="1376843263735" type="2" readable_date="Aug 18, 2013 9:27:43 AM" contact_name="Molly Stenhouse" />
+  <call number="14153780171" duration="0" date="1377107282993" type="3" readable_date="Aug 21, 2013 10:48:02 AM" contact_name="Laura Salcido" />
+  <call number="14153780171" duration="299" date="1377111996692" type="1" readable_date="Aug 21, 2013 12:06:36 PM" contact_name="Laura Salcido" />
+  <call number="+16504655702" duration="4" date="1377113692841" type="2" readable_date="Aug 21, 2013 12:34:52 PM" contact_name="Zack Wexler-Beron" />
+  <call number="13109365631" duration="3238" date="1377312852423" type="1" readable_date="Aug 23, 2013 7:54:12 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="80" date="1377316122622" type="2" readable_date="Aug 23, 2013 8:48:42 PM" contact_name="Janet Zander" />
+  <call number="4082458585" duration="29" date="1377556745642" type="2" readable_date="Aug 26, 2013 3:39:05 PM" contact_name="(Unknown)" />
+  <call number="4087397717" duration="4" date="1377556802159" type="2" readable_date="Aug 26, 2013 3:40:02 PM" contact_name="(Unknown)" />
+  <call number="4082454350" duration="23" date="1377556997129" type="2" readable_date="Aug 26, 2013 3:43:17 PM" contact_name="(Unknown)" />
+  <call number="4087740722" duration="13" date="1377557187884" type="2" readable_date="Aug 26, 2013 3:46:27 PM" contact_name="(Unknown)" />
+  <call number="17602141890" duration="233" date="1377655491767" type="1" readable_date="Aug 27, 2013 7:04:51 PM" contact_name="Teresa Gonczy" />
+  <call number="17602141890" duration="180" date="1377657375622" type="1" readable_date="Aug 27, 2013 7:36:15 PM" contact_name="Teresa Gonczy" />
+  <call number="17147718000" duration="0" date="1377726445369" type="3" readable_date="Aug 28, 2013 2:47:25 PM" contact_name="(Unknown)" />
+  <call number="13109737701" duration="0" date="1377917161880" type="3" readable_date="Aug 30, 2013 7:46:01 PM" contact_name="(Unknown)" />
+  <call number="14083963209" duration="525" date="1377996156097" type="1" readable_date="Aug 31, 2013 5:42:36 PM" contact_name="Shevek Anarres" />
+  <call number="2482255156" duration="41" date="1378576371970" type="2" readable_date="Sep 7, 2013 10:52:51 AM" contact_name="(Unknown)" />
+  <call number="16502153320" duration="145" date="1378600101394" type="1" readable_date="Sep 7, 2013 5:28:21 PM" contact_name="Loredana Afanasiev" />
+  <call number="13232178184" duration="31" date="1378750614832" type="1" readable_date="Sep 9, 2013 11:16:54 AM" contact_name="Mahdroo McCaleb" />
+  <call number="6268627478" duration="13" date="1378866078005" type="2" readable_date="Sep 10, 2013 7:21:18 PM" contact_name="Kristy Hilands" />
+  <call number="14244569269" duration="0" date="1378935819066" type="1" readable_date="Sep 11, 2013 2:43:39 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="71" date="1378935854539" type="2" readable_date="Sep 11, 2013 2:44:14 PM" contact_name="(Unknown)" />
+  <call number="13232178184" duration="1972" date="1379009786434" type="1" readable_date="Sep 12, 2013 11:16:26 AM" contact_name="Mahdroo McCaleb" />
+  <call number="13233489205" duration="0" date="1379026299754" type="3" readable_date="Sep 12, 2013 3:51:39 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="51" date="1379126527756" type="1" readable_date="Sep 13, 2013 7:42:07 PM" contact_name="Candice Achenbach" />
+  <call number="13109365631" duration="208" date="1379182060821" type="1" readable_date="Sep 14, 2013 11:07:40 AM" contact_name="Janet Zander" />
+  <call number="14153780171" duration="0" date="1379363459726" type="3" readable_date="Sep 16, 2013 1:30:59 PM" contact_name="Laura Salcido" />
+  <call number="13109365631" duration="29" date="1379459057946" type="2" readable_date="Sep 17, 2013 4:04:17 PM" contact_name="Janet Zander" />
+  <call number="4152969111" duration="140" date="1379460416428" type="2" readable_date="Sep 17, 2013 4:26:56 PM" contact_name="(Unknown)" />
+  <call number="14153780171" duration="201" date="1379479963773" type="1" readable_date="Sep 17, 2013 9:52:43 PM" contact_name="Laura Salcido" />
+  <call number="13108791348" duration="0" date="1379537034614" type="3" readable_date="Sep 18, 2013 1:43:54 PM" contact_name="(Unknown)" />
+  <call number="13102732920" duration="0" date="1379552496936" type="3" readable_date="Sep 18, 2013 6:01:36 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="1671" date="1379709102846" type="1" readable_date="Sep 20, 2013 1:31:42 PM" contact_name="Janet Zander" />
+  <call number="2059083550" duration="0" date="1379744388713" type="2" readable_date="Sep 20, 2013 11:19:48 PM" contact_name="Victoria Skelly" />
+  <call number="16503808057" duration="0" date="1379747457376" type="3" readable_date="Sep 21, 2013 12:10:57 AM" contact_name="Elizabeth" />
+  <call number="+18056377243" duration="44" date="1379748059494" type="2" readable_date="Sep 21, 2013 12:20:59 AM" contact_name="(Unknown)" />
+  <call number="+16503808057" duration="45" date="1379748871433" type="2" readable_date="Sep 21, 2013 12:34:31 AM" contact_name="Elizabeth" />
+  <call number="16503808057" duration="0" date="1379749645462" type="3" readable_date="Sep 21, 2013 12:47:25 AM" contact_name="Elizabeth" />
+  <call number="+16503808057" duration="11" date="1379749734001" type="2" readable_date="Sep 21, 2013 12:48:54 AM" contact_name="Elizabeth" />
+  <call number="19096218000" duration="0" date="1379792410054" type="3" readable_date="Sep 21, 2013 12:40:10 PM" contact_name="(Unknown)" />
+  <call number="17194726642" duration="0" date="1379874366098" type="3" readable_date="Sep 22, 2013 11:26:06 AM" contact_name="Robert Macdonald" />
+  <call number="+18056377243" duration="39" date="1379875364464" type="2" readable_date="Sep 22, 2013 11:42:44 AM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="4" date="1379875417422" type="2" readable_date="Sep 22, 2013 11:43:37 AM" contact_name="(Unknown)" />
+  <call number="17194726642" duration="1118" date="1379875448531" type="2" readable_date="Sep 22, 2013 11:44:08 AM" contact_name="Robert Macdonald" />
+  <call number="4155585400" duration="163" date="1379885650265" type="2" readable_date="Sep 22, 2013 2:34:10 PM" contact_name="(Unknown)" />
+  <call number="8008002727" duration="20" date="1379886796534" type="2" readable_date="Sep 22, 2013 2:53:16 PM" contact_name="(Unknown)" />
+  <call number="18007764737" duration="42" date="1379887012748" type="2" readable_date="Sep 22, 2013 2:56:52 PM" contact_name="(Unknown)" />
+  <call number="8008002727" duration="524" date="1379887074050" type="2" readable_date="Sep 22, 2013 2:57:54 PM" contact_name="(Unknown)" />
+  <call number="6268627478" duration="38" date="1379887701438" type="2" readable_date="Sep 22, 2013 3:08:21 PM" contact_name="Kristy Hilands" />
+  <call number="3234284434" duration="540" date="1379887914126" type="2" readable_date="Sep 22, 2013 3:11:54 PM" contact_name="Paul Grasshoff" />
+  <call number="6502009933" duration="6" date="1379890999817" type="2" readable_date="Sep 22, 2013 4:03:19 PM" contact_name="Joanna Bresee" />
+  <call number="8008002727" duration="146" date="1379892156938" type="2" readable_date="Sep 22, 2013 4:22:36 PM" contact_name="(Unknown)" />
+  <call number="4153501690" duration="113" date="1379897964346" type="2" readable_date="Sep 22, 2013 5:59:24 PM" contact_name="(Unknown)" />
+  <call number="4154684860" duration="30" date="1379898200631" type="2" readable_date="Sep 22, 2013 6:03:20 PM" contact_name="(Unknown)" />
+  <call number="8584498598" duration="86" date="1379899585837" type="2" readable_date="Sep 22, 2013 6:26:25 PM" contact_name="Steve Scher" />
+  <call number="18584498598" duration="28" date="1379902351470" type="1" readable_date="Sep 22, 2013 7:12:31 PM" contact_name="Steve Scher" />
+  <call number="18584498598" duration="13" date="1379903643194" type="1" readable_date="Sep 22, 2013 7:34:03 PM" contact_name="Steve Scher" />
+  <call number="4129927418" duration="11" date="1379906531079" type="2" readable_date="Sep 22, 2013 8:22:11 PM" contact_name="Alice Yu" />
+  <call number="19165328377" duration="352" date="1379988525118" type="1" readable_date="Sep 23, 2013 7:08:45 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="15" date="1379991379751" type="1" readable_date="Sep 23, 2013 7:56:19 PM" contact_name="Tessa Jorgenson" />
+  <call number="+18584498598" duration="57" date="1380034143333" type="2" readable_date="Sep 24, 2013 7:49:03 AM" contact_name="Steve Scher" />
+  <call number="13106508027" duration="0" date="1380052774888" type="3" readable_date="Sep 24, 2013 12:59:34 PM" contact_name="Kemi Ando" />
+  <call number="+18056377243" duration="65" date="1380052974550" type="2" readable_date="Sep 24, 2013 1:02:54 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="90" date="1380067991341" type="2" readable_date="Sep 24, 2013 5:13:11 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="189" date="1380068348383" type="2" readable_date="Sep 24, 2013 5:19:08 PM" contact_name="(Unknown)" />
+  <call number="19096218000" duration="0" date="1380072728406" type="3" readable_date="Sep 24, 2013 6:32:08 PM" contact_name="(Unknown)" />
+  <call number="19096218000" duration="0" date="1380160223895" type="3" readable_date="Sep 25, 2013 6:50:23 PM" contact_name="(Unknown)" />
+  <call number="8643548607" duration="47" date="1380232177545" type="2" readable_date="Sep 26, 2013 2:49:37 PM" contact_name="Molly Stenhouse" />
+  <call number="18643548607" duration="12" date="1380232231416" type="1" readable_date="Sep 26, 2013 2:50:31 PM" contact_name="Molly Stenhouse" />
+  <call number="19096218000" duration="0" date="1380248372863" type="3" readable_date="Sep 26, 2013 7:19:32 PM" contact_name="(Unknown)" />
+  <call number="19096218000" duration="0" date="1380249453154" type="1" readable_date="Sep 26, 2013 7:37:33 PM" contact_name="(Unknown)" />
+  <call number="18663537148" duration="11" date="1380316323798" type="1" readable_date="Sep 27, 2013 2:12:03 PM" contact_name="(Unknown)" />
+  <call number="6505485309" duration="0" date="1380317735053" type="2" readable_date="Sep 27, 2013 2:35:35 PM" contact_name="(Unknown)" />
+  <call number="4153501690" duration="34" date="1380317795136" type="2" readable_date="Sep 27, 2013 2:36:35 PM" contact_name="(Unknown)" />
+  <call number="4154684860" duration="90" date="1380317889660" type="2" readable_date="Sep 27, 2013 2:38:09 PM" contact_name="(Unknown)" />
+  <call number="4158465992" duration="46" date="1380318260184" type="2" readable_date="Sep 27, 2013 2:44:20 PM" contact_name="(Unknown)" />
+  <call number="4158216715" duration="143" date="1380318398499" type="2" readable_date="Sep 27, 2013 2:46:38 PM" contact_name="(Unknown)" />
+  <call number="6509061732" duration="16" date="1380350431398" type="2" readable_date="Sep 27, 2013 11:40:31 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="113" date="1380351413705" type="1" readable_date="Sep 27, 2013 11:56:53 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="0" date="1380353622758" type="2" readable_date="Sep 28, 2013 12:33:42 AM" contact_name="Julia Bossmann" />
+  <call number="19096218000" duration="0" date="1380394275358" type="3" readable_date="Sep 28, 2013 11:51:15 AM" contact_name="(Unknown)" />
+  <call number="17194726642" duration="0" date="1380419416921" type="1" readable_date="Sep 28, 2013 6:50:16 PM" contact_name="Robert Macdonald" />
+  <call number="+18056377243" duration="90" date="1380420459018" type="2" readable_date="Sep 28, 2013 7:07:39 PM" contact_name="(Unknown)" />
+  <call number="17194726642" duration="185" date="1380420557038" type="2" readable_date="Sep 28, 2013 7:09:17 PM" contact_name="Robert Macdonald" />
+  <call number="16509061732" duration="0" date="1380436865968" type="3" readable_date="Sep 28, 2013 11:41:05 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="36" date="1380438005513" type="2" readable_date="Sep 29, 2013 12:00:05 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="0" date="1380438256188" type="3" readable_date="Sep 29, 2013 12:04:16 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="93" date="1380438294363" type="2" readable_date="Sep 29, 2013 12:04:54 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="0" date="1380438873405" type="3" readable_date="Sep 29, 2013 12:14:33 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="0" date="1380438927906" type="3" readable_date="Sep 29, 2013 12:15:27 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="135" date="1380439138425" type="1" readable_date="Sep 29, 2013 12:18:58 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="68" date="1380441183743" type="1" readable_date="Sep 29, 2013 12:53:03 AM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="67" date="1380442215462" type="2" readable_date="Sep 29, 2013 1:10:15 AM" contact_name="Julia Bossmann" />
+  <call number="13106373653" duration="0" date="1380501811525" type="3" readable_date="Sep 29, 2013 5:43:31 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="0" date="1380505110399" type="1" readable_date="Sep 29, 2013 6:38:30 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="250" date="1380505563801" type="2" readable_date="Sep 29, 2013 6:46:03 PM" contact_name="Candice Achenbach" />
+  <call number="16509061732" duration="238" date="1380506022265" type="2" readable_date="Sep 29, 2013 6:53:42 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="65" date="1380506831383" type="2" readable_date="Sep 29, 2013 7:07:11 PM" contact_name="Julia Bossmann" />
+  <call number="17072057698" duration="3674" date="1380508644274" type="2" readable_date="Sep 29, 2013 7:37:24 PM" contact_name="Candice Achenbach" />
+  <call number="16509061732" duration="198" date="1380515184584" type="2" readable_date="Sep 29, 2013 9:26:24 PM" contact_name="Julia Bossmann" />
+  <call number="18663537148" duration="0" date="1380577443865" type="3" readable_date="Sep 30, 2013 2:44:03 PM" contact_name="(Unknown)" />
+  <call number="19096218000" duration="0" date="1380594036838" type="3" readable_date="Sep 30, 2013 7:20:36 PM" contact_name="(Unknown)" />
+  <call number="3109365631" duration="1156" date="1380602288467" type="2" readable_date="Sep 30, 2013 9:38:08 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="150" date="1380603547527" type="2" readable_date="Sep 30, 2013 9:59:07 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="2543" date="1380604701765" type="2" readable_date="Sep 30, 2013 10:18:21 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="47" date="1380607363325" type="2" readable_date="Sep 30, 2013 11:02:43 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="1422" date="1380607424151" type="1" readable_date="Sep 30, 2013 11:03:44 PM" contact_name="Janet Zander" />
+  <call number="16509061732" duration="772" date="1380675915689" type="1" readable_date="Oct 1, 2013 6:05:15 PM" contact_name="Julia Bossmann" />
+  <call number="19096218000" duration="0" date="1380680959125" type="3" readable_date="Oct 1, 2013 7:29:19 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="72" date="1380752141616" type="1" readable_date="Oct 2, 2013 3:15:41 PM" contact_name="Candice Achenbach" />
+  <call number="19096218000" duration="0" date="1380766185268" type="3" readable_date="Oct 2, 2013 7:09:45 PM" contact_name="(Unknown)" />
+  <call number="16039574029" duration="0" date="1380844280885" type="3" readable_date="Oct 3, 2013 4:51:20 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="0" date="1380861181643" type="3" readable_date="Oct 3, 2013 9:33:01 PM" contact_name="Candice Achenbach" />
+  <call number="+18056377243" duration="66" date="1380863166431" type="2" readable_date="Oct 3, 2013 10:06:06 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="0" date="1380909618577" type="3" readable_date="Oct 4, 2013 11:00:18 AM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="345" date="1380910622433" type="2" readable_date="Oct 4, 2013 11:17:02 AM" contact_name="(Unknown)" />
+  <call number="7072057698" duration="0" date="1381217930058" type="2" readable_date="Oct 8, 2013 12:38:50 AM" contact_name="Candice Achenbach" />
+  <call number="7072057698" duration="3" date="1381217933424" type="2" readable_date="Oct 8, 2013 12:38:53 AM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="91" date="1381271084835" type="1" readable_date="Oct 8, 2013 3:24:44 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="43" date="1381276764176" type="1" readable_date="Oct 8, 2013 4:59:24 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="60" date="1381276968303" type="2" readable_date="Oct 8, 2013 5:02:48 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="96" date="1381347598578" type="1" readable_date="Oct 9, 2013 12:39:58 PM" contact_name="Candice Achenbach" />
+  <call number="19084856841" duration="0" date="1381348380412" type="1" readable_date="Oct 9, 2013 12:53:00 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="75" date="1381348718049" type="2" readable_date="Oct 9, 2013 12:58:38 PM" contact_name="(Unknown)" />
+  <call number="3105082725" duration="44" date="1381376511349" type="2" readable_date="Oct 9, 2013 8:41:51 PM" contact_name="Simone Syed" />
+  <call number="14158193660" duration="101" date="1381606148130" type="1" readable_date="Oct 12, 2013 12:29:08 PM" contact_name="Liz Flannery" />
+  <call number="3234284434" duration="46" date="1381606298090" type="2" readable_date="Oct 12, 2013 12:31:38 PM" contact_name="Paul Grasshoff" />
+  <call number="17072057698" duration="64" date="1381606502997" type="1" readable_date="Oct 12, 2013 12:35:02 PM" contact_name="Candice Achenbach" />
+  <call number="13234284434" duration="354" date="1381607068442" type="1" readable_date="Oct 12, 2013 12:44:28 PM" contact_name="Paul Grasshoff" />
+  <call number="6268627478" duration="63" date="1381608054633" type="2" readable_date="Oct 12, 2013 1:00:54 PM" contact_name="Kristy Hilands" />
+  <call number="19165328377" duration="60" date="1381617240124" type="1" readable_date="Oct 12, 2013 3:34:00 PM" contact_name="Tessa Jorgenson" />
+  <call number="7072057698" duration="131" date="1381647452589" type="2" readable_date="Oct 12, 2013 11:57:32 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="111" date="1381684542031" type="1" readable_date="Oct 13, 2013 10:15:42 AM" contact_name="Candice Achenbach" />
+  <call number="14158193660" duration="58" date="1381687229188" type="1" readable_date="Oct 13, 2013 11:00:29 AM" contact_name="Liz Flannery" />
+  <call number="13109365631" duration="0" date="1381784369137" type="3" readable_date="Oct 14, 2013 1:59:29 PM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="69" date="1381784735462" type="2" readable_date="Oct 14, 2013 2:05:35 PM" contact_name="(Unknown)" />
+  <call number="8008290582" duration="40" date="1381797015681" type="2" readable_date="Oct 14, 2013 5:30:15 PM" contact_name="(Unknown)" />
+  <call number="6268627478" duration="23" date="1381802850737" type="2" readable_date="Oct 14, 2013 7:07:30 PM" contact_name="Kristy Hilands" />
+  <call number="14089961010" duration="0" date="1381880743358" type="3" readable_date="Oct 15, 2013 4:45:43 PM" contact_name="(Unknown)" />
+  <call number="19165328377" duration="0" date="1381887854291" type="3" readable_date="Oct 15, 2013 6:44:14 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="323" date="1381888332771" type="2" readable_date="Oct 15, 2013 6:52:12 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="403" date="1381889539549" type="2" readable_date="Oct 15, 2013 7:12:19 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="210" date="1381890001953" type="1" readable_date="Oct 15, 2013 7:20:01 PM" contact_name="Tessa Jorgenson" />
+  <call number="17603466319" duration="0" date="1381954515224" type="3" readable_date="Oct 16, 2013 1:15:15 PM" contact_name="(Unknown)" />
+  <call number="6176972037" duration="15" date="1381976506778" type="2" readable_date="Oct 16, 2013 7:21:46 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="338" date="1381976823695" type="1" readable_date="Oct 16, 2013 7:27:03 PM" contact_name="Bex Merhar" />
+  <call number="3234284434" duration="78" date="1381977211999" type="2" readable_date="Oct 16, 2013 7:33:31 PM" contact_name="Paul Grasshoff" />
+  <call number="16176972037" duration="0" date="1382025512021" type="3" readable_date="Oct 17, 2013 8:58:32 AM" contact_name="Bex Merhar" />
+  <call number="611" duration="160" date="1382025789106" type="2" readable_date="Oct 17, 2013 9:03:09 AM" contact_name="(Unknown)" />
+  <call number="16509061732" duration="41" date="1382027127189" type="1" readable_date="Oct 17, 2013 9:25:27 AM" contact_name="Julia Bossmann" />
+  <call number="4083354996" duration="256" date="1382135383576" type="2" readable_date="Oct 18, 2013 3:29:43 PM" contact_name="(Unknown)" />
+  <call number="4152969111" duration="30" date="1382135768003" type="2" readable_date="Oct 18, 2013 3:36:08 PM" contact_name="(Unknown)" />
+  <call number="16176972037" duration="261" date="1382207066946" type="1" readable_date="Oct 19, 2013 11:24:26 AM" contact_name="Bex Merhar" />
+  <call number="14154938211" duration="0" date="1382319546412" type="3" readable_date="Oct 20, 2013 6:39:06 PM" contact_name="Scott Norman" />
+  <call number="+18056377243" duration="43" date="1382320407407" type="2" readable_date="Oct 20, 2013 6:53:27 PM" contact_name="(Unknown)" />
+  <call number="3109365631" duration="42" date="1382326687353" type="2" readable_date="Oct 20, 2013 8:38:07 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="666" date="1382389174441" type="1" readable_date="Oct 21, 2013 1:59:34 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1382483365936" type="3" readable_date="Oct 22, 2013 4:09:25 PM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="93" date="1382483859613" type="2" readable_date="Oct 22, 2013 4:17:39 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="421" date="1382484194706" type="2" readable_date="Oct 22, 2013 4:23:14 PM" contact_name="Janet Zander" />
+  <call number="16176972037" duration="783" date="1382510278908" type="1" readable_date="Oct 22, 2013 11:37:58 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="185" date="1382512988881" type="1" readable_date="Oct 23, 2013 12:23:08 AM" contact_name="Bex Merhar" />
+  <call number="17603466319" duration="0" date="1382554228610" type="1" readable_date="Oct 23, 2013 11:50:28 AM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="67" date="1382554305349" type="2" readable_date="Oct 23, 2013 11:51:45 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="5373" date="1382587396072" type="1" readable_date="Oct 23, 2013 9:03:16 PM" contact_name="Janet Zander" />
+  <call number="16176972037" duration="0" date="1382588072153" type="3" readable_date="Oct 23, 2013 9:14:32 PM" contact_name="Bex Merhar" />
+  <call number="3109365631" duration="1586" date="1382657519531" type="2" readable_date="Oct 24, 2013 4:31:59 PM" contact_name="Janet Zander" />
+  <call number="13234284434" duration="1689" date="1382662487030" type="1" readable_date="Oct 24, 2013 5:54:47 PM" contact_name="Paul Grasshoff" />
+  <call number="13109365631" duration="368" date="1382740868945" type="1" readable_date="Oct 25, 2013 3:41:08 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="329" date="1382745788182" type="1" readable_date="Oct 25, 2013 5:03:08 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1382818313835" type="3" readable_date="Oct 26, 2013 1:11:53 PM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="51" date="1382824599945" type="2" readable_date="Oct 26, 2013 2:56:39 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="588" date="1382833136354" type="2" readable_date="Oct 26, 2013 5:18:56 PM" contact_name="Janet Zander" />
+  <call number="14158193660" duration="0" date="1382836177442" type="3" readable_date="Oct 26, 2013 6:09:37 PM" contact_name="Liz Flannery" />
+  <call number="+18056377243" duration="27" date="1382836314340" type="2" readable_date="Oct 26, 2013 6:11:54 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="9" date="1382837110878" type="2" readable_date="Oct 26, 2013 6:25:10 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="2" date="1382837149872" type="2" readable_date="Oct 26, 2013 6:25:49 PM" contact_name="Janet Zander" />
+  <call number="14158193660" duration="6" date="1382837185700" type="2" readable_date="Oct 26, 2013 6:26:25 PM" contact_name="Liz Flannery" />
+  <call number="13109365631" duration="7" date="1382837233213" type="2" readable_date="Oct 26, 2013 6:27:13 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1382837322398" type="2" readable_date="Oct 26, 2013 6:28:42 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="13" date="1382837509885" type="2" readable_date="Oct 26, 2013 6:31:49 PM" contact_name="Janet Zander" />
+  <call number="4158193660" duration="5" date="1382838639289" type="2" readable_date="Oct 26, 2013 6:50:39 PM" contact_name="Liz Flannery" />
+  <call number="13109365631" duration="1246" date="1382996265763" type="1" readable_date="Oct 28, 2013 2:37:45 PM" contact_name="Janet Zander" />
+  <call number="-1" duration="0" date="1383159279057" type="3" readable_date="Oct 30, 2013 11:54:39 AM" contact_name="(Unknown)" />
+  <call number="19175531196" duration="0" date="1383189697398" type="3" readable_date="Oct 30, 2013 8:21:37 PM" contact_name="(Unknown)" />
+  <call number="19175531196" duration="86" date="1383189730743" type="1" readable_date="Oct 30, 2013 8:22:10 PM" contact_name="(Unknown)" />
+  <call number="19175531196" duration="53" date="1383190923200" type="2" readable_date="Oct 30, 2013 8:42:03 PM" contact_name="(Unknown)" />
+  <call number="19175531196" duration="12" date="1383191775037" type="1" readable_date="Oct 30, 2013 8:56:15 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="92" date="1383237224842" type="2" readable_date="Oct 31, 2013 9:33:44 AM" contact_name="(Unknown)" />
+  <call number="4083354996" duration="246" date="1383261649537" type="2" readable_date="Oct 31, 2013 4:20:49 PM" contact_name="(Unknown)" />
+  <call number="16176972037" duration="1593" date="1383266769630" type="1" readable_date="Oct 31, 2013 5:46:09 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="760" date="1383268458929" type="1" readable_date="Oct 31, 2013 6:14:18 PM" contact_name="Bex Merhar" />
+  <call number="6512700126" duration="8" date="1383270697156" type="2" readable_date="Oct 31, 2013 6:51:37 PM" contact_name="Aileen Christina" />
+  <call number="16512700126" duration="0" date="1383283776321" type="3" readable_date="Oct 31, 2013 10:29:36 PM" contact_name="Aileen Christina" />
+  <call number="18663537148" duration="0" date="1383320948276" type="3" readable_date="Nov 1, 2013 8:49:08 AM" contact_name="(Unknown)" />
+  <call number="18665333520" duration="130" date="1383332405145" type="2" readable_date="Nov 1, 2013 12:00:05 PM" contact_name="(Unknown)" />
+  <call number="18666965673" duration="626" date="1383355357420" type="2" readable_date="Nov 1, 2013 6:22:37 PM" contact_name="(Unknown)" />
+  <call number="4158193660" duration="70" date="1383364025608" type="2" readable_date="Nov 1, 2013 8:47:05 PM" contact_name="Liz Flannery" />
+  <call number="18663537148" duration="0" date="1383412224913" type="3" readable_date="Nov 2, 2013 10:10:24 AM" contact_name="(Unknown)" />
+  <call number="18665333520" duration="0" date="1383417140746" type="2" readable_date="Nov 2, 2013 11:32:20 AM" contact_name="(Unknown)" />
+  <call number="+13104568422" duration="0" date="1383597634237" type="3" readable_date="Nov 4, 2013 12:40:34 PM" contact_name="(Unknown)" />
+  <call number="13108790203" duration="0" date="1383601777116" type="3" readable_date="Nov 4, 2013 1:49:37 PM" contact_name="(Unknown)" />
+  <call number="14082498888" duration="0" date="1383674804439" type="1" readable_date="Nov 5, 2013 10:06:44 AM" contact_name="(Unknown)" />
+  <call number="14082498888" duration="36" date="1383704256788" type="1" readable_date="Nov 5, 2013 6:17:36 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="0" date="1383757300961" type="2" readable_date="Nov 6, 2013 9:01:40 AM" contact_name="(Unknown)" />
+  <call number="16512700126" duration="0" date="1383774982883" type="3" readable_date="Nov 6, 2013 1:56:22 PM" contact_name="Aileen Christina" />
+  <call number="16512700126" duration="0" date="1383775042935" type="3" readable_date="Nov 6, 2013 1:57:22 PM" contact_name="Aileen Christina" />
+  <call number="16502153320" duration="3" date="1383854907138" type="1" readable_date="Nov 7, 2013 12:08:27 PM" contact_name="Loredana Afanasiev" />
+  <call number="16502153320" duration="0" date="1383855309009" type="3" readable_date="Nov 7, 2013 12:15:09 PM" contact_name="Loredana Afanasiev" />
+  <call number="8582043739" duration="7" date="1383860897791" type="2" readable_date="Nov 7, 2013 1:48:17 PM" contact_name="Kimberly Spillman" />
+  <call number="13109365631" duration="0" date="1383885452903" type="3" readable_date="Nov 7, 2013 8:37:32 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="35" date="1383901940027" type="2" readable_date="Nov 8, 2013 1:12:20 AM" contact_name="Janet Zander" />
+  <call number="14082498888" duration="29" date="1383946937436" type="2" readable_date="Nov 8, 2013 1:42:17 PM" contact_name="(Unknown)" />
+  <call number="3109365631" duration="4" date="1383955323376" type="2" readable_date="Nov 8, 2013 4:02:03 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="35" date="1383973237432" type="2" readable_date="Nov 8, 2013 9:00:37 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1383976173377" type="3" readable_date="Nov 8, 2013 9:49:33 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="15" date="1383976775022" type="2" readable_date="Nov 8, 2013 9:59:35 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="7448" date="1383976817055" type="2" readable_date="Nov 8, 2013 10:00:17 PM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="1270" date="1384020464381" type="1" readable_date="Nov 9, 2013 10:07:44 AM" contact_name="Janet Zander" />
+  <call number="8007529669" duration="185" date="1384023999870" type="2" readable_date="Nov 9, 2013 11:06:39 AM" contact_name="Seven Crown Resorts" />
+  <call number="3109365631" duration="29" date="1384024211826" type="2" readable_date="Nov 9, 2013 11:10:11 AM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="23" date="1384024754560" type="2" readable_date="Nov 9, 2013 11:19:14 AM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="1" date="1384025459571" type="2" readable_date="Nov 9, 2013 11:30:59 AM" contact_name="Janet Zander" />
+  <call number="8007529669" duration="160" date="1384025600655" type="2" readable_date="Nov 9, 2013 11:33:20 AM" contact_name="Seven Crown Resorts" />
+  <call number="3109365631" duration="1" date="1384025784441" type="2" readable_date="Nov 9, 2013 11:36:24 AM" contact_name="Janet Zander" />
+  <call number="19495887100" duration="196" date="1384026352738" type="1" readable_date="Nov 9, 2013 11:45:52 AM" contact_name="(Unknown)" />
+  <call number="14154938211" duration="0" date="1384026619459" type="3" readable_date="Nov 9, 2013 11:50:19 AM" contact_name="Scott Norman" />
+  <call number="13109365631" duration="39" date="1384027138400" type="1" readable_date="Nov 9, 2013 11:58:58 AM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="597" date="1384028453334" type="1" readable_date="Nov 9, 2013 12:20:53 PM" contact_name="Janet Zander" />
+  <call number="9165328377" duration="33" date="1384048822143" type="2" readable_date="Nov 9, 2013 6:00:22 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="0" date="1384048968299" type="3" readable_date="Nov 9, 2013 6:02:48 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="61" date="1384049020100" type="2" readable_date="Nov 9, 2013 6:03:40 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="15" date="1384051711100" type="1" readable_date="Nov 9, 2013 6:48:31 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="0" date="1384051878204" type="3" readable_date="Nov 9, 2013 6:51:18 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="0" date="1384055062693" type="3" readable_date="Nov 9, 2013 7:44:22 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="21" date="1384055266181" type="2" readable_date="Nov 9, 2013 7:47:46 PM" contact_name="Tessa Jorgenson" />
+  <call number="19165328377" duration="26" date="1384059327344" type="2" readable_date="Nov 9, 2013 8:55:27 PM" contact_name="Tessa Jorgenson" />
+  <call number="14154938211" duration="24" date="1384136231916" type="2" readable_date="Nov 10, 2013 6:17:11 PM" contact_name="Scott Norman" />
+  <call number="13109365631" duration="3715" date="1384137779133" type="1" readable_date="Nov 10, 2013 6:42:59 PM" contact_name="Janet Zander" />
+  <call number="18663537148" duration="0" date="1384190483152" type="3" readable_date="Nov 11, 2013 9:21:23 AM" contact_name="(Unknown)" />
+  <call number="13108790203" duration="0" date="1384194293592" type="3" readable_date="Nov 11, 2013 10:24:53 AM" contact_name="(Unknown)" />
+  <call number="14082498888" duration="0" date="1384289368765" type="1" readable_date="Nov 12, 2013 12:49:28 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="181" date="1384291611252" type="2" readable_date="Nov 12, 2013 1:26:51 PM" contact_name="(Unknown)" />
+  <call number="15756446512" duration="34" date="1384304640342" type="1" readable_date="Nov 12, 2013 5:04:00 PM" contact_name="Boris Tadjikov" />
+  <call number="16176972037" duration="0" date="1384325431234" type="3" readable_date="Nov 12, 2013 10:50:31 PM" contact_name="Bex Merhar" />
+  <call number="4158193660" duration="0" date="1384508383511" type="2" readable_date="Nov 15, 2013 1:39:43 AM" contact_name="Liz Flannery" />
+  <call number="18663537148" duration="0" date="1384619601275" type="3" readable_date="Nov 16, 2013 8:33:21 AM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="0" date="1384710115327" type="3" readable_date="Nov 17, 2013 9:41:55 AM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="247" date="1384715115961" type="2" readable_date="Nov 17, 2013 11:05:15 AM" contact_name="Candice Achenbach" />
+  <call number="14083963209" duration="63" date="1384723950763" type="1" readable_date="Nov 17, 2013 1:32:30 PM" contact_name="Shevek Anarres" />
+  <call number="18663537148" duration="0" date="1384801240307" type="3" readable_date="Nov 18, 2013 11:00:40 AM" contact_name="(Unknown)" />
+  <call number="6268627478" duration="2" date="1384922988951" type="2" readable_date="Nov 19, 2013 8:49:48 PM" contact_name="Kristy Hilands" />
+  <call number="18663537148" duration="0" date="1384966148300" type="1" readable_date="Nov 20, 2013 8:49:08 AM" contact_name="(Unknown)" />
+  <call number="12146944571" duration="0" date="1384973903510" type="3" readable_date="Nov 20, 2013 10:58:23 AM" contact_name="(Unknown)" />
+  <call number="4158193660" duration="175" date="1385094353863" type="2" readable_date="Nov 21, 2013 8:25:53 PM" contact_name="Liz Flannery" />
+  <call number="7072057698" duration="184" date="1385265107149" type="2" readable_date="Nov 23, 2013 7:51:47 PM" contact_name="Candice Achenbach" />
+  <call number="+17072057698" duration="26" date="1385267042485" type="2" readable_date="Nov 23, 2013 8:24:02 PM" contact_name="Candice Achenbach" />
+  <call number="+17072057698" duration="14" date="1385267447222" type="2" readable_date="Nov 23, 2013 8:30:47 PM" contact_name="Candice Achenbach" />
+  <call number="6512700126" duration="22" date="1385347696316" type="2" readable_date="Nov 24, 2013 6:48:16 PM" contact_name="Aileen Christina" />
+  <call number="17072057698" duration="45" date="1385348464149" type="1" readable_date="Nov 24, 2013 7:01:04 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="60" date="1385349648312" type="1" readable_date="Nov 24, 2013 7:20:48 PM" contact_name="Candice Achenbach" />
+  <call number="7742800014" duration="74" date="1385419087172" type="2" readable_date="Nov 25, 2013 2:38:07 PM" contact_name="Megan Dobro" />
+  <call number="+526394730073" duration="0" date="1385430074209" type="3" readable_date="Nov 25, 2013 5:41:14 PM" contact_name="(Unknown)" />
+  <call number="4158193660" duration="0" date="1385517330902" type="2" readable_date="Nov 26, 2013 5:55:30 PM" contact_name="Liz Flannery" />
+  <call number="17072057698" duration="192" date="1385518417603" type="1" readable_date="Nov 26, 2013 6:13:37 PM" contact_name="Candice Achenbach" />
+  <call number="14158193660" duration="0" date="1385520955127" type="3" readable_date="Nov 26, 2013 6:55:55 PM" contact_name="Liz Flannery" />
+  <call number="+18056377243" duration="27" date="1385521360903" type="2" readable_date="Nov 26, 2013 7:02:40 PM" contact_name="(Unknown)" />
+  <call number="4158193660" duration="745" date="1385521982904" type="2" readable_date="Nov 26, 2013 7:13:02 PM" contact_name="Liz Flannery" />
+  <call number="6176972037" duration="21" date="1385616172619" type="2" readable_date="Nov 27, 2013 9:22:52 PM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="431" date="1385616442782" type="1" readable_date="Nov 27, 2013 9:27:22 PM" contact_name="Bex Merhar" />
+  <call number="6268627478" duration="10" date="1385619968921" type="2" readable_date="Nov 27, 2013 10:26:08 PM" contact_name="Kristy Hilands" />
+  <call number="13109365631" duration="11" date="1385667328257" type="1" readable_date="Nov 28, 2013 11:35:28 AM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="3599" date="1385667354297" type="1" readable_date="Nov 28, 2013 11:35:54 AM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="250" date="1385670987700" type="1" readable_date="Nov 28, 2013 12:36:27 PM" contact_name="Janet Zander" />
+  <call number="6268627478" duration="28" date="1385678107435" type="2" readable_date="Nov 28, 2013 2:35:07 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="0" date="1385678379270" type="3" readable_date="Nov 28, 2013 2:39:39 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="4" date="1385678454205" type="2" readable_date="Nov 28, 2013 2:40:54 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="4" date="1385678500295" type="2" readable_date="Nov 28, 2013 2:41:40 PM" contact_name="Kristy Hilands" />
+  <call number="17196484392" duration="0" date="1385686794110" type="1" readable_date="Nov 28, 2013 4:59:54 PM" contact_name="Robert Macdonald" />
+  <call number="+18056377243" duration="21" date="1385686936575" type="2" readable_date="Nov 28, 2013 5:02:16 PM" contact_name="(Unknown)" />
+  <call number="14158193660" duration="19" date="1385832779068" type="1" readable_date="Nov 30, 2013 9:32:59 AM" contact_name="Liz Flannery" />
+  <call number="17072057698" duration="0" date="1385855556126" type="3" readable_date="Nov 30, 2013 3:52:36 PM" contact_name="Candice Achenbach" />
+  <call number="+18056377243" duration="44" date="1385858134534" type="2" readable_date="Nov 30, 2013 4:35:34 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="58" date="1385946538412" type="1" readable_date="Dec 1, 2013 5:08:58 PM" contact_name="Candice Achenbach" />
+  <call number="13106841035" duration="0" date="1385949350262" type="3" readable_date="Dec 1, 2013 5:55:50 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="14" date="1385949421375" type="2" readable_date="Dec 1, 2013 5:57:01 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="31" date="1386021190299" type="1" readable_date="Dec 2, 2013 1:53:10 PM" contact_name="Candice Achenbach" />
+  <call number="19096218000" duration="0" date="1386042281322" type="3" readable_date="Dec 2, 2013 7:44:41 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="107" date="1386113803300" type="1" readable_date="Dec 3, 2013 3:36:43 PM" contact_name="Candice Achenbach" />
+  <call number="19096218000" duration="0" date="1386127806819" type="3" readable_date="Dec 3, 2013 7:30:06 PM" contact_name="(Unknown)" />
+  <call number="3234284434" duration="14" date="1386135391120" type="2" readable_date="Dec 3, 2013 9:36:31 PM" contact_name="Paul Grasshoff" />
+  <call number="3234284434" duration="5" date="1386135453660" type="2" readable_date="Dec 3, 2013 9:37:33 PM" contact_name="Paul Grasshoff" />
+  <call number="3234284434" duration="5" date="1386135514674" type="2" readable_date="Dec 3, 2013 9:38:34 PM" contact_name="Paul Grasshoff" />
+  <call number="3234284434" duration="4" date="1386135579887" type="2" readable_date="Dec 3, 2013 9:39:39 PM" contact_name="Paul Grasshoff" />
+  <call number="13106377409" duration="0" date="1386198218425" type="3" readable_date="Dec 4, 2013 3:03:38 PM" contact_name="(Unknown)" />
+  <call number="19096218000" duration="0" date="1386300543185" type="3" readable_date="Dec 5, 2013 7:29:03 PM" contact_name="(Unknown)" />
+  <call number="6509061732" duration="20" date="1386469731186" type="2" readable_date="Dec 7, 2013 6:28:51 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="393" date="1386470051923" type="1" readable_date="Dec 7, 2013 6:34:11 PM" contact_name="Julia Bossmann" />
+  <call number="6502488526" duration="3" date="1386532549377" type="2" readable_date="Dec 8, 2013 11:55:49 AM" contact_name="Scott Westbrook" />
+  <call number="2059083550" duration="6" date="1386576506845" type="2" readable_date="Dec 9, 2013 12:08:26 AM" contact_name="Victoria Skelly" />
+  <call number="17196484392" duration="0" date="1386622427942" type="3" readable_date="Dec 9, 2013 12:53:47 PM" contact_name="Robert Macdonald" />
+  <call number="+18056377243" duration="27" date="1386622497382" type="2" readable_date="Dec 9, 2013 12:54:57 PM" contact_name="(Unknown)" />
+  <call number="16268627478" duration="0" date="1386659168120" type="3" readable_date="Dec 9, 2013 11:06:08 PM" contact_name="Kristy Hilands" />
+  <call number="6268627478" duration="3329" date="1386661845245" type="2" readable_date="Dec 9, 2013 11:50:45 PM" contact_name="Kristy Hilands" />
+  <call number="6268627478" duration="91" date="1386729814797" type="2" readable_date="Dec 10, 2013 6:43:34 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="63" date="1386732025523" type="1" readable_date="Dec 10, 2013 7:20:25 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="0" date="1386895301474" type="3" readable_date="Dec 12, 2013 4:41:41 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="0" date="1386895322553" type="3" readable_date="Dec 12, 2013 4:42:02 PM" contact_name="Kristy Hilands" />
+  <call number="16268627478" duration="316" date="1386895991134" type="1" readable_date="Dec 12, 2013 4:53:11 PM" contact_name="Kristy Hilands" />
+  <call number="+18056377243" duration="14" date="1386896341780" type="2" readable_date="Dec 12, 2013 4:59:01 PM" contact_name="(Unknown)" />
+  <call number="6268627478" duration="7" date="1386899380918" type="2" readable_date="Dec 12, 2013 5:49:40 PM" contact_name="Kristy Hilands" />
+  <call number="6268627478" duration="9" date="1386899562947" type="2" readable_date="Dec 12, 2013 5:52:42 PM" contact_name="Kristy Hilands" />
+  <call number="19096218000" duration="0" date="1386906393117" type="3" readable_date="Dec 12, 2013 7:46:33 PM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="38" date="1386907834144" type="2" readable_date="Dec 12, 2013 8:10:34 PM" contact_name="(Unknown)" />
+  <call number="16268627478" duration="0" date="1386916752132" type="3" readable_date="Dec 12, 2013 10:39:12 PM" contact_name="Kristy Hilands" />
+  <call number="15106863550" duration="26" date="1386973276200" type="1" readable_date="Dec 13, 2013 2:21:16 PM" contact_name="Victoria Skelly" />
+  <call number="17072057698" duration="0" date="1386990041385" type="3" readable_date="Dec 13, 2013 7:00:41 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="30" date="1386991465591" type="2" readable_date="Dec 13, 2013 7:24:25 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="2360" date="1386991826252" type="1" readable_date="Dec 13, 2013 7:30:26 PM" contact_name="Candice Achenbach" />
+  <call number="16176972037" duration="203" date="1387037997607" type="1" readable_date="Dec 14, 2013 8:19:57 AM" contact_name="Bex Merhar" />
+  <call number="16176972037" duration="162" date="1387068464585" type="1" readable_date="Dec 14, 2013 4:47:44 PM" contact_name="Bex Merhar" />
+  <call number="17072057698" duration="0" date="1387069896868" type="2" readable_date="Dec 14, 2013 5:11:36 PM" contact_name="Candice Achenbach" />
+  <call number="6509061732" duration="28" date="1387070496145" type="2" readable_date="Dec 14, 2013 5:21:36 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="84" date="1387070713365" type="1" readable_date="Dec 14, 2013 5:25:13 PM" contact_name="Julia Bossmann" />
+  <call number="3234284434" duration="23" date="1387071149643" type="2" readable_date="Dec 14, 2013 5:32:29 PM" contact_name="Paul Grasshoff" />
+  <call number="16509061732" duration="88" date="1387164177451" type="1" readable_date="Dec 15, 2013 7:22:57 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="292" date="1387167081171" type="1" readable_date="Dec 15, 2013 8:11:21 PM" contact_name="Julia Bossmann" />
+  <call number="9165328377" duration="109" date="1387167435370" type="2" readable_date="Dec 15, 2013 8:17:15 PM" contact_name="Tessa Jorgenson" />
+  <call number="16509061732" duration="60" date="1387167609471" type="2" readable_date="Dec 15, 2013 8:20:09 PM" contact_name="Julia Bossmann" />
+  <call number="19165328377" duration="60" date="1387179506301" type="1" readable_date="Dec 15, 2013 11:38:26 PM" contact_name="Tessa Jorgenson" />
+  <call number="16509061732" duration="0" date="1387224061823" type="3" readable_date="Dec 16, 2013 12:01:01 PM" contact_name="Julia Bossmann" />
+  <call number="16176972037" duration="1213" date="1387314772186" type="1" readable_date="Dec 17, 2013 1:12:52 PM" contact_name="Bex Merhar" />
+  <call number="13109365631" duration="7454" date="1387343671760" type="1" readable_date="Dec 17, 2013 9:14:31 PM" contact_name="Janet Zander" />
+  <call number="7072057698" duration="152" date="1387422558763" type="2" readable_date="Dec 18, 2013 7:09:18 PM" contact_name="Candice Achenbach" />
+  <call number="13106465252" duration="0" date="1387597216825" type="1" readable_date="Dec 20, 2013 7:40:16 PM" contact_name="(Unknown)" />
+  <call number="6268627478" duration="10" date="1387597551098" type="2" readable_date="Dec 20, 2013 7:45:51 PM" contact_name="Kristy Hilands" />
+  <call number="17072057698" duration="20" date="1387668134960" type="1" readable_date="Dec 21, 2013 3:22:14 PM" contact_name="Candice Achenbach" />
+  <call number="14153780171" duration="0" date="1387732796452" type="3" readable_date="Dec 22, 2013 9:19:56 AM" contact_name="Laura Salcido" />
+  <call number="6176972037" duration="61" date="1387919632258" type="2" readable_date="Dec 24, 2013 1:13:52 PM" contact_name="Bex Merhar" />
+  <call number="13182632172" duration="0" date="1388002175365" type="3" readable_date="Dec 25, 2013 12:09:35 PM" contact_name="(Unknown)" />
+  <call number="19516919559" duration="0" date="1388030296001" type="1" readable_date="Dec 25, 2013 7:58:16 PM" contact_name="(Unknown)" />
+  <call number="19516919559" duration="0" date="1388030329721" type="1" readable_date="Dec 25, 2013 7:58:49 PM" contact_name="(Unknown)" />
+  <call number="2348175195053" duration="0" date="1388046501149" type="3" readable_date="Dec 26, 2013 12:28:21 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="0" date="1388085615627" type="3" readable_date="Dec 26, 2013 11:20:15 AM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="195" date="1388086779047" type="2" readable_date="Dec 26, 2013 11:39:39 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="73" date="1388088484813" type="2" readable_date="Dec 26, 2013 12:08:04 PM" contact_name="Janet Zander" />
+  <call number="18474269203" duration="0" date="1388160689568" type="3" readable_date="Dec 27, 2013 8:11:29 AM" contact_name="(Unknown)" />
+  <call number="18474269203" duration="0" date="1388166528080" type="3" readable_date="Dec 27, 2013 9:48:48 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="0" date="1388175556333" type="3" readable_date="Dec 27, 2013 12:19:16 PM" contact_name="Janet Zander" />
+  <call number="7072057698" duration="1246" date="1388176988645" type="2" readable_date="Dec 27, 2013 12:43:08 PM" contact_name="Candice Achenbach" />
+  <call number="+18056377243" duration="183" date="1388189898984" type="2" readable_date="Dec 27, 2013 4:18:18 PM" contact_name="(Unknown)" />
+  <call number="18474269203" duration="0" date="1388247535627" type="3" readable_date="Dec 28, 2013 8:18:55 AM" contact_name="(Unknown)" />
+  <call number="18474268085" duration="0" date="1388256235993" type="1" readable_date="Dec 28, 2013 10:43:55 AM" contact_name="(Unknown)" />
+  <call number="15059187801" duration="1289" date="1388257405499" type="1" readable_date="Dec 28, 2013 11:03:25 AM" contact_name="Kim Espinoza" />
+  <call number="13109365631" duration="0" date="1388257904704" type="3" readable_date="Dec 28, 2013 11:11:44 AM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="31" date="1388259832377" type="2" readable_date="Dec 28, 2013 11:43:52 AM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="50" date="1388260584551" type="2" readable_date="Dec 28, 2013 11:56:24 AM" contact_name="Janet Zander" />
+  <call number="13109365631" duration="0" date="1388263677094" type="1" readable_date="Dec 28, 2013 12:47:57 PM" contact_name="Janet Zander" />
+  <call number="+18056377243" duration="120" date="1388264501781" type="2" readable_date="Dec 28, 2013 1:01:41 PM" contact_name="(Unknown)" />
+  <call number="13109365631" duration="2095" date="1388265150586" type="2" readable_date="Dec 28, 2013 1:12:30 PM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="10" date="1388272034221" type="2" readable_date="Dec 28, 2013 3:07:14 PM" contact_name="Janet Zander" />
+  <call number="18474268085" duration="0" date="1388276097671" type="1" readable_date="Dec 28, 2013 4:14:57 PM" contact_name="(Unknown)" />
+  <call number="18474268085" duration="0" date="1388282784055" type="1" readable_date="Dec 28, 2013 6:06:24 PM" contact_name="(Unknown)" />
+  <call number="14153780171" duration="0" date="1388283574806" type="3" readable_date="Dec 28, 2013 6:19:34 PM" contact_name="Laura Salcido" />
+  <call number="7072057698" duration="697" date="1388285675939" type="2" readable_date="Dec 28, 2013 6:54:35 PM" contact_name="Candice Achenbach" />
+  <call number="18474269203" duration="0" date="1388287781492" type="3" readable_date="Dec 28, 2013 7:29:41 PM" contact_name="(Unknown)" />
+  <call number="18474269203" duration="0" date="1388333435571" type="3" readable_date="Dec 29, 2013 8:10:35 AM" contact_name="(Unknown)" />
+  <call number="18474268085" duration="0" date="1388340428473" type="3" readable_date="Dec 29, 2013 10:07:08 AM" contact_name="(Unknown)" />
+  <call number="18474269203" duration="0" date="1388347471061" type="3" readable_date="Dec 29, 2013 12:04:31 PM" contact_name="(Unknown)" />
+  <call number="18474269203" duration="0" date="1388366500135" type="1" readable_date="Dec 29, 2013 5:21:40 PM" contact_name="(Unknown)" />
+  <call number="3109365631" duration="27" date="1388394428983" type="2" readable_date="Dec 30, 2013 1:07:08 AM" contact_name="Janet Zander" />
+  <call number="3109365631" duration="1049" date="1388433721259" type="2" readable_date="Dec 30, 2013 12:02:01 PM" contact_name="Janet Zander" />
+  <call number="4153780171" duration="172" date="1388434819446" type="2" readable_date="Dec 30, 2013 12:20:19 PM" contact_name="Laura Salcido" />
+  <call number="12105206400" duration="0" date="1388439159548" type="1" readable_date="Dec 30, 2013 1:32:39 PM" contact_name="Chase Bank" />
+  <call number="19516919559" duration="0" date="1388462145835" type="1" readable_date="Dec 30, 2013 7:55:45 PM" contact_name="(Unknown)" />
+  <call number="7072057698" duration="839" date="1388539141327" type="2" readable_date="Dec 31, 2013 5:19:01 PM" contact_name="Candice Achenbach" />
+  <call number="+16504655702" duration="0" date="1388556767453" type="2" readable_date="Dec 31, 2013 10:12:47 PM" contact_name="Zack Wexler-Beron" />
+  <call number="17072057698" duration="0" date="1388611024092" type="3" readable_date="Jan 1, 2014 1:17:04 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="5" date="1388611183468" type="2" readable_date="Jan 1, 2014 1:19:43 PM" contact_name="Candice Achenbach" />
+  <call number="+18056377243" duration="24" date="1388611373986" type="2" readable_date="Jan 1, 2014 1:22:53 PM" contact_name="(Unknown)" />
+  <call number="17072057698" duration="123" date="1388612307114" type="1" readable_date="Jan 1, 2014 1:38:27 PM" contact_name="Candice Achenbach" />
+  <call number="19105745949" duration="0" date="1388616634229" type="3" readable_date="Jan 1, 2014 2:50:34 PM" contact_name="Mike Grace" />
+  <call number="+18056377243" duration="82" date="1388616992657" type="2" readable_date="Jan 1, 2014 2:56:32 PM" contact_name="(Unknown)" />
+  <call number="18009359935" duration="192" date="1388711289220" type="2" readable_date="Jan 2, 2014 5:08:09 PM" contact_name="(Unknown)" />
+  <call number="+19192591180" duration="0" date="1388779908257" type="2" readable_date="Jan 3, 2014 12:11:48 PM" contact_name="Andrea F. Jones" />
+  <call number="7072057698" duration="942" date="1388781280428" type="2" readable_date="Jan 3, 2014 12:34:40 PM" contact_name="Candice Achenbach" />
+  <call number="6509061732" duration="27" date="1388809282468" type="2" readable_date="Jan 3, 2014 8:21:22 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="523" date="1388809497648" type="1" readable_date="Jan 3, 2014 8:24:57 PM" contact_name="Julia Bossmann" />
+  <call number="8582043739" duration="17" date="1388810566903" type="2" readable_date="Jan 3, 2014 8:42:46 PM" contact_name="Kimberly Spillman" />
+  <call number="8582043739" duration="0" date="1388810618212" type="2" readable_date="Jan 3, 2014 8:43:38 PM" contact_name="Kimberly Spillman" />
+  <call number="+18056377243" duration="0" date="1388810632749" type="2" readable_date="Jan 3, 2014 8:43:52 PM" contact_name="(Unknown)" />
+  <call number="16509061732" duration="0" date="1388811705190" type="3" readable_date="Jan 3, 2014 9:01:45 PM" contact_name="Julia Bossmann" />
+  <call number="16509061732" duration="118" date="1388811768800" type="2" readable_date="Jan 3, 2014 9:02:48 PM" contact_name="Julia Bossmann" />
+  <call number="4014501675" duration="245" date="1388811949534" type="2" readable_date="Jan 3, 2014 9:05:49 PM" contact_name="max song" />
+  <call number="4014501675" duration="33" date="1388812213146" type="2" readable_date="Jan 3, 2014 9:10:13 PM" contact_name="max song" />
+  <call number="18004549078" duration="102" date="1389137076397" type="1" readable_date="Jan 7, 2014 3:24:36 PM" contact_name="(Unknown)" />
+  <call number="13108363160" duration="0" date="1389294754889" type="1" readable_date="Jan 9, 2014 11:12:34 AM" contact_name="(Unknown)" />
+  <call number="+18056377243" duration="26" date="1389294813120" type="2" readable_date="Jan 9, 2014 11:13:33 AM" contact_name="(Unknown)" />
+  <call number="14153780171" duration="36" date="1389297716112" type="1" readable_date="Jan 9, 2014 12:01:56 PM" contact_name="Laura Salcido" />
+  <call number="7072057698" duration="5014" date="1389325918474" type="2" readable_date="Jan 9, 2014 7:51:58 PM" contact_name="Candice Achenbach" />
+  <call number="16176972037" duration="0" date="1389470677079" type="3" readable_date="Jan 11, 2014 12:04:37 PM" contact_name="Bex Merhar" />
+  <call number="+18056377243" duration="50" date="1389471866251" type="2" readable_date="Jan 11, 2014 12:24:26 PM" contact_name="(Unknown)" />
+  <call number="6176972037" duration="145" date="1389475838602" type="2" readable_date="Jan 11, 2014 1:30:38 PM" contact_name="Bex Merhar" />
+  <call number="17072057698" duration="136" date="1389547735988" type="1" readable_date="Jan 12, 2014 9:28:55 AM" contact_name="Candice Achenbach" />
+  <call number="7072057698" duration="16" date="1389556283517" type="2" readable_date="Jan 12, 2014 11:51:23 AM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="35" date="1389560787112" type="1" readable_date="Jan 12, 2014 1:06:27 PM" contact_name="Candice Achenbach" />
+  <call number="18582043739" duration="0" date="1389566202122" type="3" readable_date="Jan 12, 2014 2:36:42 PM" contact_name="Kimberly Spillman" />
+  <call number="7072057698" duration="6" date="1389580113254" type="2" readable_date="Jan 12, 2014 6:28:33 PM" contact_name="Candice Achenbach" />
+  <call number="17072057698" duration="98" date="1389580237554" type="1" readable_date="Jan 12, 2014 6:30:37 PM" contact_name="Candice Achenbach" />
+  <call number="+18056377243" duration="20" date="1389584395314" type="2" readable_date="Jan 12, 2014 7:39:55 PM" contact_name="(Unknown)" />
+  <call number="19165328377" duration="12" date="1389818977568" type="1" readable_date="Jan 15, 2014 12:49:37 PM" contact_name="Tessa Jorgenson" />
+  <call number="16176972037" duration="846" date="1389856747287" type="1" readable_date="Jan 15, 2014 11:19:07 PM" contact_name="Bex Merhar" />
+  <call number="14088068169" duration="2686" date="1389889864631" type="1" readable_date="Jan 16, 2014 8:31:04 AM" contact_name="(Unknown)" />
+  <call number="6176972037" duration="223" date="1389925394872" type="2" readable_date="Jan 16, 2014 6:23:14 PM" contact_name="Bex Merhar" />
+</calls>

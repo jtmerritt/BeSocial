@@ -47,11 +47,20 @@ public class EventInfo {
              INCOMING_TYPE = 1
              Draft = 3
         */
+    public EventInfo(String name, String phoneNumber, int event_class, int event_type,
+                           long date_ms, String date_string, long duration,
+                           long wordCount, long charCount){
 
-    public void setEvent(int eClass, String eContactName,
-                         long eDate, long eDuration, long eWordCount) {
-
+        this.eventContactName = name;
+        this.eventClass = event_class;
+        this.eventType = event_type;
+        this.eventContactAddress = phoneNumber;
+        this.eventDate = date_ms;
+        this.eventDuration = duration;
+        this.eventWordCount = wordCount;
+        this.eventCharCount = charCount;
     }
+
 
     public long getRowId() { return rowId; }
     public String getEventID() {

@@ -47,10 +47,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -78,6 +81,11 @@ import com.example.android.contactslist.util.Utils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.achartengine.GraphicalView;
+import org.achartengine.model.SeriesSelection;
+import org.achartengine.tools.PanListener;
+import org.achartengine.tools.ZoomEvent;
+import org.achartengine.tools.ZoomListener;
+
 import com.commonsware.cwac.loaderex.SQLiteCursorLoader;
 
 
@@ -129,7 +137,7 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mEmptyView;
     private TextView mContactName;
     private MenuItem mEditContactMenuItem;
-    private GraphicalView gView = null;
+    private GraphicalView mChartView = null;
     private String mContactNameString;
     private FractionView fractionView = null;
     private Spinner chartSpinner = null;
@@ -1290,7 +1298,7 @@ private LinearLayout buildCallLogLayout(
                     public void onClick(View v) {
                         //make call to adjust the date range back by one year
                         mChartMaker.adjustChartRange(true);
-                        gView.repaint();
+                        mChartView.repaint();
                     }});
 
                 final ImageButton nextButton =
@@ -1301,7 +1309,7 @@ private LinearLayout buildCallLogLayout(
                     public void onClick(View v) {
                         //make call to adjust the date range forward by one year
                         mChartMaker.adjustChartRange(false);
-                        gView.repaint();
+                        mChartView.repaint();
                     }});
 
 
@@ -1335,13 +1343,14 @@ private LinearLayout buildCallLogLayout(
                     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
                         mChartMaker.selectDataFeed(pos);
-                        gView.repaint();
+                        mChartView.repaint();
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> arg0) {
                         // TODO Auto-generated method stub
                     }
                 });
+
 
                 return chartLayout;
             }
@@ -1368,15 +1377,81 @@ private LinearLayout buildCallLogLayout(
                         //mEventLog,
                         getActivity(),
                         this);
-                gView = mChartMaker.getBarChartView();
+                mChartView = mChartMaker.getBarChartView();
 
                 try
                 {
                     //add the chart view to the fragment.
-                    mChartLayout.addView(gView);
+                    mChartLayout.addView(mChartView);
                 }
                 catch (Exception e)
                 {}
+
+
+                mChartView.setOnDragListener(new View.OnDragListener() {
+                    @Override
+                    public boolean onDrag(View view, DragEvent dragEvent) {
+                        Toast.makeText(getActivity(), "Drag", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                });
+
+
+                mChartView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent event) {
+                        int windowWidth = mChartView.getWidth();
+
+                        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                            final int historySize = event.getHistorySize();
+                            if (historySize > 0) {
+                                int xPos = (int) event.getHistoricalX(0, historySize - 1);
+                                int xPast = (int) event.getHistoricalX(0 /*pointer number*/, 0);
+                                int xDiff = xPos - xPast;
+
+
+                                if (Math.abs(xDiff) > 50) {
+                                    if (xDiff > 0) {
+                                        //Toast.makeText(getActivity(), "Left", Toast.LENGTH_SHORT).show();
+                                        mChartMaker.adjustChartRange(true);
+                                        mChartView.repaint();
+                                    } else {
+                                        mChartMaker.adjustChartRange(false);
+                                        mChartView.repaint();
+                                        //Toast.makeText(getActivity(), "Right", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                        }
+
+                            return true;
+                    }
+                });
+
+
+
+                mChartView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
+                        if (seriesSelection == null) {
+                            Toast.makeText(mContext, "No chart element was long pressed",
+                                    Toast.LENGTH_SHORT).show();
+                            return false; // no chart element was long pressed, so let
+                            // something
+                            // else handle the event
+                        } else {
+                           // SimpleSeriesRenderer renderer = mMultiRenderer.getSeriesRendererAt(seriesSelection.getSeriesIndex());
+
+                            Toast.makeText(mContext, "Chart element in series index "
+                                            + seriesSelection.getSeriesIndex() + " data point index "
+                                            + seriesSelection.getPointIndex() + " was long pressed",
+                                    Toast.LENGTH_SHORT).show();
+                           // renderer.setColor(Color.LTGRAY);
+                            return true;
+                        }
+                    }
+                });
             }
 
     public void finishedLoading() {

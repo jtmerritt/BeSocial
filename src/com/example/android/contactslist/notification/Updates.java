@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -22,11 +23,15 @@ import com.example.android.contactslist.ui.ContactDetailActivity;
 import com.example.android.contactslist.ui.ContactGroupsList;
 import com.example.android.contactslist.ui.ContactsListFragment;
 import com.example.android.contactslist.ui.LoadContactLogsTask;
+import com.example.android.contactslist.util.CallLogXmlParser;
 import com.example.android.contactslist.util.EventInfo;
+import com.example.android.contactslist.util.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +64,8 @@ public class Updates implements ContactDetailFragmentCallback {
         if(getLargestGroup()){
             loadGroupContactList();
         }
+
+        getPhoneEventsXML();
     }
 
     private boolean getLargestGroup(){
@@ -205,4 +212,42 @@ public class Updates implements ContactDetailFragmentCallback {
 
     }
 
+
+    public void getPhoneEventsXML() {
+        String DIR = "/storage/emulated/0/CallLogBackupRestore";
+        String fileName = "calls-20140224142217.xml";
+        String xml_file_path = DIR + "/" + fileName;
+        InputStream inputStream;
+        CallLogXmlParser callLogXmlParser = new CallLogXmlParser();
+        List<EventInfo> phoneLog = null;
+        File inputFile = new File(xml_file_path);
+
+        SocialEventsContract db = new SocialEventsContract(mContext);
+
+
+        try {
+            //inputStream = mContext.getAssets().open("calls.xml"); //new FileInputStream(inputFile);
+            inputStream = mContext.getResources().openRawResource(R.xml.calls);
+
+
+
+            //TODO fix: the XML tags aren't getting read
+            phoneLog = callLogXmlParser.parse(inputStream);
+
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        if(phoneLog != null) {
+            for (EventInfo log : phoneLog) {
+                db.addIfNewEvent(log);
+            }
+        }
+
+        db.closeSocialEventsContract();
+
+    }
 }

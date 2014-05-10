@@ -280,54 +280,6 @@ Reciprocity by event count
     }
 
 
-    //this method is far from ready
-    private void addSMSEventList(ContactInfo contact, Cursor data){
-
-        String smsBody = null;
-        if(data.moveToFirst()){
-            do{
-                // create a new eventInfo, and place the base values.
-                EventInfo event = new EventInfo();
-
-                //TODO setup with actual cursor definitions
-
-                //event.setEventID(data.getLong(LoadContactLogsTask.ContactSMSLogQuery.ID));
-                event.setDate(data.getLong(LoadContactLogsTask.ContactSMSLogQuery.DATE));
-                event.setAddress(data.getString(LoadContactLogsTask.ContactSMSLogQuery.ADDRESS));
-                smsBody = data.getString(LoadContactLogsTask.ContactSMSLogQuery.BODY);
-                if(smsBody != null){
-                    event.setWordCount(new StringTokenizer(smsBody).countTokens());
-                    event.setCharCount(smsBody.length());
-                }else{
-                    //TODO decide what to set in this case
-                }
-                event.setEventType(data.getInt(LoadContactLogsTask.ContactSMSLogQuery.TYPE));
-                event.setEventClass(EventInfo.SMS_CLASS);
-
-                event.setContactName(contact.getName());
-                event.setContactKey(contact.getKeyString());
-                event.setDuration((long)0);
-
-
-
-
-
-
-
-
-
-                //event.setContactKey(data.getString(LoadContactLogsTask.ContactSMSLogQuery.LOOKUP_KEY));
-
-                if(checkEventExists(event) == -1){
-                    addEvent(event);
-                }
-
-            }while(data.moveToNext());  // for the entire lenght of the list
-
-        }
-    }
-
-
     public EventInfo getEvent(String selection,   String selection_arg ){
     // selection needs to be a string from TableEntry.class
     // selection_arg needs to be the string value of the item filtering for.  String.valueOf(long_number)
@@ -374,18 +326,27 @@ Reciprocity by event count
 
         // organize the event info and pass it back
         if (cursor.moveToFirst()) {
-            event = new EventInfo();
+            event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                    cursor.getString(TableEntry.CONTACT_ADDRESS),
+                    cursor.getInt(TableEntry.CLASS),
+                    cursor.getInt(TableEntry.TYPE),
+                    cursor.getLong(TableEntry.EVENT_TIME),
+                    "",
+                    cursor.getInt(TableEntry.DURATION),
+                    cursor.getInt(TableEntry.WORD_COUNT),
+                    cursor.getInt(TableEntry.CHAR_COUNT)
+                    );
             event.setRowId(cursor.getLong(TableEntry.ROW_ID));
             event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-            event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-            event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
+            //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
+            //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
             event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-            event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-            event.setEventClass(cursor.getInt(TableEntry.CLASS));
-            event.setEventType(cursor.getInt(TableEntry.TYPE));
-            event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-            event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-            event.setDuration(cursor.getInt(TableEntry.DURATION));
+            //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
+            //event.setEventClass(cursor.getInt(TableEntry.CLASS));
+            //event.setEventType(cursor.getInt(TableEntry.TYPE));
+            //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
+            //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
+            //event.setDuration(cursor.getInt(TableEntry.DURATION));
         }
 
         cursor.close();
@@ -458,18 +419,27 @@ Reciprocity by event count
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                event = new EventInfo();
+                event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                        cursor.getString(TableEntry.CONTACT_ADDRESS),
+                        cursor.getInt(TableEntry.CLASS),
+                        cursor.getInt(TableEntry.TYPE),
+                        cursor.getLong(TableEntry.EVENT_TIME),
+                        "",
+                        cursor.getInt(TableEntry.DURATION),
+                        cursor.getInt(TableEntry.WORD_COUNT),
+                        cursor.getInt(TableEntry.CHAR_COUNT)
+                );
                 event.setRowId(cursor.getLong(TableEntry.ROW_ID));
                 event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-                event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-                event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
+                //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
+                //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
                 event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-                event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-                event.setEventClass(cursor.getInt(TableEntry.CLASS));
-                event.setEventType(cursor.getInt(TableEntry.TYPE));
-                event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-                event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-                event.setDuration(cursor.getInt(TableEntry.DURATION));
+                //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
+                //event.setEventClass(cursor.getInt(TableEntry.CLASS));
+               // event.setEventType(cursor.getInt(TableEntry.TYPE));
+                //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
+                //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
+                //event.setDuration(cursor.getInt(TableEntry.DURATION));
                 // Adding contact to list
                 eventList.add(event);
             } while (cursor.moveToNext());
@@ -557,18 +527,27 @@ Reciprocity by event count
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                event = new EventInfo();
+                event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                        cursor.getString(TableEntry.CONTACT_ADDRESS),
+                        cursor.getInt(TableEntry.CLASS),
+                        cursor.getInt(TableEntry.TYPE),
+                        cursor.getLong(TableEntry.EVENT_TIME),
+                        "",
+                        cursor.getInt(TableEntry.DURATION),
+                        cursor.getInt(TableEntry.WORD_COUNT),
+                        cursor.getInt(TableEntry.CHAR_COUNT)
+                );
                 event.setRowId(cursor.getLong(TableEntry.ROW_ID));
                 event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-                event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-                event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
+                //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
+                //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
                 event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-                event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-                event.setEventClass(cursor.getInt(TableEntry.CLASS));
-                event.setEventType(cursor.getInt(TableEntry.TYPE));
-                event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-                event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-                event.setDuration(cursor.getInt(TableEntry.DURATION));
+                //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
+                //event.setEventClass(cursor.getInt(TableEntry.CLASS));
+                //event.setEventType(cursor.getInt(TableEntry.TYPE));
+                //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
+                //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
+                //event.setDuration(cursor.getInt(TableEntry.DURATION));
                 // Adding contact to list
                 eventList.add(event);
 

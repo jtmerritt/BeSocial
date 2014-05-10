@@ -5,8 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.CallLog;
 import android.provider.ContactsContract;
-import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
@@ -146,24 +146,16 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                         smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
                         eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
 
-                        EventInfo EventInfo = new EventInfo();
-                        //EventInfo.clear();
+                        EventInfo eventInfo = new EventInfo(contactName, eventContactAddress,
+                                EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
+                                new StringTokenizer(smsBody).countTokens(), smsBody.length());
 
-                        EventInfo.eventID = eventID;
-                        EventInfo.eventDate = eventDate;
-                        EventInfo.eventContactAddress = eventContactAddress;
-                        EventInfo.eventContactID = eventContactID;
-                        EventInfo.eventWordCount = new StringTokenizer(smsBody).countTokens();  //NullPointerException - if str is null
-                        EventInfo.eventCharCount = smsBody.length();                //NullPointerException - if str is null
-                        EventInfo.eventType = eventType;
-                        EventInfo.eventClass = EventInfo.SMS_CLASS;
-                        EventInfo.setContactName(contactName);
-
-
+                        eventInfo.eventID = eventID;
+                        eventInfo.eventContactID = eventContactID;
 
                     //Add it into the ArrayList
-                       mEventLog.add(EventInfo);
-                        dbRowID = db.addIfNewEvent(EventInfo);
+                       mEventLog.add(eventInfo);
+                        dbRowID = db.addIfNewEvent(eventInfo);
 
 
                     }
@@ -232,18 +224,15 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                 int eventType = callLogCursor.getInt(
                         callLogCursor.getColumnIndex(android.provider.CallLog.Calls.TYPE));
 
+                String phone_number = callLogCursor.getString(
+                        callLogCursor.getColumnIndex(CallLog.Calls.NUMBER));
+
                 if (eventContactName == null)
                     eventContactName = "No Name";
 
                 if((contactName.equals(eventContactName))){
-            		/*Create Model Object*/
-                    EventInfo eventInfo = new EventInfo();
-
-                    eventInfo.eventDate = eventDate;
-                    eventInfo.eventDuration = eventDuration;
-                    eventInfo.eventContactName = eventContactName;
-                    eventInfo.eventType = eventType;
-                    eventInfo.eventClass = eventInfo.PHONE_CLASS;
+                    EventInfo eventInfo = new EventInfo(eventContactName, phone_number, EventInfo.PHONE_CLASS,
+                            eventType, eventDate, "", eventDuration, 0, 0);
 
 
     		        /*Add it into the ArrayList*/
@@ -256,7 +245,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
                     String log = "Date: "+eventInfo.getDate()+" ,Name: " + eventInfo.getContactName()
                             + " ,Type: " + eventInfo.getEventType();
                     // Writing Contacts to log
-                    Log.d("db Read: ", log);
+                    //Log.d("db Read: ", log);
 
                 }
                 j++;
@@ -285,9 +274,9 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
     }
 
-
     @Override
     protected Integer doInBackground(Void... v1) {
+
         loadContactCallLogs();
         loadContactSMSLogs();
         return 1;
