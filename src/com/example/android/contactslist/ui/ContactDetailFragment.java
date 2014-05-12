@@ -1289,30 +1289,6 @@ private LinearLayout buildCallLogLayout(
                 chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
 
 
-                // Gets handles to the view objects in the layout
-                final ImageButton previousButton =
-                        (ImageButton) chartLayout.findViewById(R.id.imageButton_previous_chart_time);
-                previousButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        //make call to adjust the date range back by one year
-                        mChartMaker.adjustChartRange(true);
-                        mChartView.repaint();
-                    }});
-
-                final ImageButton nextButton =
-                        (ImageButton) chartLayout.findViewById(R.id.imageButton_next_chart_time);
-                nextButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        //make call to adjust the date range forward by one year
-                        mChartMaker.adjustChartRange(false);
-                        mChartView.repaint();
-                    }});
-
-
                 final CheckBox autoScale =
                         (CheckBox) chartLayout.findViewById(R.id.autoScale);
                 autoScale.setOnClickListener(new View.OnClickListener() {
@@ -1388,43 +1364,42 @@ private LinearLayout buildCallLogLayout(
                 {}
 
 
-                mChartView.setOnDragListener(new View.OnDragListener() {
-                    @Override
-                    public boolean onDrag(View view, DragEvent dragEvent) {
-                        Toast.makeText(getActivity(), "Drag", Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                });
-
 
                 mChartView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View view, MotionEvent event) {
-                        int windowWidth = mChartView.getWidth();
+                        int xDiff;
 
-                        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                            final int historySize = event.getHistorySize();
-                            if (historySize > 0) {
-                                int xPos = (int) event.getHistoricalX(0, historySize - 1);
-                                int xPast = (int) event.getHistoricalX(0 /*pointer number*/, 0);
-                                int xDiff = xPos - xPast;
-
-
-                                if (Math.abs(xDiff) > 50) {
+                        final int action = event.getAction();
+                        switch (action & MotionEvent.ACTION_MASK) {
+                            case MotionEvent.ACTION_DOWN:
+                                mChartMaker.xTouchPast = (int) event.getX();
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                //TODO why is seriesSelection always null in the touch listener
+                                SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
+                                mChartMaker.xTouchPosition = (int) event.getX();
+                                xDiff = mChartMaker.xTouchPosition - mChartMaker.xTouchPast;
+                                if (Math.abs(xDiff) > 75) {
                                     if (xDiff > 0) {
-                                        //Toast.makeText(getActivity(), "Left", Toast.LENGTH_SHORT).show();
                                         mChartMaker.adjustChartRange(true);
-                                        mChartView.repaint();
                                     } else {
                                         mChartMaker.adjustChartRange(false);
-                                        mChartView.repaint();
-                                        //Toast.makeText(getActivity(), "Right", Toast.LENGTH_SHORT).show();
+                                    }
+                                    mChartView.repaint();
+                                }
+                                if(Math.abs(xDiff) < 20){
+                                    if (seriesSelection != null) {
+                                        Toast.makeText(mContext, "Chart element in series index "
+                                                        + seriesSelection.getSeriesIndex() + " data point index "
+                                                        + seriesSelection.getPointIndex() + " was long pressed",
+                                                Toast.LENGTH_SHORT).show();
                                     }
                                 }
-                            }
+                                break;
+                            default:
                         }
-
-                            return true;
+                        return true;
                     }
                 });
 
@@ -1434,6 +1409,7 @@ private LinearLayout buildCallLogLayout(
                     @Override
                     public boolean onLongClick(View v) {
                         SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
+
                         if (seriesSelection == null) {
                             Toast.makeText(mContext, "No chart element was long pressed",
                                     Toast.LENGTH_SHORT).show();
@@ -1441,13 +1417,10 @@ private LinearLayout buildCallLogLayout(
                             // something
                             // else handle the event
                         } else {
-                           // SimpleSeriesRenderer renderer = mMultiRenderer.getSeriesRendererAt(seriesSelection.getSeriesIndex());
-
                             Toast.makeText(mContext, "Chart element in series index "
                                             + seriesSelection.getSeriesIndex() + " data point index "
                                             + seriesSelection.getPointIndex() + " was long pressed",
                                     Toast.LENGTH_SHORT).show();
-                           // renderer.setColor(Color.LTGRAY);
                             return true;
                         }
                     }

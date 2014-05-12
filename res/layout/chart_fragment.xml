@@ -24,14 +24,7 @@
             android:layout_weight="0.04"
             android:src="@drawable/ic_action_previous_item" />
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="35dp"
-            android:id="@+id/imageButton_next_chart_time"
-            android:layout_weight="0.04"
-            android:src="@drawable/ic_action_next_item"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/imageButton_previous_chart_time" />
+
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -48,8 +41,15 @@
             android:layout_height="wrap_content"
             android:text="Auto Scale"
             android:id="@+id/autoScale"
-            android:layout_alignBottom="@+id/imageButton_next_chart_time"
             android:layout_centerHorizontal="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trend"
+            android:id="@+id/trend"
+            android:layout_alignBottom="@+id/imageButton_previous_chart_time"
+            android:layout_toRightOf="@+id/imageButton_previous_chart_time" />
     </RelativeLayout>
 
 </LinearLayout>

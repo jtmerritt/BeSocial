@@ -59,7 +59,8 @@ public class chartMaker {
     TimeSeries mDisplaySeries = null;
     //TimeSeries mSeriesSMS = null;
     XYMultipleSeriesRenderer mRenderer;
-
+    public int xTouchPosition;
+    public int xTouchPast;
 
     public chartMaker(
             //Long cID, String cName,
