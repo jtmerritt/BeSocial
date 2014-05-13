@@ -102,6 +102,11 @@ public class SocialEventsContract {
 +-----------------------+------------+------------------------------+---+--------+--+
 
 Others to include:
+Name
+contact idee
+date last contact
+contact due date
+Current RMS value
 Decay rate
 average time between contact
 longest time without contact

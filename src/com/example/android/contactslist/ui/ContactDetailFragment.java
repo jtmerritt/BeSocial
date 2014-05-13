@@ -1319,7 +1319,7 @@ private LinearLayout buildCallLogLayout(
                     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
                         mChartMaker.selectDataFeed(pos);
-                        mChartView.repaint();
+                        //repaint of the chartView is handeled in the callback
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> arg0) {
@@ -1381,12 +1381,12 @@ private LinearLayout buildCallLogLayout(
                                 mChartMaker.xTouchPosition = (int) event.getX();
                                 xDiff = mChartMaker.xTouchPosition - mChartMaker.xTouchPast;
                                 if (Math.abs(xDiff) > 75) {
-                                    if (xDiff > 0) {
-                                        mChartMaker.adjustChartRange(true);
+                                    if (xDiff > 0) { //choosing the direction of the swipe
+                                        mChartMaker.adjustChartRange(true); //going left or back
                                     } else {
-                                        mChartMaker.adjustChartRange(false);
+                                        mChartMaker.adjustChartRange(false); //going right or forward
                                     }
-                                    mChartView.repaint();
+                                    //repaint of the chartView is handeled in the callback
                                 }
                                 if(Math.abs(xDiff) < 20){
                                     if (seriesSelection != null) {
@@ -1430,10 +1430,10 @@ private LinearLayout buildCallLogLayout(
     public void finishedLoading() {
 
 
-
+        mChartView.repaint();
         //Display all the data
-        displayCallLog();
-        displaySMSLog();
+        //displayCallLog();
+        //displaySMSLog();
         //displayAddressLog();
     }
     private void loadContactLogs(String contactName, long contactID){

@@ -4,12 +4,15 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.example.android.contactslist.ChartMakerCallback;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.dateSelection.dateSelection;
 import com.example.android.contactslist.util.EventInfo;
+import com.example.android.contactslist.util.LoadEventLogTask;
 import com.example.android.contactslist.util.SocialEventsContract;
 
 import org.achartengine.ChartFactory;
@@ -36,11 +39,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Tyson Macdonald on 1/15/14.
  */
-public class chartMaker {
+public class chartMaker implements ChartMakerCallback {
 
     // create data set for the charts
     private List<EventInfo> mBarChartEventLog;
-    private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
+    List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private Long contactID;
     private String mContactName;
     private ContentResolver mContentResolver;
@@ -61,6 +64,10 @@ public class chartMaker {
     XYMultipleSeriesRenderer mRenderer;
     public int xTouchPosition;
     public int xTouchPast;
+    private int currentFunction;
+    private final int INITIALIZE = 1;
+    private final int CHANGE_RANGE = 2;
+    private final int CHANGE_DATA = 3;
 
     public chartMaker(
             //Long cID, String cName,
@@ -181,6 +188,8 @@ public class chartMaker {
 //*****Bar Chart*****************
     public GraphicalView getBarChartView() {
 
+        //what are we doing?
+        currentFunction = INITIALIZE;
 
         // Define chart
         mDisplaySeries = new TimeSeries("SMS");
@@ -251,27 +260,70 @@ public class chartMaker {
         mRenderer.setZoomEnabled(false, false);
         mRenderer.setZoomButtonsVisible(false);
 
+        //get the data via async task
+        loadContactEventLogs();
 
-        //grab data from database for the set person in the time range
-        // and set it into the plot
-        if (setNewDataSet() == true){
-
-            mRenderer.setYAxisMax(
-                    //Choose the larger of the 2 bounds
-                    mYAxisMax = 1.1*(mDisplaySeries.getMaxY()) // > mSeriesSMS.getMaxY() ?
-                            ///mDisplaySeries.getMaxY() : mSeriesSMS.getMaxY())
-            );
-        }else{
-            mRenderer.setYAxisMax(1);
-            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
-        }
-
+        /*mRenderer.setYAxisMax(
+                //Choose the larger of the 2 bounds
+                mYAxisMax = 1.1*(mDisplaySeries.getMaxY() > mSeriesSMS.getMaxY() ?
+                mDisplaySeries.getMaxY() : mSeriesSMS.getMaxY())
+        );*/
         mRenderer.setYAxisMin(0);
         mRenderer.setXAxisMin(mDateMin - (double)ONE_YEAR*mXMargin);
         mRenderer.setXAxisMax(mDateMax + (double)ONE_YEAR*mXMargin);
 
-
         return ChartFactory.getBarChartView(mContext, dataset, mRenderer, BarChart.Type.DEFAULT);
+    }
+
+    private void loadContactEventLogs(){
+        mEventLog.clear();
+        // KS TODO: look into possibility of sending parameters in execute instead
+        AsyncTask<Void, Void, List<EventInfo>> eventLogsTask = new LoadEventLogTask(
+                mContactName,
+                mDataFeedClass,
+                (long)mDateMin,
+                (long)mDateMax,
+                //mEventLog,
+                this,
+                mContext);
+        eventLogsTask.execute();
+
+    }
+
+    public void finishedLoading(List<EventInfo> log) {
+        mEventLog = log;
+
+        if (setNewDataSet() == true){
+
+            mRenderer.setYAxisMax(mYAxisMax = 1.1 *(mDisplaySeries.getMaxY()));
+            mRenderer.setXAxisMin(mDateMin - (double) ONE_YEAR * mXMargin);
+            mRenderer.setXAxisMax(mDateMax + (double) ONE_YEAR * mXMargin);
+
+
+
+        }else{
+
+            switch(currentFunction){
+                case INITIALIZE:
+                    mRenderer.setYAxisMax(1);
+                    break;
+                case CHANGE_RANGE:
+                    //if there was no data further back in time, reset the date markers to last known good
+                    // and exit
+                    if(mDateMax < mDateNow) {
+                        mDateMax += (double) ONE_YEAR;
+                        mDateMin += (double) ONE_YEAR;
+                    }
+                    break;
+                case CHANGE_DATA:
+                    break;
+                default:
+            }
+            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
+        }
+
+        //TODO: Callback for repaint
+        mContactDetailFragmentCallback.finishedLoading();
     }
 
     private boolean setNewDataSet(){
@@ -291,9 +343,11 @@ public class chartMaker {
         String formattedDate1 = null;
 
         //grab contact relevant event data from db
+        /*
+        moved to async task
         SocialEventsContract db = new SocialEventsContract(mContext);
         mEventLog = db.getEventsInDateRange(mContactName, mDataFeedClass, (long)mDateMin, (long)mDateMax);
-        db.closeSocialEventsContract();
+        db.closeSocialEventsContract(); */
 
         //exit if there is no data
         if(mEventLog.size() == 0){
@@ -403,6 +457,9 @@ public class chartMaker {
 
     public void adjustChartRange(boolean back){
 
+        //what are we doing?
+        currentFunction = CHANGE_RANGE;
+
         if(back) {
             //check if there is more data beyond the earliest time of the chart
 
@@ -419,39 +476,17 @@ public class chartMaker {
             }
         }
 
-        //grab data from database for the set person in the time range
-        // and set it into the plot
-        if (setNewDataSet() == false){
-            //if there was no data further back in time, reset the date markers to last known good
-            // and exit
-            mDateMax += (double) ONE_YEAR;
-            mDateMin += (double) ONE_YEAR;
-            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        mRenderer.setXAxisMin(mDateMin - (double)ONE_YEAR*mXMargin);
-        mRenderer.setXAxisMax(mDateMax + (double)ONE_YEAR*mXMargin);
-        mRenderer.setYAxisMax(
-                //Choose the larger of the 2 bounds
-                mYAxisMax = 1.1*(mDisplaySeries.getMaxY())// > mSeriesSMS.getMaxY() ?
-                        //mDisplaySeries.getMaxY() : mSeriesSMS.getMaxY())
-        );
+        loadContactEventLogs();
     }
 
 
     public void selectDataFeed(int pos)
     {
+        //what are we doing?
+        currentFunction = CHANGE_DATA;
+
         mDataFeedClass = pos;
-
-        if(setNewDataSet() == true) {
-            mRenderer.setXAxisMin(mDateMin - (double) ONE_YEAR * mXMargin);
-            mRenderer.setXAxisMax(mDateMax + (double) ONE_YEAR * mXMargin);
-            mRenderer.setYAxisMax(mYAxisMax = 1.1 * (mDisplaySeries.getMaxY()));
-        }else{
-            Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
-        }
-
+        loadContactEventLogs();
     }
    
     
