@@ -10,10 +10,8 @@ import android.widget.Toast;
 import com.example.android.contactslist.ChartMakerCallback;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.ui.dateSelection.dateSelection;
-import com.example.android.contactslist.util.EventInfo;
-import com.example.android.contactslist.util.LoadEventLogTask;
-import com.example.android.contactslist.util.SocialEventsContract;
+import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.LoadEventLogTask;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
@@ -299,8 +297,6 @@ public class chartMaker implements ChartMakerCallback {
             mRenderer.setXAxisMin(mDateMin - (double) ONE_YEAR * mXMargin);
             mRenderer.setXAxisMax(mDateMax + (double) ONE_YEAR * mXMargin);
 
-
-
         }else{
 
             switch(currentFunction){
@@ -322,7 +318,7 @@ public class chartMaker implements ChartMakerCallback {
             Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_SHORT).show();
         }
 
-        //TODO: Callback for repaint
+        // callback for repaint
         mContactDetailFragmentCallback.finishedLoading();
     }
 

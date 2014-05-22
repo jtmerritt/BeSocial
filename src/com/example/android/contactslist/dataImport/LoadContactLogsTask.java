@@ -1,4 +1,4 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.dataImport;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -8,48 +8,37 @@ import android.os.AsyncTask;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
-import android.util.Log;
-import com.example.android.contactslist.ContactDetailFragmentCallback;
-import com.example.android.contactslist.util.EventInfo;
-import com.example.android.contactslist.util.SocialEventsContract;
+
+import com.example.android.contactslist.UpdateLogsCallback;
+import com.example.android.contactslist.eventLogs.EventInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+/*
+    Loading event logs (phone and SMS) from the android phone and SMS database
+ */
 
-public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
+public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> {
 
     private Long contactID;
     private String contactName;
     private ContentResolver mContentResolver;
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
-    private ContactDetailFragmentCallback mContactDetailFragmentCallback;
+    private UpdateLogsCallback mUpdateLogsCallback;
     private Context mContext; // only added so this class can call on the event database
 
 
     public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver,
-                               List<EventInfo> eventLog,
-                               ContactDetailFragmentCallback contactDetailFragmentCallback,
+                               UpdateLogsCallback updateLogsCallback,
                                Context context  // only added so this class can call on the event database
     ) {
         contactID = cID;
         contactName = cName;
         mContentResolver = contentResolver;
-        mEventLog = eventLog;
-        mContactDetailFragmentCallback = contactDetailFragmentCallback;
+        mUpdateLogsCallback = updateLogsCallback;
         mContext = context;
-    }
-
-    //Stripping the phone number strings of non-numerical digits takes a very long time and a lot of memory
-    // Don't use this function
-    private String convertNumber(String num)
-    {
-        String ret = num.replaceAll("\\D+","");
-        // Perhaps remove country codes in general
-        if (ret.startsWith("1"))
-            ret = ret.replace("1", "");
-        return ret;
     }
 
 
@@ -61,8 +50,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         List<String> phoneNumberList = new ArrayList<String>();
         phoneNumberList.clear();
 
-        SocialEventsContract db = new SocialEventsContract(mContext);
-        long dbRowID = (long)0;
 
 
         // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
@@ -155,24 +142,13 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
                     //Add it into the ArrayList
                        mEventLog.add(eventInfo);
-                        dbRowID = db.addIfNewEvent(eventInfo);
 
 
                     }
                 }while(j>0); //compare each element in the phone number list
 
             }while (SMSLogCursor.moveToNext());
-            /*
-            try
-            {
-                //add the chart view to the fragment.
-                android.os.Debug.dumpHprofData("/sdcard/Download/dump.hprof");
-                Log.w("*********dumpHprofData***************", "Saving data to Download");
 
-            }
-            catch (Exception e)
-            {}
-*/
         }
     /*Close the cursor  for this iteration of the loop*/
         SMSLogCursor.close();
@@ -186,11 +162,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     private void loadContactCallLogs() {
 
         int j=0;
-        long dbRowID = (long)0;
-
-        //TEMP Load stuff into database
-        SocialEventsContract db = new SocialEventsContract(mContext);
-
 
         final String parameters[] = {contactName};
 
@@ -208,6 +179,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         if (callLogCursor.moveToFirst()) { //changed from !=null
 
 	/*Loop through the cursor*/
+            //TODO FIX: calling moveToNext here skips the first element -- perhaps emulate the smslog reading
             while (callLogCursor.moveToNext()) {
 
     		/*Get Contact Name*/
@@ -237,25 +209,12 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
 
     		        /*Add it into the ArrayList*/
                     mEventLog.add(eventInfo);
-
-                    //insert event into database
-                    dbRowID = db.addIfNewEvent(eventInfo);
-                    //Log.d("Insert: ", "Row ID: " + dbRowID);
-
-                    String log = "Date: "+eventInfo.getDate()+" ,Name: " + eventInfo.getContactName()
-                            + " ,Type: " + eventInfo.getEventType();
-                    // Writing Contacts to log
-                    //Log.d("db Read: ", log);
-
                 }
                 j++;
             }
 
 	/*Close the cursor*/
             callLogCursor.close();
-
-            db.closeSocialEventsContract();
-
         }
 
         /*
@@ -275,11 +234,11 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
     }
 
     @Override
-    protected Integer doInBackground(Void... v1) {
+    protected List<EventInfo> doInBackground(Void... v1) {
 
         loadContactCallLogs();
         loadContactSMSLogs();
-        return 1;
+        return mEventLog;
 
    }
 
@@ -287,10 +246,14 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, Integer> {
         // do something
     }
 
-    protected void onPostExecute(Integer result) {
+    protected void onPostExecute(List<EventInfo> result) {
         // do something
-        mContactDetailFragmentCallback.finishedLoading();
+        mUpdateLogsCallback.finishedLoading(result);
     }
+
+
+
+
 
     public interface ContactCallLogQuery {
         // A unique query ID to distinguish queries being run by the

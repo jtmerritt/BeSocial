@@ -2,37 +2,30 @@ package com.example.android.contactslist.notification;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.CursorLoader;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.ui.ContactDetailActivity;
+import com.example.android.contactslist.UpdateLogsCallback;
+import com.example.android.contactslist.contactStats.ContactStatsContract;
+import com.example.android.contactslist.contactStats.ContactStatsHelper;
 import com.example.android.contactslist.ui.ContactGroupsList;
-import com.example.android.contactslist.ui.ContactsListFragment;
-import com.example.android.contactslist.ui.LoadContactLogsTask;
-import com.example.android.contactslist.util.CallLogXmlParser;
-import com.example.android.contactslist.util.EventInfo;
-import com.example.android.contactslist.util.SocialEventsContract;
+import com.example.android.contactslist.dataImport.LoadContactLogsTask;
+import com.example.android.contactslist.dataImport.CallLogXmlParser;
+import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +41,7 @@ import java.util.List;
 
 // Based on example at http://developer.android.com/guide/topics/ui/notifiers/notifications.html
     //the page has more info on updating and removing notifications in code
-public class Updates implements ContactDetailFragmentCallback {
+public class Updates implements UpdateLogsCallback {
     //private static List<ContactInfo> mContactList = new ArrayList<ContactInfo>();
     //private static Uri mContactUri;
     //private static String mContactName = "Janet";
@@ -57,6 +50,8 @@ public class Updates implements ContactDetailFragmentCallback {
 
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
     private ContactGroupsList.GroupInfo largestGroup;
+
+    List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
     public void updateDB(Context context){
         mContext = context;
@@ -100,12 +95,11 @@ public class Updates implements ContactDetailFragmentCallback {
             if(cursor.moveToFirst())
             {
                 do{
-                    ContactInfo contact = new ContactInfo();
-
-                    contact.setKey(cursor.getString(localContactsGroupQuery.LOOKUP_KEY));
                     contactName = cursor.getString(localContactsGroupQuery.DISPLAY_NAME);
-                    contact.setName(cursor.getString(localContactsGroupQuery.DISPLAY_NAME));
-                    contact.setIDLong(cursor.getLong(localContactsGroupQuery.ID));
+
+                    ContactInfo contact = new ContactInfo(contactName,
+                            cursor.getString(localContactsGroupQuery.LOOKUP_KEY),
+                            cursor.getLong(localContactsGroupQuery.ID));
 
                     loadContactLogs(contactName,
                             cursor.getLong(localContactsGroupQuery.ID));
@@ -123,22 +117,53 @@ public class Updates implements ContactDetailFragmentCallback {
     }
 
     private void loadContactLogs(String contactName, long contactID) {
-        // TODO: restructure so we don't need to have an eventlog
-        List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
-        // KS TODO: look into possibility of sending parameters in execute instead
-        AsyncTask<Void, Void, Integer> contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, mContext.getContentResolver(), mEventLog, this, mContext);
+        // KS TODO: look into possibility of sending parameters in execute instead, including date range
+
+        AsyncTask<Void, Void, List<EventInfo>> contactLogsTask = new LoadContactLogsTask
+                (contactID, contactName, mContext.getContentResolver(), this, mContext);
         contactLogsTask.execute();
     }
 
 
-    public void finishedLoading() {
+    public void finishedLoading(List<EventInfo> log) {
+        //TODO do callbacks here end up being in parallel?  That could be a problem
+        mEventLog = log;
         Log.d("db Loaded: ", "All Done with contact!");
+        insertEventLogIntoDatabase();
 
         // Toast.makeText(mContext, "Finished Loading " + contactName, Toast.LENGTH_SHORT).show();
     }
 
+    private void insertEventLogIntoDatabase(){
+        SocialEventsContract eventDb = new SocialEventsContract(mContext);
+        ContactStatsHelper csh = new ContactStatsHelper(mContext);
+        long dbRowID = (long)0;
+
+        //step through mEventLog (new events) to load individual events into the eventLog database
+        // while collecting some basic statistics in contact_stats
+        for(EventInfo event : mEventLog){
+
+            //proceed if the event is likely new
+            if(eventDb.checkEventExists(event) == -1) {
+                //insert event into database
+                dbRowID = eventDb.addEvent(event);
+                //Log.d("Insert: ", "Row ID: " + dbRowID);
+
+                String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+                        + " ,Type: " + event.getEventType();
+                // Writing Contacts to log
+                //Log.d("db Read: ", log);
+
+                // Process its data into the contact_stats for the contact
+                csh.updateContactStatsFromEvent(event);
+
+            }
+
+        }
+
+        eventDb.close();
+    }
 
 
     /**
@@ -247,7 +272,7 @@ public class Updates implements ContactDetailFragmentCallback {
             }
         }
 
-        db.closeSocialEventsContract();
+        db.close();
 
     }
 }

@@ -1,21 +1,16 @@
-package com.example.android.contactslist.util;
+package com.example.android.contactslist.eventLogs;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.CallLog;
-import android.provider.ContactsContract;
-import android.telephony.PhoneNumberUtils;
 
 import com.example.android.contactslist.ChartMakerCallback;
-import com.example.android.contactslist.ContactDetailFragmentCallback;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
+/*
+    Loading event logs from the database
+ */
 
 public class LoadEventLogTask extends AsyncTask<Void, Void, List<EventInfo>> {
 
@@ -55,7 +50,7 @@ public class LoadEventLogTask extends AsyncTask<Void, Void, List<EventInfo>> {
         //grab contact relevant event data from db
         SocialEventsContract db = new SocialEventsContract(mContext);
         mEventLog = db.getEventsInDateRange(mContactName, mDataFeedClass, (long)mDateMin, (long)mDateMax);
-        db.closeSocialEventsContract();
+        db.close();
         return  mEventLog;
 
    }

@@ -1,4 +1,4 @@
-package com.example.android.contactslist.util;
+package com.example.android.contactslist.eventLogs;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,12 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.example.android.contactslist.notification.ContactInfo;
-import com.example.android.contactslist.ui.LoadContactLogsTask;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by Tyson Macdonald on 3/6/14.
@@ -31,7 +27,7 @@ public class SocialEventsContract {
         mDbHelper = new EventLogDbHandler (mContext);
     }
 
-    public void closeSocialEventsContract(){
+    public void close(){
         mDbHelper.close();
     }
     /* Inner class that defines the table contents */
@@ -39,9 +35,28 @@ public class SocialEventsContract {
         //By implementing the BaseColumns interface, your inner class can inherit a primary key field called _ID
         public static final String TABLE_NAME = "eventLog";
 
+ /*
++-----------------------+------------+------------------------------+---+--------+--+
+| Field Name            |  Field Type                   | Sample                        |
++-----------------------+------------+------------------------------+---+--------+--+
+| ID                    |  PRIMARY KEY [Auto Generated] |  1                            |
+| Android Event ID      |  Text                         | 7                             |
+| Event TIME            |  Long                         | 555555555555555555            |
+| Contact Name          |  TEXT                         | Chintan Khetiya               |
+| Contact Key           |  TEXT                         | 787                           |
+| CONTACT Address       |  TEXT                         | 555*555-5555/ TYSON@GMAIL.COM |
+| Class                 |  Int                          |   1                           |
+| Type                  |  Int                          |   1                           |
+| Word Count            |  Long                         | 5555                          |
+| Char Count            |  Long                         |  555555555555555555           |
+| Duration              |  Long                         |  555555555555555555           |
+| Location Lon          |
+| Location Lat          |
++-----------------------+------------+------------------------------+---+--------+--+
 
+*/
 
-        //define the table entries, matching ContactsInfo.class
+        //define the table entries, matching EventInfo.class
         public static final String KEY_ANDROID_EVENT_ID = "android_event_id";
         public static final String KEY_CONTACT_NAME = "contact_name";
         public static final String KEY_CONTACT_KEY = "contact_key";
@@ -82,38 +97,6 @@ public class SocialEventsContract {
 
     public static class EventLogDbHandler extends SQLiteOpenHelper {
 
- /*
-+-----------------------+------------+------------------------------+---+--------+--+
-| Field Name            |  Field Type                   | Sample                    |
-+-----------------------+------------+------------------------------+---+--------+--+
-| ID                    |  PRIMARY KEY [Auto Generated] |  1                         |
-| Android Event ID      |  Text                         | 7                          |
-| Event TIME            |  Long                         | 555555555555555555         |
-| Contact Name          |  TEXT                         | Chintan Khetiya            |
-| Contact Key           |  TEXT                         | 787                        |
-| CONTACT Address       |  TEXT                         | 555*555-5555/ TYSON@GMAIL.COM
-| Class                 |  Int                          |   1                          |
-| Type                  |  Int                          |   1                          |
-| Word Count            |  Long                         | 5555         |
-| Char Count            |  Long                         |  555555555555555555        |
-| Duration              |  Long                         |  555555555555555555        |
-| Location Lon          |  
-| Location Lat          |
-+-----------------------+------------+------------------------------+---+--------+--+
-
-Others to include:
-Name
-contact idee
-date last contact
-contact due date
-Current RMS value
-Decay rate
-average time between contact
-longest time without contact
-Average call length
-Reciprocity by event count
-
-*/
         // If you change the database schema, you must increment the database version.
         public static final int DATABASE_VERSION = 1;
         public static final String DATABASE_NAME = "EventLog.db";
@@ -204,6 +187,7 @@ Reciprocity by event count
                 TableEntry.COLUMN_NAME_NULLABLE, //provides the name of a column in which the framework can insert NULL in the event that the ContentValues is empty
                 values);
 
+        db.close();
         return newRowId;
     }
 
@@ -278,10 +262,10 @@ Reciprocity by event count
 
     public long addIfNewEvent(EventInfo event){
         long id = -1;
-        if(checkEventExists(event) == -1) {
+        if(checkEventExists(event) == -1) { // if event is likely new
             id = addEvent(event);
         }
-        return id;
+        return id;  //return -1 for events
     }
 
 
@@ -354,6 +338,7 @@ Reciprocity by event count
             //event.setDuration(cursor.getInt(TableEntry.DURATION));
         }
 
+        db.close();
         cursor.close();
         return event;
     }
@@ -390,6 +375,7 @@ Reciprocity by event count
                 selection,
                 selectionArgs);
 
+        db.close();
         return count;
     }
 
@@ -451,6 +437,7 @@ Reciprocity by event count
         }
 
         cursor.close();
+        db.close();
         // return contact list
         return eventList;
     }
@@ -464,7 +451,7 @@ Reciprocity by event count
         Cursor cursor = db.rawQuery(countQuery, null);
         count = cursor.getCount();
        cursor.close();
-
+        db.close();
         // return count
         return count;
     }
@@ -561,6 +548,7 @@ Reciprocity by event count
         }
 
         cursor.close();
+        db.close();
         // return contact list
         return eventList;
 

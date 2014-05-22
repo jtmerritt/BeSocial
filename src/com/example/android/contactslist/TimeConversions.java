@@ -1,10 +1,10 @@
-package com.example.android.contactslist.ui.dateSelection;
+package com.example.android.contactslist;
 
 /**
  * Created by Tyson Macdonald on 12/26/13.
  */
 
-public interface dateSelection {
+public interface TimeConversions {
 
     final static long ONE_DAY = 81300000;
     final static long THREE_DAY = ONE_DAY * 3;

@@ -5,7 +5,7 @@ import com.example.android.contactslist.eventLogs.EventInfo;
 
 import java.util.List;
 
-public interface ChartMakerCallback {
+public interface UpdateLogsCallback {
 
-    public abstract void finishedLoading(List<EventInfo> log);
+    public abstract void finishedLoading(List<EventInfo> result);
 }

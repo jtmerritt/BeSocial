@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ui.ContactDetailActivity;
+import com.example.android.contactslist.contactStats.ContactInfo;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -128,11 +129,9 @@ public class Notification {
             String line;
             while ((line = r.readLine()) != null) {
                 contact = line.split(",");
-                ContactInfo ContactInfo = new ContactInfo();
+                ContactInfo ContactInfo = new ContactInfo(contact[0], contact[2], 0);
 
-                ContactInfo.setName(contact[0]);
                 ContactInfo.setIDString(contact[1]);
-                ContactInfo.setKey(contact[2]);
 
                 ContactList.add(ContactInfo);
                 //total.append(line); // all lines run together. better as list

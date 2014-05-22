@@ -3,7 +3,7 @@ package com.example.android.contactslist.notification;
 import android.content.Context;
 import android.database.Cursor;
 
-import com.example.android.contactslist.notification.ContactInfo;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.ui.ContactsListFragment;
 
 import java.io.BufferedReader;
@@ -84,11 +84,8 @@ public class FileIO {
             String line;
             while ((line = r.readLine()) != null) {
                 contact = line.split(",");
-                ContactInfo contactInfo = new ContactInfo();
-
-                contactInfo.setName(contact[0]);
-                contactInfo.setIDLong(Long.parseLong(contact[1]));
-                contactInfo.setKey(contact[2]);
+                ContactInfo contactInfo = new ContactInfo(contact[0], contact[2],
+                        Long.parseLong(contact[1]) );
 
                 mContactList.add(contactInfo);
                 //total.append(line); // all lines run together. better as list

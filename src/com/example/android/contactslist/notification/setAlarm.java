@@ -83,6 +83,8 @@ public class SetAlarm {
                 }
                 if(enable_local_sources_read){ //Things to do when accessing local data
                     Toast.makeText(context, "Accessing Local Data", Toast.LENGTH_SHORT).show();
+
+                    //TODO Change updateDB to an AsyncTask to offload the broadcast receiver
                     Updates local_updates = new Updates();
                     local_updates.updateDB(context);
 

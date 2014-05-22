@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -48,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -68,23 +66,19 @@ import android.widget.Toast;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 
-import com.commonsware.cwac.loaderex.acl.SQLCipherCursorLoader;
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.ui.dateSelection.dateSelection;
-import com.example.android.contactslist.util.EventInfo;
+import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
-import com.example.android.contactslist.util.SocialEventsContract;
+import com.example.android.contactslist.dataImport.LoadContactLogsTask;
+import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.achartengine.GraphicalView;
 import org.achartengine.model.SeriesSelection;
-import org.achartengine.tools.PanListener;
-import org.achartengine.tools.ZoomEvent;
-import org.achartengine.tools.ZoomListener;
 
 import com.commonsware.cwac.loaderex.SQLiteCursorLoader;
 
@@ -103,8 +97,7 @@ import com.commonsware.cwac.loaderex.SQLiteCursorLoader;
  * Uri for the contact you want to display.
  */
 public class ContactDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>
-        , dateSelection,
+        LoaderManager.LoaderCallbacks<Cursor>,
         ContactDetailFragmentCallback
         //, View.OnClickListener
         {
@@ -1436,21 +1429,6 @@ private LinearLayout buildCallLogLayout(
         //displaySMSLog();
         //displayAddressLog();
     }
-    private void loadContactLogs(String contactName, long contactID){
-        mEventLog.clear();
-        // KS TODO: look into possibility of sending parameters in execute instead
-        AsyncTask<Void, Void, Integer> contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, getActivity().getContentResolver(), mEventLog, this, getActivity());
-        contactLogsTask.execute();
-
-    }
-            /*
-            public void addListenerOnSpinnerItemSelection() {
-                chartSpinner.setOnItemSelectedListener(new ContactsListActivity.CustomOnItemSelectedListener());
-            }
-            */
-
-
 
 }
 

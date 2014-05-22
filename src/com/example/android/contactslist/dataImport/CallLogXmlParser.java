@@ -1,12 +1,12 @@
-package com.example.android.contactslist.util;
+package com.example.android.contactslist.dataImport;
 
-import android.util.EventLog;
 import android.util.Xml;
+
+import com.example.android.contactslist.eventLogs.EventInfo;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

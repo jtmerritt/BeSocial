@@ -1,4 +1,4 @@
-package com.example.android.contactslist.util;
+package com.example.android.contactslist.eventLogs;
 
 
 public class EventInfo {
@@ -41,12 +41,14 @@ public class EventInfo {
             CallLog.Calls.OUTGOING_TYPE = 2
             CallLog.Calls.INCOMING_TYPE = 1
             CallLog.Calls.MISSED_TYPE = 3
-
-           3 SMS type
-             OUTGOING_TYPE = 2
-             INCOMING_TYPE = 1
-             Draft = 3
         */
+
+    final public static int OUTGOING_TYPE = 2;
+    final public static int INCOMING_TYPE = 1;
+    final public static int MISSED_DRAFT = 3;
+
+
+    //constructor
     public EventInfo(String name, String phoneNumber, int event_class, int event_type,
                            long date_ms, String date_string, long duration,
                            long wordCount, long charCount){
