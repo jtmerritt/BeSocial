@@ -520,7 +520,7 @@ public class chartMaker implements ChartMakerCallback {
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
 
-                ChartEventInfo = new EventInfo("", "",
+                ChartEventInfo = new EventInfo("", "", "",
                         mEventLog.get(j).getEventClass(), mEventLog.get(j).getEventType(),
                         cal.getTimeInMillis(), "",
                         0,0,0  //set all counts to zero

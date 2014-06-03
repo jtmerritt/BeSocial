@@ -7,14 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.example.android.contactslist.notification.timedUpdate;
-
-import java.util.Calendar;
+import com.example.android.contactslist.dataImport.Updates;
 
 /**
  * Created by Tyson Macdonald on 1/27/14.
@@ -72,26 +68,19 @@ public class SetAlarm {
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override public void onReceive( Context context, Intent _ )
             {
+
+                // setup an async task to read local and web data sources into the database
+                // user preferences governing updates are handeled in Updates
+                AsyncTask<Void, Void, String> updates = new Updates(context);
+                updates.execute();
+
                 //Log.d("Alarm Receiver", "onReceive called");
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-                Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
-                Boolean enable_local_sources_read = sharedPref.getBoolean("sync_with_local_sources_checkbox_preference_key", false);
                 Boolean enable_notification = sharedPref.getBoolean("notification_checkbox_preference_key", false);
 
-                if(access_web) {  //things to do when accessing data on-line
-                    Toast.makeText(context, "Accessing Web Data", Toast.LENGTH_SHORT).show();
-                }
-                if(enable_local_sources_read){ //Things to do when accessing local data
-                    Toast.makeText(context, "Accessing Local Data", Toast.LENGTH_SHORT).show();
-
-                    //TODO Change updateDB to an AsyncTask to offload the broadcast receiver
-                    Updates local_updates = new Updates();
-                    local_updates.updateDB(context);
-
-                }
-                if(enable_notification){  //Things to do when notifying user of updates
+               if(enable_notification){  //Things to do when notifying user of updates
                     Notification.simpleNotification(context);
-                }
+               }
             }
         };
 

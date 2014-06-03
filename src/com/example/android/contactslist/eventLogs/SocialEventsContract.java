@@ -316,6 +316,7 @@ public class SocialEventsContract {
         // organize the event info and pass it back
         if (cursor.moveToFirst()) {
             event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                    cursor.getString(TableEntry.CONTACT_KEY),
                     cursor.getString(TableEntry.CONTACT_ADDRESS),
                     cursor.getInt(TableEntry.CLASS),
                     cursor.getInt(TableEntry.TYPE),
@@ -411,6 +412,7 @@ public class SocialEventsContract {
         if (cursor.moveToFirst()) {
             do {
                 event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                        cursor.getString(TableEntry.CONTACT_KEY),
                         cursor.getString(TableEntry.CONTACT_ADDRESS),
                         cursor.getInt(TableEntry.CLASS),
                         cursor.getInt(TableEntry.TYPE),
@@ -520,6 +522,7 @@ public class SocialEventsContract {
         if (cursor.moveToFirst()) {
             do {
                 event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                        cursor.getString(TableEntry.CONTACT_KEY),
                         cursor.getString(TableEntry.CONTACT_ADDRESS),
                         cursor.getInt(TableEntry.CLASS),
                         cursor.getInt(TableEntry.TYPE),

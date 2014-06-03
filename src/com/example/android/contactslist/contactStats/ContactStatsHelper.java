@@ -1,6 +1,7 @@
 package com.example.android.contactslist.contactStats;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.android.contactslist.eventLogs.EventInfo;
 
@@ -123,6 +124,16 @@ public class ContactStatsHelper {
         // Select All Query
         String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
         String whereArg = event.getContactKey();
+
+        // since the contact key might not be set, we could fall back on ID
+        if(whereArg == null){
+            where = ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
+            whereArg = Long.toString(event.getContactID());
+            if(whereArg ==null){
+                Log.d("CONTACT STATS HELPER ", "MISSING CONTACT IDENTIFIERS");
+            }
+
+        }
 
         return statsDb.getContactStats(where, whereArg);
     }

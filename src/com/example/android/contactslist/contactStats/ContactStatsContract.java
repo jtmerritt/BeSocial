@@ -196,7 +196,7 @@ public class ContactStatsContract {
                         TableEntry.KEY_EVENT_COUNT + INT_TYPE + COMMA_SEP +
 
                         TableEntry.KEY_STANDING + REAL_TYPE + COMMA_SEP +
-                        TableEntry.KEY_DECAY_RATE + REAL_TYPE + COMMA_SEP +
+                        TableEntry.KEY_DECAY_RATE + REAL_TYPE + //COMMA_SEP +
                         //... // Any other options for the CREATE command
                         " )";
 
@@ -457,70 +457,81 @@ public class ContactStatsContract {
 
 
     public int updateContact(ContactInfo contact){
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Time now = new Time();
-        now.setToNow();
 
-        Time last_event = new Time();
-        last_event.format3339(true);
+        int count = 0;
 
-        // choose the most recent event to represent as the formatted string for the last event date
-        last_event.set( contact.getDateLastEventIn() > contact.getDateLastEventOut() ?
-                contact.getDateLastEventIn() : contact.getDateLastEventOut());
+        // Only bother if the contact record update flag is set to true.
+        if(contact.getUpdatedFlag() == true){
 
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        //Since this is an update, we should already have a rowId of _ID
-        long rowId = contact.getRowId();
+            // get the time of the update process
+            Time now = new Time();
+            now.setToNow();
 
-// New value for one column
-        //TODO: Evaluate use of flags for whether to update each value
-        ContentValues values = new ContentValues();
-        //values.put(TableEntry._ID, contact.getRowId());
-        values.put(TableEntry.KEY_CONTACT_ID, contact.getIDLong());
-        values.put(TableEntry.KEY_CONTACT_NAME, contact.getName());
-        values.put(TableEntry.KEY_CONTACT_KEY, contact.getKeyString());
+            Time last_event = new Time();
+            last_event.format3339(true);
 
-        values.put(TableEntry.KEY_DATE_LAST_EVENT_IN, contact.getDateLastEventIn());
-        values.put(TableEntry.KEY_DATE_LAST_EVENT_OUT, contact.getDateLastEventOut());
-        values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.toMillis(true)); // ignore daylight savings
-        values.put(TableEntry.KEY_DATE_CONTACT_DUE, contact.getDateEventDue());
-
-        values.put(TableEntry.KEY_DATE_RECORD_LAST_UPDATED, now.toMillis(true) );  //time in millis, ignore daylight savings time
-        values.put(TableEntry.KEY_EVENT_INTERVAL_LIMIT, contact.getEventIntervalLimit());
-        values.put(TableEntry.KEY_EVENT_INTERVAL_LONGEST, contact.getEventIntervalLongest());
-        values.put(TableEntry.KEY_EVENT_INTERVAL_AVG, contact.getEventIntervalAvg());
-
-        values.put(TableEntry.KEY_CALL_DURATION_TOTAL, contact.getCallDurationTotal());
-        values.put(TableEntry.KEY_CALL_DURATION_AVG, contact.getCallDurationAvg());
-        values.put(TableEntry.KEY_WORD_COUNT_AVG_IN, contact.getWordCountAvgIn());
-        values.put(TableEntry.KEY_WORD_COUNT_AVG_OUT, contact.getWordCountAvgOut());
-
-        values.put(TableEntry.KEY_WORD_COUNT_IN, contact.getWordCountIn());
-        values.put(TableEntry.KEY_WORD_COUNT_OUT, contact.getWordCountOut());
-        values.put(TableEntry.KEY_MESSAGE_COUNT_IN, contact.getMessagesCountIn());
-        values.put(TableEntry.KEY_MESSAGE_COUNT_OUT, contact.getMessagesCountOut());
-
-        values.put(TableEntry.KEY_CALL_COUNT_IN, contact.getCallCountIn());
-        values.put(TableEntry.KEY_CALL_COUNT_OUT, contact.getCallCountOut());
-        values.put(TableEntry.KEY_CALL_COUNT_MISSED, contact.getCallCountMissed());
-
-        values.put(TableEntry.KEY_EVENT_COUNT, contact.getEventCount());
-        values.put(TableEntry.KEY_STANDING, contact.getStandingValue());
-
-        values.put(TableEntry.KEY_DECAY_RATE, contact.getDecay_rate());
+            // choose the most recent event to represent as the formatted string for the last event date
+            last_event.set( contact.getDateLastEventIn() > contact.getDateLastEventOut() ?
+                    contact.getDateLastEventIn() : contact.getDateLastEventOut());
 
 
-// Which row to update, based on the ID
-        String selection = TableEntry._ID + " LIKE ?";
-        String[] selectionArgs = { String.valueOf(rowId) }; //TODO: Review what is needed
+            //Since this is an update, we should already have a rowId of _ID
+            long rowId = contact.getRowId();
 
-        int count = db.update(
-                TableEntry.STATS_TABLE,
-                values,
-                selection,
-                selectionArgs);
+            // New value for one column
+            //TODO: Evaluate use of flags for whether to update each value
+            ContentValues values = new ContentValues();
+            //values.put(TableEntry._ID, contact.getRowId());
+            values.put(TableEntry.KEY_CONTACT_ID, contact.getIDLong());
+            values.put(TableEntry.KEY_CONTACT_NAME, contact.getName());
+            values.put(TableEntry.KEY_CONTACT_KEY, contact.getKeyString());
 
-        db.close();
+            values.put(TableEntry.KEY_DATE_LAST_EVENT_IN, contact.getDateLastEventIn());
+            values.put(TableEntry.KEY_DATE_LAST_EVENT_OUT, contact.getDateLastEventOut());
+            values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.toMillis(true)); // ignore daylight savings
+            values.put(TableEntry.KEY_DATE_CONTACT_DUE, contact.getDateEventDue());
+
+            values.put(TableEntry.KEY_DATE_RECORD_LAST_UPDATED, now.toMillis(true) );  //time in millis, ignore daylight savings time
+            values.put(TableEntry.KEY_EVENT_INTERVAL_LIMIT, contact.getEventIntervalLimit());
+            values.put(TableEntry.KEY_EVENT_INTERVAL_LONGEST, contact.getEventIntervalLongest());
+            values.put(TableEntry.KEY_EVENT_INTERVAL_AVG, contact.getEventIntervalAvg());
+
+            values.put(TableEntry.KEY_CALL_DURATION_TOTAL, contact.getCallDurationTotal());
+            values.put(TableEntry.KEY_CALL_DURATION_AVG, contact.getCallDurationAvg());
+            values.put(TableEntry.KEY_WORD_COUNT_AVG_IN, contact.getWordCountAvgIn());
+            values.put(TableEntry.KEY_WORD_COUNT_AVG_OUT, contact.getWordCountAvgOut());
+
+            values.put(TableEntry.KEY_WORD_COUNT_IN, contact.getWordCountIn());
+            values.put(TableEntry.KEY_WORD_COUNT_OUT, contact.getWordCountOut());
+            values.put(TableEntry.KEY_MESSAGE_COUNT_IN, contact.getMessagesCountIn());
+            values.put(TableEntry.KEY_MESSAGE_COUNT_OUT, contact.getMessagesCountOut());
+
+            values.put(TableEntry.KEY_CALL_COUNT_IN, contact.getCallCountIn());
+            values.put(TableEntry.KEY_CALL_COUNT_OUT, contact.getCallCountOut());
+            values.put(TableEntry.KEY_CALL_COUNT_MISSED, contact.getCallCountMissed());
+
+            values.put(TableEntry.KEY_EVENT_COUNT, contact.getEventCount());
+            values.put(TableEntry.KEY_STANDING, contact.getStandingValue());
+
+            values.put(TableEntry.KEY_DECAY_RATE, contact.getDecay_rate());
+
+
+            // Which row to update, based on the ID
+            String selection = TableEntry._ID + " LIKE ?"; //TODO: Review what is needed
+            String[] selectionArgs = { String.valueOf(rowId) };
+
+            count = db.update(
+                    TableEntry.STATS_TABLE,
+                    values,
+                    selection,
+                    selectionArgs);
+
+            db.close();
+        }
+
+
         return count;
     }
 

@@ -6,8 +6,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.CallLog;
-import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
+import android.util.Log;
 
 import com.example.android.contactslist.UpdateLogsCallback;
 import com.example.android.contactslist.eventLogs.EventInfo;
@@ -22,58 +22,54 @@ import java.util.StringTokenizer;
 
 public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> {
 
-    private Long contactID;
+    private Long mContactId;
     private String contactName;
     private ContentResolver mContentResolver;
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private UpdateLogsCallback mUpdateLogsCallback;
     private Context mContext; // only added so this class can call on the event database
+    private String mContactKey;
 
 
-    public LoadContactLogsTask(Long cID, String cName, ContentResolver contentResolver,
+    // used for the async task callback
+    public LoadContactLogsTask(Long cID, String cName, String contactKey, 
+                               ContentResolver contentResolver,
                                UpdateLogsCallback updateLogsCallback,
                                Context context  // only added so this class can call on the event database
     ) {
-        contactID = cID;
+        mContactId = cID;
         contactName = cName;
         mContentResolver = contentResolver;
         mUpdateLogsCallback = updateLogsCallback;
         mContext = context;
+        mContactKey = contactKey;
+    }
+
+    // used for non-async execution
+    public LoadContactLogsTask(Long cID, String cName, String contactKey, ContentResolver contentResolver,
+                               Context context  // only added so this class can call on the event database
+    ) {
+        mContactId = cID;
+        contactName = cName;
+        mContentResolver = contentResolver;
+        mContext = context;
+        mContactKey = contactKey;
     }
 
 
 
+    /*
+    This method grabs the content of the entire SMS database and looks through it for the phone numbers of the contact.
+    This is hugely inefficient as we must repeat this for every contact.
+     */
+
+    //TODO: Fix inefficiency - make queries specific with the args clause
     private void loadContactSMSLogs() {
         int j = 0;
 
-        String phoneNumber = "";
-        List<String> phoneNumberList = new ArrayList<String>();
-        phoneNumberList.clear();
 
-
-
-        // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
-        Cursor phoneCursor = mContentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                new String[] { contactID.toString() },
-                null);
-
-        if(phoneCursor.moveToFirst()){
-
-            do{
-                // phone number comes out formatted with dashes or dots, as 555-555-5555
-                phoneNumber = phoneCursor.getString(phoneCursor
-                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                //phoneNumber = convertNumber(phoneNumber); //this utility causes memory problems
-
-                phoneNumberList.add(phoneNumber);
-            }while (phoneCursor.moveToNext());
-        }
-        phoneCursor.close();
-
-
+        ContactPhoneNumbers contactPhoneNumbers = new ContactPhoneNumbers(mContactId, mContentResolver);
+        List<String> phoneNumberList = contactPhoneNumbers.getPhoneNumberList();
 
         /*Query SMS Log Content Provider*/
         /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
@@ -92,8 +88,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         if (SMSLogCursor != null
                 && SMSLogCursor.moveToFirst()
                 && !phoneNumberList.isEmpty()
-            //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("date"))
-            //&& !SMSLogCursor.isNull(SMSLogCursor.getColumnIndex("address"))
                 ) {
 
 
@@ -106,8 +100,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         /*Loop through the cursor*/
             do{
 
-                Long eventContactID = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_NAME);
-                //TODO: cleanup name vs ID
+                Long eventmContactId = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_ID);
 
                 String eventContactAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
                 //eventContactAddress = convertNumber(eventContactAddress);
@@ -122,9 +115,6 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                             j >= 0 &&
                             eventContactAddress != null
                             && PhoneNumberUtils.compare(eventContactAddress, phoneNumberList.get(j))
-                            //&& isEquivalentNumber(eventContactAddress, phoneNumberList.get(j))
-                            //&& eventContactAddress.contains(phoneNumberList.get(j))
-
                             ) {
 
 
@@ -133,12 +123,18 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                         smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
                         eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
 
-                        EventInfo eventInfo = new EventInfo(contactName, eventContactAddress,
+                        EventInfo eventInfo = new EventInfo(contactName, mContactKey,
+                                eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
                                 new StringTokenizer(smsBody).countTokens(), smsBody.length());
 
-                        eventInfo.eventID = eventID;
-                        eventInfo.eventContactID = eventContactID;
+                        eventInfo.setContactID(mContactId);
+                        eventInfo.setEventID(eventID);
+
+                        // Test if the two are the same for debugging
+                        if(mContactId != eventmContactId){
+                            Log.d("LOAD SMS ", "CONTACT ID MISMATCH");
+                        }
 
                     //Add it into the ArrayList
                        mEventLog.add(eventInfo);
@@ -179,8 +175,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         if (callLogCursor.moveToFirst()) { //changed from !=null
 
 	/*Loop through the cursor*/
-            //TODO FIX: calling moveToNext here skips the first element -- perhaps emulate the smslog reading
-            while (callLogCursor.moveToNext()) {
+            do {
 
     		/*Get Contact Name*/
                 String eventContactName = callLogCursor.getString(
@@ -203,19 +198,21 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                     eventContactName = "No Name";
 
                 if((contactName.equals(eventContactName))){
-                    EventInfo eventInfo = new EventInfo(eventContactName, phone_number, EventInfo.PHONE_CLASS,
+                    EventInfo eventInfo = new EventInfo(eventContactName, mContactKey,
+                            phone_number, EventInfo.PHONE_CLASS,
                             eventType, eventDate, "", eventDuration, 0, 0);
 
+                    eventInfo.setContactID(mContactId);
 
     		        /*Add it into the ArrayList*/
                     mEventLog.add(eventInfo);
                 }
                 j++;
-            }
-
-	/*Close the cursor*/
-            callLogCursor.close();
+            } while (callLogCursor.moveToNext());
         }
+
+        /*Close the cursor*/
+        callLogCursor.close();
 
         /*
         //Read from database
@@ -302,7 +299,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         final static int ID = 0;
         final static int DATE = 1;
         final static int ADDRESS = 2;
-        final static int CONTACT_NAME = 3;
+        final static int CONTACT_ID = 3;
         final static int BODY = 4;
         final static int STATUS = 5;
         final static int TYPE = 6;

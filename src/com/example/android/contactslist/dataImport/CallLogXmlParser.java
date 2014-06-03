@@ -115,7 +115,7 @@ public class CallLogXmlParser {
         parser.nextTag();
         parser.require(XmlPullParser.END_TAG, ns, "call");
 
-        return new EventInfo(contact_name, phone_number, EventInfo.PHONE_CLASS, event_type,
+        return new EventInfo(contact_name, "", phone_number, EventInfo.PHONE_CLASS, event_type,
                 date_ms, readable_date, duration, 0, 0);
     }
 

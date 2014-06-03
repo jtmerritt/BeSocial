@@ -49,11 +49,14 @@ public class EventInfo {
 
 
     //constructor
-    public EventInfo(String name, String phoneNumber, int event_class, int event_type,
+    public EventInfo(String name, String contactKey,
+                     String phoneNumber, int event_class, int event_type,
                            long date_ms, String date_string, long duration,
                            long wordCount, long charCount){
 
         this.eventContactName = name;
+        //this.eventContactID = contactID;
+        this.eventContactKey = contactKey;
         this.eventClass = event_class;
         this.eventType = event_type;
         this.eventContactAddress = phoneNumber;

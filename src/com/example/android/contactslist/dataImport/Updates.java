@@ -1,11 +1,13 @@
-package com.example.android.contactslist.notification;
+package com.example.android.contactslist.dataImport;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -41,27 +43,52 @@ import java.util.List;
 
 // Based on example at http://developer.android.com/guide/topics/ui/notifiers/notifications.html
     //the page has more info on updating and removing notifications in code
-public class Updates implements UpdateLogsCallback {
-    //private static List<ContactInfo> mContactList = new ArrayList<ContactInfo>();
-    //private static Uri mContactUri;
-    //private static String mContactName = "Janet";
+public class Updates extends AsyncTask<Void, Void, String> {
+
     private Context mContext;
     private String contactName;
-
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
     private ContactGroupsList.GroupInfo largestGroup;
 
     List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
-    public void updateDB(Context context){
+    public Updates(Context context){
         mContext = context;
+    }
 
-        if(getLargestGroup()){
-            loadGroupContactList();
+    @Override
+    protected String doInBackground(Void... v1) {
+
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
+        Boolean enable_local_sources_read = sharedPref.getBoolean("sync_with_local_sources_checkbox_preference_key", false);
+
+        if(access_web) {  //things to do when accessing data on-line
+            //Toast.makeText(mContext, "Accessing Web Data", Toast.LENGTH_SHORT).show();
+        }
+        if(enable_local_sources_read){ //Things to do when accessing local data
+            //Toast.makeText(mContext, "Accessing Local Data", Toast.LENGTH_SHORT).show();
+
+            if(getLargestGroup()){
+                loadGroupContactList();
+            }
+
+            // getPhoneEventsXML();
+
         }
 
-        getPhoneEventsXML();
+      return "done";
     }
+
+    protected void onProgressUpdate(Integer... progress) {
+                // do something
+            }
+
+    protected void onPostExecute(int result) {
+                // do something
+    }
+
 
     private boolean getLargestGroup(){
         // collect list of applicable gmail contact groups
@@ -69,6 +96,7 @@ public class Updates implements UpdateLogsCallback {
         contactGroupsList.loadGroups();
         largestGroup = contactGroupsList.getLargestGroup();
 
+        //do we have a group?
         if (largestGroup !=null) {
             return true;
         }else{
@@ -102,6 +130,7 @@ public class Updates implements UpdateLogsCallback {
                             cursor.getLong(localContactsGroupQuery.ID));
 
                     loadContactLogs(contactName,
+                            cursor.getString(localContactsGroupQuery.LOOKUP_KEY),
                             cursor.getLong(localContactsGroupQuery.ID));
                     i++;
 
@@ -109,25 +138,38 @@ public class Updates implements UpdateLogsCallback {
                 }while(cursor.moveToNext());
             }
 
+            cursor.close();
+
         }else{
             Toast.makeText(mContext, "No Contacts Available", Toast.LENGTH_SHORT).show();
         }
         //Log.d("Iterate Contacts: ", "Number iterations: " + i);
         // And now we should have a list of contacts in the group
+
     }
 
-    private void loadContactLogs(String contactName, long contactID) {
+    private void loadContactLogs(String contactName, String contactKey, long contactID) {
 
-        // KS TODO: look into possibility of sending parameters in execute instead, including date range
+        // TODO: look into possibility of including date range
 
+        // We're already in an async task, and we should probably do this sequentially
+        LoadContactLogsTask contactLogsTask = new LoadContactLogsTask
+                (contactID, contactName, contactKey, mContext.getContentResolver(), mContext);
+
+        finishedLoading( contactLogsTask.doInBackground()); // gather up event data from phone logs
+
+
+        /*
         AsyncTask<Void, Void, List<EventInfo>> contactLogsTask = new LoadContactLogsTask
                 (contactID, contactName, mContext.getContentResolver(), this, mContext);
+
         contactLogsTask.execute();
+        */
     }
 
 
+    // This function is not a callback from an asyncTask
     public void finishedLoading(List<EventInfo> log) {
-        //TODO do callbacks here end up being in parallel?  That could be a problem
         mEventLog = log;
         Log.d("db Loaded: ", "All Done with contact!");
         insertEventLogIntoDatabase();
@@ -146,6 +188,7 @@ public class Updates implements UpdateLogsCallback {
 
             //proceed if the event is likely new
             if(eventDb.checkEventExists(event) == -1) {
+
                 //insert event into database
                 dbRowID = eventDb.addEvent(event);
                 //Log.d("Insert: ", "Row ID: " + dbRowID);
@@ -258,6 +301,7 @@ public class Updates implements UpdateLogsCallback {
 
             //TODO fix: the XML tags aren't getting read
             phoneLog = callLogXmlParser.parse(inputStream);
+            // This event log has no CONTACT_KEYS, which need tobe added in
 
             if (inputStream != null) {
                 inputStream.close();
@@ -266,6 +310,7 @@ public class Updates implements UpdateLogsCallback {
             e.printStackTrace();
         }
 
+        // TODO add in CONTACT_KEYS
         if(phoneLog != null) {
             for (EventInfo log : phoneLog) {
                 db.addIfNewEvent(log);
