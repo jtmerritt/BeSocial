@@ -2,7 +2,10 @@ package com.example.android.contactslist.dataImport;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
+
+import com.example.android.contactslist.contactStats.ContactInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,30 +15,30 @@ import java.util.List;
  */
 public class ContactPhoneNumbers {
 
-    String phoneNumber = "";
-    List<String> phoneNumberList = new ArrayList<String>();
-    Long mContactID;
     private ContentResolver mContentResolver;
 
 
 
-    public ContactPhoneNumbers(Long contactID, ContentResolver contentResolver ){
-        mContactID = contactID;
+    public ContactPhoneNumbers( ContentResolver contentResolver ){
         mContentResolver = contentResolver;
     }
 
 
-    public List<String> getPhoneNumberList(){
-        phoneNumberList.clear();
+    public List<String> getPhoneNumberListFromContact(String contactKey ){
+        List<String> phoneNumberList = new ArrayList<String>();
+        String phoneNumber = "";
 
         // TODO: There must be a better way to get the contact phone numbers into this function, especially since many contacts have multiple phone numbers
         Cursor phoneCursor = mContentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                new String[] { mContactID.toString() },
+                //ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?",
+                new String[] { contactKey },
                 null);
 
+        int k = phoneCursor.getCount();
+        // are there any phone numbers?
         if(phoneCursor.moveToFirst()){
 
             do{
@@ -53,5 +56,55 @@ public class ContactPhoneNumbers {
         return phoneNumberList;
     }
 
+
+    /*
+    Make a basic list of contacts listed under the given phoneNumber.
+    There may be several contacts, such as several people living in one household
+    This method returns an empty list if there are no matches.
+     */
+    public List<ContactInfo> getContactsFromPhoneNumber(String phoneNumber){
+
+        List<ContactInfo> list = new ArrayList<ContactInfo>();
+
+        // create lookup uri out of phone number
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+
+        // create cursor with all data columns
+        Cursor phoneCursor = mContentResolver.query(
+                uri,
+                null,
+                null,
+                null,
+                null);
+
+        int k = phoneCursor.getCount();
+
+        // are there any contacts?
+        if(phoneCursor.moveToFirst()){
+
+            //set through the list of contact, loading information into the contacts list
+            do {
+
+                // create a new temporary contactInfo based on the groups entry
+                // to easily pass around this basic information
+                ContactInfo contact = new ContactInfo(
+                        phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME)),
+                        phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.PhoneLookup.LOOKUP_KEY)),
+                        phoneCursor.getLong(phoneCursor.getColumnIndex(ContactsContract.PhoneLookup._ID)));
+
+                //add to the contact list if it's a named contact
+                if((contact.getName() != null) &&
+                        (!contact.getName().equals("")) &&
+                        (!contact.getName().equals("(Unknown)"))
+                        ){
+                    list.add(contact);
+                }
+
+            }while(phoneCursor.moveToNext());
+        }
+        phoneCursor.close();
+
+        return list;
+    }
 
 }

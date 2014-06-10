@@ -13,13 +13,10 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.UpdateLogsCallback;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
 import com.example.android.contactslist.ui.ContactGroupsList;
-import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.dataImport.CallLogXmlParser;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
@@ -46,11 +43,10 @@ import java.util.List;
 public class Updates extends AsyncTask<Void, Void, String> {
 
     private Context mContext;
-    private String contactName;
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
     private ContactGroupsList.GroupInfo largestGroup;
+    private List<EventInfo> mSMSEventLog = new ArrayList<EventInfo>();
 
-    List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
     public Updates(Context context){
         mContext = context;
@@ -68,14 +64,7 @@ public class Updates extends AsyncTask<Void, Void, String> {
             //Toast.makeText(mContext, "Accessing Web Data", Toast.LENGTH_SHORT).show();
         }
         if(enable_local_sources_read){ //Things to do when accessing local data
-            //Toast.makeText(mContext, "Accessing Local Data", Toast.LENGTH_SHORT).show();
-
-            if(getLargestGroup()){
-                loadGroupContactList();
-            }
-
-            // getPhoneEventsXML();
-
+            localSourceRead();
         }
 
       return "done";
@@ -90,6 +79,43 @@ public class Updates extends AsyncTask<Void, Void, String> {
     }
 
 
+    private void localSourceRead(){
+
+        if(getLargestGroup()){
+            List<ContactInfo> masterContactList = getGroupContactList();
+
+            // only work with a non-empty list
+            if(!masterContactList.isEmpty()){
+
+                Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
+
+                // grab the SMS database for the master list of contacts
+                mSMSEventLog = getAllSMSLogs(masterContactList);
+
+                Log.d("LOCAL SOURCE READ: ", "Got SMS log");
+
+                for(ContactInfo contact:masterContactList){
+                    // there is a chance that the contact is completely new to the db
+                    // Contact groups are read from google and may be updated on the website
+                    addContactToDbIfNew(contact);
+
+                    // feed the all events for contact to the local databases
+                    insertEventLogIntoDatabases(getAllEventLogsForContact(contact));
+
+                    // test that we can retrieve the contact from the db
+                    testContact(contact);
+                }
+            }
+
+
+
+        }
+
+        // getPhoneEventsXML();
+
+    }
+
+// TODO enable switching to a smaller group for testing
     private boolean getLargestGroup(){
         // collect list of applicable gmail contact groups
         contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
@@ -104,10 +130,17 @@ public class Updates extends AsyncTask<Void, Void, String> {
         }
     }
 
-    private void loadGroupContactList(){
+    /*
+    Load the group contact list and step through the listed contacts...
+    1) adding them to the database if they aren't there
+    2) gathering all the event data on the phone and placeint that in the event database
+     */
+    private List<ContactInfo> getGroupContactList(){
         Uri contentUri;
-        int i = 0;
+        List<ContactInfo> masterContactList = new ArrayList<ContactInfo>();
+
         if(largestGroup.getId() != -1){
+
             contentUri = localContactsGroupQuery.CONTENT_URI;
 
             final String parameters[] = {String.valueOf(largestGroup.getId())};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
@@ -123,91 +156,187 @@ public class Updates extends AsyncTask<Void, Void, String> {
             if(cursor.moveToFirst())
             {
                 do{
-                    contactName = cursor.getString(localContactsGroupQuery.DISPLAY_NAME);
-
-                    ContactInfo contact = new ContactInfo(contactName,
+                    // create a new temporary contactInfo based on the groups entry
+                    // to easily pass around this basic information
+                    ContactInfo contact = new ContactInfo(
+                            cursor.getString(localContactsGroupQuery.DISPLAY_NAME),
                             cursor.getString(localContactsGroupQuery.LOOKUP_KEY),
                             cursor.getLong(localContactsGroupQuery.ID));
 
-                    loadContactLogs(contactName,
-                            cursor.getString(localContactsGroupQuery.LOOKUP_KEY),
-                            cursor.getLong(localContactsGroupQuery.ID));
-                    i++;
+                    masterContactList.add(contact);
 
-                    //mContactList.add(contact);
                 }while(cursor.moveToNext());
+            }else {
+                Toast.makeText(mContext, "Please add contacts to group", Toast.LENGTH_SHORT).show();
             }
-
             cursor.close();
 
         }else{
             Toast.makeText(mContext, "No Contacts Available", Toast.LENGTH_SHORT).show();
+            // TODO : add better handling of empty groups, such as prompt to add contacts locally
         }
-        //Log.d("Iterate Contacts: ", "Number iterations: " + i);
-        // And now we should have a list of contacts in the group
 
+        return masterContactList;
     }
 
-    private void loadContactLogs(String contactName, String contactKey, long contactID) {
+
+    private void addContactToDbIfNew(ContactInfo contact){
+
+        ContactStatsContract statsDb = new ContactStatsContract(mContext);
+        statsDb.addIfNewContact(contact);
+
+        statsDb.close();
+    }
+
+    private void testContact(ContactInfo testContact){
+
+        ContactStatsContract statsDb = new ContactStatsContract(mContext);
+
+        // Select All Query
+        String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
+        String whereArg = testContact.getKeyString();
+
+        ContactInfo dbContact = statsDb.getContactStats(where, whereArg);
+
+        if(dbContact != null){
+            Log.d("UPDATES ", "Contact info: " + dbContact.getName() + " : " +
+                    dbContact.getDateLastEvent());
+        }else{
+            Log.d("UPDATES ", "No Contact for " + testContact.getName());
+
+        }
+
+    statsDb.close();
+    }
+
+
+    /*
+    Here is where the bulk of the work is managed
+    populating the mSMSEventLog seems to take about 8 minutes
+    iterating through it again and again takes another 4
+    For an sms database of 10k+
+     */
+    private List<EventInfo> getAllEventLogsForContact(ContactInfo contact){
+        List<EventInfo> localEventLog;
+        List<EventInfo> removeLog = new ArrayList<EventInfo>();
+
+
+        //if we haven't yet grabbed the SMS database for the master contact list...
+        if(mSMSEventLog.isEmpty()){
+            // grab the entire SMS database for named contacts
+
+            Log.d("GET CALL EVENTS: ", "Event log is empty");
+            //mSMSEventLog = getAllSMSLogs(null);
+        }
+
+        // initialize the localEventLog with the call log for the contact
+        localEventLog = getAllCallLogsForContact(contact);
+
+
+        //search through SMS event log for contact and add items to the local event log
+        // note that this list could be very long: My sms log is 10k+ entries
+        //TODO: find a way to limit the number of iterations of this list
+        for(EventInfo event : mSMSEventLog) {
+            if(isEventWithContact(contact,event)){
+                localEventLog.add(event);
+
+                // keep list of events to remove from the SMS event log
+                removeLog.add(event);
+            }
+        }
+
+        //TODO Try not removing taken elements
+        // remove all sms events that have already been added to the local event Log
+        if(!removeLog.isEmpty()){
+            mSMSEventLog.removeAll(removeLog);
+        }
+
+        // return the event log that is ready for the database
+        return localEventLog;
+    }
+
+
+
+    // get full SMS log for further search
+    //if masterList is null, returns all SMS events
+    private List<EventInfo> getAllSMSLogs(List<ContactInfo> masterList) {
 
         // TODO: look into possibility of including date range
 
         // We're already in an async task, and we should probably do this sequentially
-        LoadContactLogsTask contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, contactKey, mContext.getContentResolver(), mContext);
+        PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(),
+                mContext);
 
-        finishedLoading( contactLogsTask.doInBackground()); // gather up event data from phone logs
+        // get list of SMS events for named contacts, if masterList is null, returns all SMS events
+        return phoneLogAccess.getSMSLogsForContactList(masterList); // gather up event data from phone logs
+    }
 
+    // get call log specific to contact
+    private List<EventInfo> getAllCallLogsForContact(ContactInfo contact) {
 
-        /*
-        AsyncTask<Void, Void, List<EventInfo>> contactLogsTask = new LoadContactLogsTask
-                (contactID, contactName, mContext.getContentResolver(), this, mContext);
+        // TODO: look into possibility of including date range
 
-        contactLogsTask.execute();
-        */
+        // We're already in an async task, and we should probably do this sequentially
+        PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(), mContext);
+
+        // gather up event data from call logs for the specific contact
+        return phoneLogAccess.getAllCallLogs(contact.getIDLong(), contact.getName(), contact.getKeyString());
     }
 
 
-    // This function is not a callback from an asyncTask
-    public void finishedLoading(List<EventInfo> log) {
-        mEventLog = log;
-        Log.d("db Loaded: ", "All Done with contact!");
-        insertEventLogIntoDatabase();
+    /*
+    Method takes an eventLog and inserts it into the event database and submits the event to
+    ContactStatsHelper to update the contact implicated by the each event.
 
-        // Toast.makeText(mContext, "Finished Loading " + contactName, Toast.LENGTH_SHORT).show();
-    }
-
-    private void insertEventLogIntoDatabase(){
+    All events need to be for valid contacts of the group defined for the application.
+     */
+    private void insertEventLogIntoDatabases(List<EventInfo> eventLog){
         SocialEventsContract eventDb = new SocialEventsContract(mContext);
         ContactStatsHelper csh = new ContactStatsHelper(mContext);
-        long dbRowID = (long)0;
+
 
         //step through mEventLog (new events) to load individual events into the eventLog database
-        // while collecting some basic statistics in contact_stats
-        for(EventInfo event : mEventLog){
-
-            //proceed if the event is likely new
-            if(eventDb.checkEventExists(event) == -1) {
-
-                //insert event into database
-                dbRowID = eventDb.addEvent(event);
-                //Log.d("Insert: ", "Row ID: " + dbRowID);
-
-                String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
-                        + " ,Type: " + event.getEventType();
-                // Writing Contacts to log
-                //Log.d("db Read: ", log);
-
+        for(EventInfo event : eventLog){
+            if(insertEventIntoDatabaseIfNew(event, eventDb)){
+                // if event is new...
                 // Process its data into the contact_stats for the contact
+                // assuming the contact is not new
                 csh.updateContactStatsFromEvent(event);
-
+                // method returns false if the event does not have a corresponding contact in the db
             }
-
         }
 
         eventDb.close();
     }
 
+
+    private boolean insertEventIntoDatabaseIfNew(EventInfo event, SocialEventsContract eventDb){
+        long dbRowID = (long)0;
+
+        //proceed if the event is likely new
+        if(eventDb.checkEventExists(event) == -1) {
+
+            //insert event into database
+            dbRowID = eventDb.addEvent(event);
+            //Log.d("Insert: ", "Row ID: " + dbRowID);
+
+            String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+                    + " ,Class: " + event.getEventClass();
+            // Writing Contacts to log
+            //Log.d("db Read: ", log);
+
+            //action taken
+            return true;
+        }else{
+            // no action taken
+            return false;
+        }
+    }
+
+
+    private boolean isEventWithContact(ContactInfo contact, EventInfo event){
+        return (contact.getKeyString().equals(event.eventContactKey));
+    }
 
     /**
      * Taken from ContactsListFragment.java

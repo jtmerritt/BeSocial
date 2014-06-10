@@ -142,9 +142,13 @@ public class ContactStatsHelper {
     public boolean updateContactStatsFromEvent(EventInfo event){
         ContactStatsContract statsDb = new ContactStatsContract(mContext);
 
-        ContactInfo stats = getContactStatsFromEvent(event, statsDb);
 
-        //stats could be null
+        ContactInfo stats = getContactStatsFromEvent(event, statsDb);
+        //this function returns null if the event holds a contact not in the database
+
+
+
+        //stats could be null, which could mean the contact does not exist in the local db
         if(stats != null){
 
             // call function which parses the entire event into the correct stats

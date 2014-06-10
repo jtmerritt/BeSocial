@@ -25,28 +25,30 @@ public class ContactStatsContentProvider extends ContentProvider {
 
     // used for the UriMacher
     private static final int CONTACTS = 10;
-    private static final int CONTACT_ID = 20;
-    private static final int CONTACT_NAME = 30;
-    private static final int CONTACT_KEY = 40;
+    private static final int ROW_ID = 20;
+    private static final int LOOKUP_KEY = 30;
+
+
 
     private Context mContext;
 
-    private static final String AUTHORITY = "com.example.android.contactslist.contactStats";
+    private static final String AUTHORITY = "com.example.android.contactslist.contactStats.provider";
 
-    private static final String BASE_PATH = "contact_stats";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
+    private static final String BASE_PATH = "contactStatsTable";
+    public static final Uri CONTACT_STATS_URI = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH);
 
     public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-            + "/contact_stats";
+            + "/contactStats";
     public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-            + "/contact";
+            + "/dir";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH, CONTACTS);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", CONTACT_ID);
-        //TODO add more uri
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ROW_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/*", LOOKUP_KEY);
+
     }
 
     @Override
@@ -74,19 +76,17 @@ public class ContactStatsContentProvider extends ContentProvider {
         switch (uriType) {
             case CONTACTS:
                 break;
-            case CONTACT_ID:
+            case ROW_ID:
                 // adding the ID to the original query
-                queryBuilder.appendWhere(ContactStatsContract.TableEntry.KEY_CONTACT_ID + "="
+                queryBuilder.appendWhere(ContactStatsContract.TableEntry._ID + "="
                         + uri.getLastPathSegment());
                 break;
-            case CONTACT_NAME:
-                queryBuilder.appendWhere((ContactStatsContract.TableEntry.KEY_CONTACT_NAME + "="
-                    + uri.getLastPathSegment()));
-                break;
-            case CONTACT_KEY:
+
+            case LOOKUP_KEY:
                 queryBuilder.appendWhere((ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "="
                         + uri.getLastPathSegment()));
                 break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -94,6 +94,8 @@ public class ContactStatsContentProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection,
                 selectionArgs, null, null, sortOrder);
+        // TODO Fix: the above statement segfaults with the Lookup_key case
+
         // make sure that potential listeners are getting notified
         cursor.setNotificationUri(mContext.getContentResolver(), uri);
 
@@ -102,7 +104,7 @@ public class ContactStatsContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        return null;
+        return "vnd.android.cursor.dir/vnd.com.example.android.contactslist.contactStats.contactStatsTable";
     }
 
     @Override
@@ -133,7 +135,7 @@ public class ContactStatsContentProvider extends ContentProvider {
                 rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE, selection,
                         selectionArgs);
                 break;
-            case CONTACT_ID:
+            case ROW_ID:
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
                             ContactStatsContract.TableEntry.KEY_CONTACT_ID + "=" + id,
@@ -141,30 +143,6 @@ public class ContactStatsContentProvider extends ContentProvider {
                 } else {
                     rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
                             ContactStatsContract.TableEntry.KEY_CONTACT_ID + "=" + id
-                                    + " and " + selection,
-                            selectionArgs);
-                }
-                break;
-            case CONTACT_NAME:
-                if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_NAME + "=" + id,
-                            null);
-                } else {
-                    rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_NAME + "=" + id
-                                    + " and " + selection,
-                            selectionArgs);
-                }
-                break;
-            case CONTACT_KEY:
-                if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "=" + id,
-                            null);
-                } else {
-                    rowsDeleted = sqlDB.delete(ContactStatsContract.TableEntry.STATS_TABLE,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -192,7 +170,7 @@ public class ContactStatsContentProvider extends ContentProvider {
                         selection,
                         selectionArgs);
                 break;
-            case CONTACT_ID:
+            case ROW_ID:
                 if (TextUtils.isEmpty(selection)) {
                     rowsUpdated = sqlDB.update(ContactStatsContract.TableEntry.STATS_TABLE,
                             values,
@@ -207,45 +185,12 @@ public class ContactStatsContentProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
-            case CONTACT_NAME:
-                if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(ContactStatsContract.TableEntry.STATS_TABLE,
-                            values,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_NAME + "=" + id,
-                            null);
-                } else {
-                    rowsUpdated = sqlDB.update(ContactStatsContract.TableEntry.STATS_TABLE,
-                            values,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_NAME + "=" + id
-                                    + " and "
-                                    + selection,
-                            selectionArgs);
-                }
-                break;
-            case CONTACT_KEY:
-                if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(ContactStatsContract.TableEntry.STATS_TABLE,
-                            values,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "=" + id,
-                            null);
-                } else {
-                    rowsUpdated = sqlDB.update(ContactStatsContract.TableEntry.STATS_TABLE,
-                            values,
-                            ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "=" + id
-                                    + " and "
-                                    + selection,
-                            selectionArgs);
-                }
-                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         mContext.getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
     }
-
-
-
 
     private void checkColumns(String[] projection) {
         String[] available = {

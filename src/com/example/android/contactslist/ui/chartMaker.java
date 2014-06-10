@@ -108,8 +108,8 @@ public class chartMaker implements ChartMakerCallback {
             if (j >= 0)
             {
 
-                        mDisplaySeries.add(mEventLog.get(j).getDate(), /*date of call. Time of day?*/
-                                secondsToDecimalMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
+               mDisplaySeries.add(mEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                  secondsToDecimalMinutes(mEventLog.get(j).getCallDuration())); /*Length of the call in Minutes*/
 
 
             }
@@ -395,7 +395,8 @@ public class chartMaker implements ChartMakerCallback {
                         eventDuration = mBarChartEventLog.get(j).getDuration();
                         wordCount = mBarChartEventLog.get(j).getWordCount();
                         mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
-                                (double)wordCount/(double)100 +(double)eventDuration /*Length of event*/
+                                (double)wordCount/(double)10 +(double)eventDuration /*Length of event*/
+                                // normalized combined data
                         );
                 }
 

@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.CallLog;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
@@ -20,10 +19,11 @@ import java.util.StringTokenizer;
     Loading event logs (phone and SMS) from the android phone and SMS database
  */
 
-public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> {
+public class LoadContactLogsTask //extends AsyncTask<Void, Void, List<EventInfo>>
+{
 
     private Long mContactId;
-    private String contactName;
+    private String mContactName;
     private ContentResolver mContentResolver;
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private UpdateLogsCallback mUpdateLogsCallback;
@@ -38,7 +38,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                                Context context  // only added so this class can call on the event database
     ) {
         mContactId = cID;
-        contactName = cName;
+        mContactName = cName;
         mContentResolver = contentResolver;
         mUpdateLogsCallback = updateLogsCallback;
         mContext = context;
@@ -50,12 +50,20 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                                Context context  // only added so this class can call on the event database
     ) {
         mContactId = cID;
-        contactName = cName;
+        mContactName = cName;
         mContentResolver = contentResolver;
         mContext = context;
         mContactKey = contactKey;
     }
 
+
+    public List<EventInfo> getEventLogs() {
+
+        loadContactCallLogs();
+        loadContactSMSLogs();
+        return mEventLog;
+
+    }
 
 
     /*
@@ -68,14 +76,18 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         int j = 0;
 
 
-        ContactPhoneNumbers contactPhoneNumbers = new ContactPhoneNumbers(mContactId, mContentResolver);
-        List<String> phoneNumberList = contactPhoneNumbers.getPhoneNumberList();
+        ContactPhoneNumbers contactPhoneNumbers = new ContactPhoneNumbers(mContentResolver);
+        List<String> phoneNumberList = contactPhoneNumbers.getPhoneNumberListFromContact(mContactKey);
+
+
+        String SELECTION = "person = ?" ;
+        final String SELECTION_ARGS[] = { Long.toString(mContactId)  };
+
 
         /*Query SMS Log Content Provider*/
         /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
         Cursor SMSLogCursor = mContentResolver.query(
                 ContactSMSLogQuery.SMSLogURI,
-                //Uri.parse(contentParsePhrase),
                 ContactSMSLogQuery.PROJECTION,
                 null,
                 null,
@@ -84,6 +96,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
 
         // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
 
+        int k = SMSLogCursor.getCount();
         /*Check if cursor is not null*/
         if (SMSLogCursor != null
                 && SMSLogCursor.moveToFirst()
@@ -123,7 +136,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                         smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
                         eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
 
-                        EventInfo eventInfo = new EventInfo(contactName, mContactKey,
+                        EventInfo eventInfo = new EventInfo(mContactName, mContactKey,
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
                                 new StringTokenizer(smsBody).countTokens(), smsBody.length());
@@ -133,7 +146,12 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
 
                         // Test if the two are the same for debugging
                         if(mContactId != eventmContactId){
-                            Log.d("LOAD SMS ", "CONTACT ID MISMATCH");
+                            String log = "CONTACT ID MISMATCH: " +
+                                    mContactName + "\t"+
+                                    Long.toString(mContactId)  + "\t"+
+                                    Long.toString(eventmContactId);
+                                    
+                            Log.d("LOAD SMS ", log);
                         }
 
                     //Add it into the ArrayList
@@ -159,7 +177,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
 
         int j=0;
 
-        final String parameters[] = {contactName};
+        final String parameters[] = {mContactName};
 
 	/*Query Call Log Content Provider*/
         //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
@@ -178,7 +196,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
             do {
 
     		/*Get Contact Name*/
-                String eventContactName = callLogCursor.getString(
+                String eventmContactName = callLogCursor.getString(
                         callLogCursor.getColumnIndex(android.provider.CallLog.Calls.CACHED_NAME));
 
 		    /*Get Date and time information*/
@@ -194,11 +212,11 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                 String phone_number = callLogCursor.getString(
                         callLogCursor.getColumnIndex(CallLog.Calls.NUMBER));
 
-                if (eventContactName == null)
-                    eventContactName = "No Name";
+                if (eventmContactName == null)
+                    eventmContactName = "No Name";
 
-                if((contactName.equals(eventContactName))){
-                    EventInfo eventInfo = new EventInfo(eventContactName, mContactKey,
+                if((mContactName.equals(eventmContactName))){
+                    EventInfo eventInfo = new EventInfo(eventmContactName, mContactKey,
                             phone_number, EventInfo.PHONE_CLASS,
                             eventType, eventDate, "", eventDuration, 0, 0);
 
@@ -218,7 +236,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         //Read from database
         List<EventInfo> events = db.getAllEvents();
         for (EventInfo event : events) {
-            String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+            String log = "Date: "+event.getDate()+" ,Name: " + event.getmContactName()
                     + " ,Type: " + event.getEventType();
             // Writing Contacts to log
             Log.d("db Read: ", log);
@@ -230,14 +248,15 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
 
     }
 
+    /*
     @Override
     protected List<EventInfo> doInBackground(Void... v1) {
 
         loadContactCallLogs();
         loadContactSMSLogs();
         return mEventLog;
-
    }
+    */
 
     protected void onProgressUpdate(Integer... progress) {
         // do something
@@ -277,7 +296,7 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
                 "_id",      //message ID
                 "date",     //date of message long
                 "address", // phone number long
-                "person", //Name of person (ID?)
+                "person", //contact ID - kinda useless
                 "body", //body of message
                 "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
                 "type" //  Inbox, Sent, Draft
@@ -292,14 +311,14 @@ public class LoadContactLogsTask extends AsyncTask<Void, Void, List<EventInfo>> 
         // Except they never quite worked in this context.
         final static String SELECTION =
                 "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-        final String SELECTION_ARGS[] = null; //{addressToBeSearched + "%" } //{contactName + "%" };
+
         final String SORT_ORDER = null;   //example: "DATE desc"
 
         // The query column numbers which map to each value in the projection
         final static int ID = 0;
         final static int DATE = 1;
         final static int ADDRESS = 2;
-        final static int CONTACT_ID = 3;
+        final static int CONTACT_ID = 3;  //kinda useless
         final static int BODY = 4;
         final static int STATUS = 5;
         final static int TYPE = 6;

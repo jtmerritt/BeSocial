@@ -29,7 +29,6 @@ import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -69,11 +68,14 @@ import android.widget.TabHost.TabSpec;
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
+import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
+import com.example.android.contactslist.contactStats.ContactInfo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -116,6 +118,8 @@ public class ContactDetailFragment extends Fragment implements
     private boolean mIsTwoPaneLayout;
 
     private Uri mContactUri; // Stores the contact Uri for this fragment instance
+    private ContactInfo contactStats;
+
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
     // Used to store references to key views, layouts and menu items as these need to be updated
@@ -128,7 +132,7 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mChartLayout;
     private LinearLayout mPChartView;
     private TextView mEmptyView;
-    private TextView mContactName;
+    private TextView mContactNameView;
     private MenuItem mEditContactMenuItem;
     private GraphicalView mChartView = null;
     private String mContactNameString;
@@ -169,6 +173,7 @@ public class ContactDetailFragment extends Fragment implements
      */
     public ContactDetailFragment() {}
 
+
     /**
      * Sets the contact that this Fragment displays, or clears the display if the contact argument
      * is null. This will re-initialize all the views and start the queries to the system contacts
@@ -184,6 +189,8 @@ public class ContactDetailFragment extends Fragment implements
         // Uri is then used at various points in this class to map to the provided contact.
         if (Utils.hasHoneycomb()) {
             mContactUri = contactLookupUri;
+
+
         } else {
             // For versions earlier than Android 3.0, stores a contact Uri that's constructed from
             // contactLookupUri. Later on, the resulting Uri is combined with
@@ -215,6 +222,8 @@ public class ContactDetailFragment extends Fragment implements
             // multiple times.
 
             getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
+            getContactStats();
+
             xdisplaySMSLog();
             //getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
 
@@ -230,8 +239,8 @@ public class ContactDetailFragment extends Fragment implements
             mDetailsLayout.removeAllViews();
             mDetailsCallLogLayout.removeAllViews();
 
-            if (mContactName != null) {
-                mContactName.setText("");
+            if (mContactNameView != null) {
+                mContactNameView.setText("");
             }
             if (mEditContactMenuItem != null) {
                 mEditContactMenuItem.setVisible(false);
@@ -310,12 +319,13 @@ public class ContactDetailFragment extends Fragment implements
         if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
             // name in details. For a one-pane view, the contact name is displayed as a title.
-            mContactName = (TextView) detailView.findViewById(R.id.contact_name);
-            mContactName.setVisibility(View.VISIBLE);
+            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
+            mContactNameView.setVisibility(View.VISIBLE);
         }
 
         return detailView;
     }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -381,8 +391,13 @@ public class ContactDetailFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
     }
 
+    private void getContactStats(){
+        getLoaderManager().restartLoader(ContactStatsQuery.QUERY_ID, null, this);
+    }
+
+
     private void setFractionView(String lookupKey, Long lastTimeContacted){
-        // TODO: Fix the implementation of getting the due date
+        // TODO: Make this use the data from ContactInfo contactStats
         //  There shouldn't have to be a separate call to the contcts contract.
 
         // set the fraction view with current state of contact countdown
@@ -472,7 +487,7 @@ public class ContactDetailFragment extends Fragment implements
                         ContactAddressQuery.PROJECTION,
                         ContactAddressQuery.SELECTION,
                         null, null);
-
+/*
             case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
                 // This query loads main contact details, for use in generating a call log.
                 return new CursorLoader(getActivity(), mContactUri,
@@ -490,15 +505,34 @@ public class ContactDetailFragment extends Fragment implements
                 //TODO: figure out how to use Loaderex
                 //https://github.com/commonsguy/cwac-loaderex/blob/master/demo/src/com/commonsware/cwac/loaderex/demo/ConstantsBrowser.java
 
+                mDbHelper.close();
+
                 //return mSQLoader;
+                break;
+                */
+            case ContactStatsQuery.QUERY_ID:
+                // This query loads data from ContactStatsContentProvider.
 
 
+                // Parse the contact uri to get the lookup key for the contact
+                List<String> path = mContactUri.getPathSegments();
 
+                //add the second to last lath element, which should be the lookup key
+                Uri contactStatsUri = Uri.withAppendedPath(ContactStatsContentProvider.CONTACT_STATS_URI,
+                        path.get(path.size() - 2));
 
-            mDbHelper.close();
+                //prepare the shere and args clause for the contact lookup key
+                final String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "= ? ";
+                String[] whereArgs ={ path.get(path.size() - 2) };
+
+                return new CursorLoader(getActivity(),
+                        ContactStatsContentProvider.CONTACT_STATS_URI,
+                        null,
+                        where, whereArgs, null);
         }
         return null;
     }
+
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -518,10 +552,10 @@ public class ContactDetailFragment extends Fragment implements
                     // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
                     // name field based on OS version.
                     mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
-                    if (mIsTwoPaneLayout && mContactName != null) {
+                    if (mIsTwoPaneLayout && mContactNameView != null) {
                         // In the two pane layout, there is a dedicated TextView
                         // that holds the contact name.
-                        mContactName.setText(mContactNameString);
+                        mContactNameView.setText(mContactNameString);
                     } else {
                         // In the single pane layout, sets the activity title
                         // to the contact name. On HC+ this will be set as
@@ -629,6 +663,14 @@ public class ContactDetailFragment extends Fragment implements
                     }
                 }
                 break;
+            case ContactStatsQuery.QUERY_ID:
+
+                setContactStatsFromCursor(data);
+                if (contactStats != null) {
+
+                    //TODO send cotactStats data to UI
+                }
+                    break;
         }
     }
 
@@ -637,6 +679,77 @@ public class ContactDetailFragment extends Fragment implements
         // Nothing to do here. The Cursor does not need to be released as it was never directly
         // bound to anything (like an adapter).
     }
+
+
+    /*
+    Take the cursor containing all the available data columns from the ContactStatsContentProvider
+    and pace it in a contactInfo for easy access
+    */
+    private void setContactStatsFromCursor(Cursor cursor){
+        if (cursor.moveToFirst()) {
+            contactStats = new ContactInfo(
+                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_NAME)),
+                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_KEY)),
+                    cursor.getLong(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_ID)));
+
+            contactStats.setRowId(cursor.getLong(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry._ID)));
+
+            contactStats.setDateLastEventIn(cursor.getLong(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_IN)));
+            contactStats.setDateLastEventOut(cursor.getLong(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_OUT)));
+            contactStats.setDateLastEvent(cursor.getString(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT)));
+            contactStats.setDateContactDue(cursor.getLong(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DATE_CONTACT_DUE)));
+
+            contactStats.setDateRecordLastUpdated(cursor.getLong(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DATE_RECORD_LAST_UPDATED)));
+            contactStats.setEventIntervalLimit(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LIMIT)));
+            contactStats.setEventIntervalLongest(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST)));
+            contactStats.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
+
+            contactStats.setCallDurationTotal(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_CALL_DURATION_TOTAL)));
+            contactStats.setCallDurationAvg(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_CALL_DURATION_AVG)));
+            contactStats.setWordCountAvgIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_IN)));
+            contactStats.setWordCountAvgOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_OUT)));
+
+            contactStats.setWordCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_IN)));
+            contactStats.setWordCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_OUT)));
+            contactStats.setMessageCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_IN)));
+            contactStats.setMessageCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_OUT)));
+
+            contactStats.setCallCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_IN)));
+            contactStats.setCallCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_OUT)));
+            contactStats.setCallCountMissed(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_MISSED)));
+
+            contactStats.setEventCount(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));
+            contactStats.setStanding(cursor.getFloat(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_STANDING)));
+
+            contactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
+
+            contactStats.resetUpdateFlag(); //because this is just reporting on the database content
+        }
+    }
+
 
     /**
      * Builds an empty address layout that just shows that no addresses
@@ -901,37 +1014,38 @@ public class ContactDetailFragment extends Fragment implements
         final static int DATE_LABEL =4;
     }
 
+    public interface SQLiteQuery {
+
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 6;
+        //final String contact_due_date_label = "Contact Due";
+
+        // The query projection (columns to fetch from the provider)
+        @SuppressLint("InlinedApi")
+        final static String[] PROJECTION = {
+                Contacts._ID,
+                Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
+                Contacts.LOOKUP_KEY,
+                Contacts.LAST_TIME_CONTACTED,
+                //ContactsContract.CommonDataKinds.Event.LABEL
+        };
 
 
-            public interface SQLiteQuery {
-                // A unique query ID to distinguish queries being run by the
-                // LoaderManager.
-                final static int QUERY_ID = 6;
-                //final String contact_due_date_label = "Contact Due";
+        final String SELECTION =
+                ContactsContract.Data.MIMETYPE + "= ? "
+                        + " AND " + ContactsContract.CommonDataKinds.Event.LABEL + "= ? ";
+        //final String ARGS[] = {ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, contact_due_date_label};
 
-                // The query projection (columns to fetch from the provider)
-                @SuppressLint("InlinedApi")
-                final static String[] PROJECTION = {
-                        Contacts._ID,
-                        Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
-                        Contacts.LOOKUP_KEY,
-                        Contacts.LAST_TIME_CONTACTED,
-                        //ContactsContract.CommonDataKinds.Event.LABEL
-                };
+        // The query column numbers which map to each value in the projection
+        final static int ID = 0;
+        final static int DISPLAY_NAME = 1;
+        final static int LOOKUP_KEY = 2;
+        final static int LAST_TIME_CONTACTED = 3;
+        final static int DATE_LABEL =4;
+    }
 
 
-                final String SELECTION =
-                        ContactsContract.Data.MIMETYPE + "= ? "
-                                + " AND " + ContactsContract.CommonDataKinds.Event.LABEL + "= ? ";
-                //final String ARGS[] = {ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, contact_due_date_label};
-
-                // The query column numbers which map to each value in the projection
-                final static int ID = 0;
-                final static int DISPLAY_NAME = 1;
-                final static int LOOKUP_KEY = 2;
-                final static int LAST_TIME_CONTACTED = 3;
-                final static int DATE_LABEL =4;
-            }
 
     /**
      * This interface defines constants used by address retrieval queries.
@@ -960,6 +1074,18 @@ public class ContactDetailFragment extends Fragment implements
         final static int ADDRESS = 1;
         final static int TYPE = 2;
         final static int LABEL = 3;
+    }
+
+
+    /**
+      * This interface defines the ID used to call the ContactStatsContentProvider.
+    */
+    public interface ContactStatsQuery {
+        // A unique query ID to distinguish queries being run by the
+        // LoaderManager.
+        final static int QUERY_ID = 5;
+
+        // no projection as we just grab all the data and place it in a ContactInfo
     }
 
     /**

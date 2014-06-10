@@ -296,6 +296,9 @@ public class ContactsListFragment extends ListFragment implements
                 cursor.getLong(ContactsQuery.ID),
                 cursor.getString(ContactsQuery.LOOKUP_KEY));
 
+
+        //TODO Fix the fact that the ID used here is the group ID
+
         // Notifies the parent activity that the user selected a contact. In a two-pane layout, the
         // parent activity loads a ContactDetailFragment that displays the details for the selected
         // contact. In a single-pane layout, the parent activity starts a new activity that
@@ -847,6 +850,8 @@ public class ContactsListFragment extends ListFragment implements
             // containing the contact's details and icons for the built-in apps that can handle
             // each detail type.
 
+
+            //TODO Fix the fact that the ID used here is the group ID
             // Generates the contact lookup Uri
             final Uri contactUri = Contacts.getLookupUri(
                     cursor.getLong(ContactsQuery.ID),

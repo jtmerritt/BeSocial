@@ -247,7 +247,7 @@ public class ContactStatsContract {
     // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
 
-        values.put(TableEntry._ID, contact.getRowId());
+        //values.put(TableEntry._ID, contact.getRowId());
         values.put(TableEntry.KEY_CONTACT_ID, contact.getIDLong());
         values.put(TableEntry.KEY_CONTACT_NAME, contact.getName());
         values.put(TableEntry.KEY_CONTACT_KEY, contact.getKeyString());
@@ -298,11 +298,11 @@ public class ContactStatsContract {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Long id;
 
-        String selection = "";
-        String selection_arg = "";
+        // Select Query
+        String selection = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
+        String selection_arg = contact.getKeyString();
 
         //format selection and search
-        selection = selection + "=?";
         String[] selectionArgs = {selection_arg};
 
         // How you want the results sorted in the resulting Cursor
@@ -313,8 +313,7 @@ public class ContactStatsContract {
         // you will actually use after this query.
         String[] projection = {
                 TableEntry._ID,
-                TableEntry.KEY_CONTACT_NAME,
-                TableEntry.KEY_CONTACT_KEY
+                TableEntry.KEY_CONTACT_NAME
         };
 
         Cursor cursor = db.query(
@@ -330,13 +329,15 @@ public class ContactStatsContract {
 
         // organize the contact info and pass it back
         if (cursor.moveToFirst()) {
-            if((contact.getKeyString() == cursor.getString(TableEntry.CONTACT_KEY))
-                || (contact.getName() == cursor.getString(TableEntry.CONTACT_NAME))
+            if(
+                    //(contact.getKeyString().equals(cursor.getString(TableEntry.CONTACT_KEY))) ||
+                (contact.getName().equals(cursor.getString(1))) //reference to the cursor column with the name
                 ){
-                id = cursor.getLong(TableEntry.ROW_ID);
+                id = cursor.getLong(cursor.getColumnIndex(TableEntry._ID));
                 db.close();
                 cursor.close();
                 return id;
+                // TODO This check needs to be more sophisticated to deal with changed names or multiple contact entries
             }
         }
         db.close();
@@ -344,6 +345,14 @@ public class ContactStatsContract {
         return -1;
     }
 
+
+    public long addIfNewContact(ContactInfo contact){
+        long id = -1;
+        if(checkContactExists(contact) == -1) { // if event is likely new
+            id = addContact(contact);
+        }
+        return id;  //return -1 for events
+    }
 
     public ContactInfo getContactStats(String selection,   String selection_arg ){
     // selection needs to be a string from TableEntry.class
@@ -353,7 +362,7 @@ public class ContactStatsContract {
         ContactInfo contact = null;
 
         //format selection and search
-        selection = selection + "=?";
+        //selection = selection + "=?";
         String[] selectionArgs = {selection_arg};
 
         // How you want the results sorted in the resulting Cursor

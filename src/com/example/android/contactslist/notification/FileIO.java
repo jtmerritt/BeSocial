@@ -24,11 +24,14 @@ public class FileIO {
     public static void logNames(Context context, Cursor data){
         //File file = new File(context.getFilesDir(), "BeSocial.list");
 
+
         String filename = "BeSocial.list";
         String string = "Hello world!";
         FileOutputStream outputStream;
 
+/*
         try {
+
             outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
 
             if(data.moveToFirst()){
@@ -56,12 +59,14 @@ public class FileIO {
                 outputStream.write(string.getBytes());
             }
 
+
             outputStream.close();
             //context.deleteFile(filename);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        */
     }
 
 
