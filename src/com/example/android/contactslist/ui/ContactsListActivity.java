@@ -205,8 +205,10 @@ public class ContactsListActivity extends FragmentActivity implements
             @Override
             public void onClick(View v) {
 
-                Log.d("OnClickListener: ", "Entered");
-                Toast.makeText(getApplicationContext(), "Clicked!!!", Toast.LENGTH_SHORT).show();
+                //Log.d("OnClickListener: ", "Entered");
+                //Toast.makeText(getApplicationContext(), "Clicked!!!", Toast.LENGTH_SHORT).show();
+
+                startFileImportActivity();
             }
         });
 
@@ -214,6 +216,19 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerList.setAdapter(dataAdapter);
 
     }
+
+    /*
+    Send intent for opening the XML file import activity
+     */
+    private void startFileImportActivity(){
+
+        Intent explicitlyLoadedIntent = new Intent();
+        explicitlyLoadedIntent.setClass(this, FileImportActivity.class);
+        startActivity(explicitlyLoadedIntent);
+    }
+
+
+
     /**
      * Overrides newView() to inflate the list item views.
      */

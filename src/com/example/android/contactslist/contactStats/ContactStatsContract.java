@@ -22,6 +22,9 @@ public class ContactStatsContract {
     // To access your database, instantiate your subclass of SQLiteOpenHelper:
     ContactStatsDbHelper mDbHelper;
 
+    final long ONE_DAY = 86400000;
+
+
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
     public ContactStatsContract(Context context) {
@@ -238,7 +241,6 @@ public class ContactStatsContract {
         now.setToNow();
 
         Time last_event = new Time();
-        last_event.format3339(true);
 
         // choose the most recent event to represent as the formatted string for the last event date
         last_event.set( contact.getDateLastEventIn() > contact.getDateLastEventOut() ?
@@ -254,8 +256,9 @@ public class ContactStatsContract {
 
         values.put(TableEntry.KEY_DATE_LAST_EVENT_IN, contact.getDateLastEventIn());
         values.put(TableEntry.KEY_DATE_LAST_EVENT_OUT, contact.getDateLastEventOut());
-        values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.toMillis(true)); // ignore daylight savings
-        values.put(TableEntry.KEY_DATE_CONTACT_DUE, contact.getDateEventDue());
+        values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.format3339(true)); // ignore daylight savings
+        values.put(TableEntry.KEY_DATE_CONTACT_DUE, (last_event.toMillis(true)) + 14*ONE_DAY);
+
 
         values.put(TableEntry.KEY_DATE_RECORD_LAST_UPDATED, now.toMillis(true) );  //time in millis, ignore daylight savings time
         values.put(TableEntry.KEY_EVENT_INTERVAL_LIMIT, contact.getEventIntervalLimit());
@@ -479,7 +482,6 @@ public class ContactStatsContract {
             now.setToNow();
 
             Time last_event = new Time();
-            last_event.format3339(true);
 
             // choose the most recent event to represent as the formatted string for the last event date
             last_event.set( contact.getDateLastEventIn() > contact.getDateLastEventOut() ?
@@ -499,8 +501,8 @@ public class ContactStatsContract {
 
             values.put(TableEntry.KEY_DATE_LAST_EVENT_IN, contact.getDateLastEventIn());
             values.put(TableEntry.KEY_DATE_LAST_EVENT_OUT, contact.getDateLastEventOut());
-            values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.toMillis(true)); // ignore daylight savings
-            values.put(TableEntry.KEY_DATE_CONTACT_DUE, contact.getDateEventDue());
+            values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.format3339(true)); // ignore daylight savings
+            values.put(TableEntry.KEY_DATE_CONTACT_DUE, (last_event.toMillis(true)) + 14*ONE_DAY);
 
             values.put(TableEntry.KEY_DATE_RECORD_LAST_UPDATED, now.toMillis(true) );  //time in millis, ignore daylight savings time
             values.put(TableEntry.KEY_EVENT_INTERVAL_LIMIT, contact.getEventIntervalLimit());

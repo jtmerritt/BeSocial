@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.util.Log;
+import com.example.android.contactslist.contactStats.ContactInfo;
+
 
 import java.io.IOException;
 import java.text.ParsePosition;
@@ -21,11 +23,19 @@ public class DateCalculations {
     private Context mContext;
     private String mLookupKey;
     private String mDueDate;
+    Long mDueDateLong;
+    Long mDateLastLong;
+    Boolean useContactStates = false;
 
 
     public DateCalculations(Context context, String lookupKey){
         mContext = context;
         mLookupKey = lookupKey;
+    }
+
+    public DateCalculations(ContactInfo contactSats){
+        mDueDateLong = contactSats.getDateEventDue();
+        useContactStates = true;
     }
 
     public void getContactDueDate()

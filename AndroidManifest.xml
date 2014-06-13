@@ -85,6 +85,14 @@
             </intent-filter>
 
         </activity>
+
+        <activity android:name=".ui.FileImportActivity"
+            android:label="@string/file_import_activity"
+            android:parentActivityName=".ui.ContactsListActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ContactsListActivity" />
+
+        </activity>
         <receiver
             android:name=".notification.timedUpdate"
             android:enabled="true">

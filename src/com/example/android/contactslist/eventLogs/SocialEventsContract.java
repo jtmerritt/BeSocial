@@ -49,7 +49,7 @@ public class SocialEventsContract {
 | Type                  |  Int                          |   1                           |
 | Word Count            |  Long                         | 5555                          |
 | Char Count            |  Long                         |  555555555555555555           |
-| Duration              |  Long                         |  555555555555555555           |
+| Duration       (s)       |  Long                         |  555555555555555555           |
 | Location Lon          |
 | Location Lat          |
 +-----------------------+------------+------------------------------+---+--------+--+

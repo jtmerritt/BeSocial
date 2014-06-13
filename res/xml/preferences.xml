@@ -16,10 +16,18 @@
     <CheckBoxPreference
         android:dependency="update_db_checkbox_preference_key"
 
-        android:key="sync_with_local_sources_checkbox_preference_key"
+        android:key="sync_with_local_db_checkbox_preference_key"
         android:title="@string/sync_with_local_sources_preference_title"
         android:summary="@string/sync_with_local_sources_preference_summary"
-        android:defaultValue="true" />
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
+        android:dependency="update_db_checkbox_preference_key"
+
+        android:key="sync_with_local_xml_checkbox_preference_key"
+        android:title="@string/sync_with_local_xml_preference_title"
+        android:summary="@string/sync_with_local_xml_preference_summary"
+        android:defaultValue="false" />
 
     <CheckBoxPreference
         android:dependency="update_db_checkbox_preference_key"
@@ -27,7 +35,7 @@
         android:key="sync_with_internet_sources_checkbox_preference_key"
         android:title="@string/sync_with_web_sources_preference_title"
         android:summary="@string/sync_with_web_sources_preference_summary"
-        android:defaultValue="true" />
+        android:defaultValue="false" />
     <ListPreference
         android:dependency="sync_with_internet_sources_checkbox_preference_key"
         android:key="sync_with_internet_sources_freq_preference_key"

@@ -31,6 +31,7 @@ public class ContactStatsHelper {
                 //TODO think more about how to incorporate services like skype
                 case EventInfo.PHONE_CLASS:
                     // tally up all the call durations
+                    //TODO: need checks for negative values
                     count = stats.getCallDurationTotal(); //seconds
                     count += event.getCallDuration();
                     stats.setCallDurationTotal(count);
@@ -53,6 +54,16 @@ public class ContactStatsHelper {
                         count++;
                         stats.setCallCountMissed(count);
                     }
+
+                    //set all time call duration average
+                    count = stats.getCallCountIn()+stats.getCallCountOut();
+                    if(count>0){
+                        stats.setCallDurationAvg((int)((float)stats.getCallDurationTotal()/
+                                (float)count));
+                    }else{
+                        stats.setCallDurationAvg(0);
+                    }
+
                     break;
 
                 case EventInfo.SMS_CLASS:
@@ -70,6 +81,9 @@ public class ContactStatsHelper {
                         count = stats.getWordCountIn();
                         count += event.getWordCount();
                         stats.setWordCountIn(count);
+
+                        stats.setWordCountAvgIn((int)((float)stats.getWordCountIn()/
+                                (float)stats.getMessagesCountIn()));
                     }
                     if(event.getEventType() == EventInfo.OUTGOING_TYPE){
                         count = stats.getMessagesCountOut();
@@ -79,7 +93,13 @@ public class ContactStatsHelper {
                         count = stats.getWordCountOut();
                         count += event.getWordCount();
                         stats.setWordCountOut(count);
+
+                        stats.setWordCountAvgOut((int)((float)stats.getWordCountOut()/
+                                (float)stats.getMessagesCountOut()));
                     }
+
+
+
                     break;
                 default:
 

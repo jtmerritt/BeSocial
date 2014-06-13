@@ -47,6 +47,8 @@
 
 
     <string name="preferences_fragment">Preferences</string>
+    <string name="file_import_activity">File Selection</string>
+
     <string name="notification_checkbox_preference_title"
             >Enabel Broadcast receiver</string>
     <string name="notification_checkbox_preference_summary"
@@ -60,7 +62,12 @@
     <string name="sync_with_local_sources_preference_title"
             >Sync with phone and SMS logs</string>
     <string name="sync_with_local_sources_preference_summary"
-        >Gather data from local phone and SMS logs sources?</string>
+        >Gather data from local phone and SMS database?</string>
+
+    <string name="sync_with_local_xml_preference_title"
+            >Sync with phone XML backup</string>
+    <string name="sync_with_local_xml_preference_summary"
+        >Gather data from local phone XML bachup?</string>
 
     <string name="sync_with_web_sources_preference_title"
         >Sync with Web</string>

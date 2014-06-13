@@ -23,8 +23,11 @@ import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.Utils;
 
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
-import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,28 +46,42 @@ import java.util.List;
 public class Updates extends AsyncTask<Void, Void, String> {
 
     private Context mContext;
+    private String mXMLFilePath;
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
     private ContactGroupsList.GroupInfo largestGroup;
     private List<EventInfo> mSMSEventLog = new ArrayList<EventInfo>();
+    private List<EventInfo> mXMLEventLog = new ArrayList<EventInfo>();
 
 
-    public Updates(Context context){
+
+    public Updates(Context context, String xml_file_path){
         mContext = context;
+        mXMLFilePath = xml_file_path;
     }
 
     @Override
     protected String doInBackground(Void... v1) {
 
+        if(mXMLFilePath != null){
+            localXMLRead();
+            return "done";
+        }
+
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
-        Boolean enable_local_sources_read = sharedPref.getBoolean("sync_with_local_sources_checkbox_preference_key", false);
+        Boolean enable_local_db_read = sharedPref.getBoolean("sync_with_local_db_checkbox_preference_key", false);
+        Boolean enable_local_xml_read = sharedPref.getBoolean("sync_with_local_xml_checkbox_preference_key", false);
+
 
         if(access_web) {  //things to do when accessing data on-line
             //Toast.makeText(mContext, "Accessing Web Data", Toast.LENGTH_SHORT).show();
         }
-        if(enable_local_sources_read){ //Things to do when accessing local data
+        if(enable_local_db_read){ //Things to do when accessing local data
             localSourceRead();
+        }
+        if(enable_local_xml_read){
+            //TODO Is this not used anymore?
         }
 
       return "done";
@@ -106,14 +123,55 @@ public class Updates extends AsyncTask<Void, Void, String> {
                     testContact(contact);
                 }
             }
-
-
-
         }
-
-        // getPhoneEventsXML();
-
     }
+
+
+    private void localXMLRead(){
+
+        if(getLargestGroup()){
+            List<ContactInfo> masterContactList = getGroupContactList();
+            CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList, mContext.getContentResolver());
+            FileInputStream fileStream;
+
+
+            // only work with a non-empty list
+            if(!masterContactList.isEmpty()){
+
+                Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
+
+                // grab the SMS database for the master list of contacts
+                try {
+                    File file = new File(mXMLFilePath);
+                    if(file.exists()) {
+                        fileStream = new FileInputStream(file);
+                        mXMLEventLog = callLogXmlParser.parse(fileStream);
+                        fileStream.close();
+                    }else{
+                        Toast.makeText(mContext, "File Doesn't Exist", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (XmlPullParserException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                for(ContactInfo contact:masterContactList){
+                    // there is a chance that the contact is completely new to the db
+                    // Contact groups are read from google and may be updated on the website
+                    addContactToDbIfNew(contact);
+
+                    // feed the all events for contact to the local databases
+                    insertEventLogIntoDatabases(getAllXMLLogsForContact(contact));
+
+                    // test that we can retrieve the contact from the db
+                    //testContact(contact);
+                }
+            }
+        }
+    }
+
+
 
 // TODO enable switching to a smaller group for testing
     private boolean getLargestGroup(){
@@ -237,7 +295,7 @@ public class Updates extends AsyncTask<Void, Void, String> {
         // note that this list could be very long: My sms log is 10k+ entries
         //TODO: find a way to limit the number of iterations of this list
         for(EventInfo event : mSMSEventLog) {
-            if(isEventWithContact(contact,event)){
+            if(isEventWithContact(contact,event,0)){
                 localEventLog.add(event);
 
                 // keep list of events to remove from the SMS event log
@@ -249,6 +307,33 @@ public class Updates extends AsyncTask<Void, Void, String> {
         // remove all sms events that have already been added to the local event Log
         if(!removeLog.isEmpty()){
             mSMSEventLog.removeAll(removeLog);
+        }
+
+        // return the event log that is ready for the database
+        return localEventLog;
+    }
+
+    /*
+    Here is where the bulk of the work is managed
+    populating the mXMLEventLog
+     */
+    private List<EventInfo> getAllXMLLogsForContact(ContactInfo contact){
+        List<EventInfo> localEventLog = new ArrayList<EventInfo>();
+
+        //if we haven't yet grabbed the XML Log for the master contact list...
+        if(mXMLEventLog.isEmpty()){
+            // grab the entire SMS database for named contacts
+
+            Log.d("GET XML CALL EVENTS: ", "Event log is empty");
+        }
+
+
+        //search through SMS event log for contact and add items to the local event log
+        // note that this list could be very long: My sms log is 10k+ entries
+        for(EventInfo event : mXMLEventLog) {
+            if(isEventWithContact(contact,event,0)){ //comparing the contact key, not the lookup key
+                localEventLog.add(event);
+            }
         }
 
         // return the event log that is ready for the database
@@ -334,8 +419,16 @@ public class Updates extends AsyncTask<Void, Void, String> {
     }
 
 
-    private boolean isEventWithContact(ContactInfo contact, EventInfo event){
-        return (contact.getKeyString().equals(event.eventContactKey));
+    private boolean isEventWithContact(ContactInfo contact, EventInfo event, int test_type){
+
+        switch (test_type){
+            case 1:
+                return (contact.getName().equals(event.eventContactName));
+            case 0:
+            default:  // compare contact key by default
+                return (contact.getKeyString().equals(event.eventContactKey));
+        }
+
     }
 
     /**
@@ -409,44 +502,4 @@ public class Updates extends AsyncTask<Void, Void, String> {
 
     }
 
-
-    public void getPhoneEventsXML() {
-        String DIR = "/storage/emulated/0/CallLogBackupRestore";
-        String fileName = "calls-20140224142217.xml";
-        String xml_file_path = DIR + "/" + fileName;
-        InputStream inputStream;
-        CallLogXmlParser callLogXmlParser = new CallLogXmlParser();
-        List<EventInfo> phoneLog = null;
-        File inputFile = new File(xml_file_path);
-
-        SocialEventsContract db = new SocialEventsContract(mContext);
-
-
-        try {
-            //inputStream = mContext.getAssets().open("calls.xml"); //new FileInputStream(inputFile);
-            inputStream = mContext.getResources().openRawResource(R.xml.calls);
-
-
-
-            //TODO fix: the XML tags aren't getting read
-            phoneLog = callLogXmlParser.parse(inputStream);
-            // This event log has no CONTACT_KEYS, which need tobe added in
-
-            if (inputStream != null) {
-                inputStream.close();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        // TODO add in CONTACT_KEYS
-        if(phoneLog != null) {
-            for (EventInfo log : phoneLog) {
-                db.addIfNewEvent(log);
-            }
-        }
-
-        db.close();
-
-    }
 }

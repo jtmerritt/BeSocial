@@ -71,7 +71,7 @@ public class SetAlarm {
 
                 // setup an async task to read local and web data sources into the database
                 // user preferences governing updates are handeled in Updates
-                AsyncTask<Void, Void, String> updates = new Updates(context);
+                AsyncTask<Void, Void, String> updates = new Updates(context, null);
                 updates.execute();
 
                 //Log.d("Alarm Receiver", "onReceive called");

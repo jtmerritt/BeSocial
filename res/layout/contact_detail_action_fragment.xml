@@ -101,7 +101,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Average time between contact: 12 days"
-            android:id="@+id/textView2"
+            android:id="@+id/statsTextView1"
             android:layout_below="@+id/textNotesTitle"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
@@ -110,8 +110,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Longest interval without contact: 31 days"
-            android:id="@+id/textView3"
-            android:layout_below="@+id/textView2"
+            android:id="@+id/statsTextView2"
+            android:layout_below="@+id/statsTextView1"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
@@ -119,8 +119,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Average Phone call length: 0 Minutes"
-            android:id="@+id/textView4"
-            android:layout_below="@+id/textView3"
+            android:id="@+id/statsTextView3"
+            android:layout_below="@+id/statsTextView2"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
@@ -128,8 +128,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Reciprocity: 46% Incoming, 54% Outgoing"
-            android:id="@+id/textView5"
-            android:layout_below="@+id/textView4"
+            android:id="@+id/statsTextView4"
+            android:layout_below="@+id/statsTextView3"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 

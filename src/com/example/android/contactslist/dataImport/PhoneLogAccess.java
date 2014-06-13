@@ -220,7 +220,7 @@ public class PhoneLogAccess //extends AsyncTask<Void, Void, List<EventInfo>>
     by testing the contacts lookup key
         It's not very likely that we'd have multiple contacts for an SMS event - would probably be due to a duplicated contact
 
-    TODO: need to handle multiple contacts to a phone number more smartly, such as preferentially do the starred lookup, or the one that's in the beSocial group
+    TODO: move into the ContactPhoneNumbersClass
      */
     private ContactInfo getReverseContactOnMasterList(List<ContactInfo> reverseLookupContacts,
                                            List<ContactInfo> masterContactList){
@@ -295,6 +295,7 @@ public class PhoneLogAccess //extends AsyncTask<Void, Void, List<EventInfo>>
                     EventInfo eventInfo = new EventInfo(eventmContactName, mContactKey,
                             phone_number, EventInfo.PHONE_CLASS,
                             eventType, eventDate, "", eventDuration, 0, 0);
+                    //TODO: why do phone calls not have eventID?
 
                     eventInfo.setContactID(mContactId);
 

@@ -62,8 +62,8 @@ public abstract class ImageLoader {
 
     /**
      * Load an image specified by the data parameter into an ImageView (override
-     * {@link ImageLoader#processBitmap(Object)} to define the processing logic). If the image is
-     * found in the memory cache, it is set immediately, otherwise an {@link AsyncTask} will be
+     * {@link com.example.android.contactslist.util.ImageLoader#processBitmap(Object)} to define the processing logic). If the image is
+     * found in the memory cache, it is set immediately, otherwise an {@link android.os.AsyncTask} will be
      * created to asynchronously load the bitmap.
      *
      * @param data The URL of the image to download.
@@ -103,7 +103,7 @@ public abstract class ImageLoader {
     }
 
     /**
-     * Adds an {@link ImageCache} to this image loader.
+     * Adds an {@link com.example.android.contactslist.util.ImageCache} to this image loader.
      *
      * @param fragmentManager A FragmentManager to use to retain the cache over configuration
      *                        changes such as an orientation change.
@@ -126,7 +126,7 @@ public abstract class ImageLoader {
      * example, you could resize a large bitmap here, or pull down an image from the network.
      *
      * @param data The data to identify which image to process, as provided by
-     *            {@link ImageLoader#loadImage(Object, ImageView)}
+     *            {@link com.example.android.contactslist.util.ImageLoader#loadImage(Object, android.widget.ImageView)}
      * @return The processed bitmap
      */
     protected abstract Bitmap processBitmap(Object data);
@@ -372,8 +372,8 @@ public abstract class ImageLoader {
     }
 
     /**
-     * Calculate an inSampleSize for use in a {@link BitmapFactory.Options} object when decoding
-     * bitmaps using the decode* methods from {@link BitmapFactory}. This implementation calculates
+     * Calculate an inSampleSize for use in a {@link android.graphics.BitmapFactory.Options} object when decoding
+     * bitmaps using the decode* methods from {@link android.graphics.BitmapFactory}. This implementation calculates
      * the closest inSampleSize that will result in the final decoded bitmap having a width and
      * height equal to or larger than the requested width and height. This implementation does not
      * ensure a power of 2 is returned for inSampleSize which can be faster when decoding but

@@ -107,4 +107,36 @@ public class ContactPhoneNumbers {
         return list;
     }
 
+    /*
+Returns the first reverse lookup contact that is on the master contact list,
+by testing the contacts lookup key
+    It's not very likely that we'd have multiple contacts for an SMS event - would probably be due to a duplicated contact
+
+TODO: need to handle multiple contacts to a phone number more smartly, such as preferentially do the starred lookup, or the one that's in the beSocial group
+ */
+    public ContactInfo getReverseContactOnMasterList(String phoneNumber,
+                                                      List<ContactInfo> masterContactList){
+
+        List<ContactInfo> reverseLookupContacts = getContactsFromPhoneNumber(phoneNumber);
+
+        if(reverseLookupContacts.isEmpty()){
+            return null;
+        }
+
+        // if there is no master list, return the first contact in the reverse lookup list as default behavior
+        if(masterContactList == null){
+            return reverseLookupContacts.get(0);
+        }
+
+        // iterate through the list of provided contacts
+        for( ContactInfo reverseContactItem:reverseLookupContacts){
+            for( ContactInfo masterContactItem:masterContactList){
+                if(masterContactItem.getKeyString().equals(reverseContactItem.getKeyString())){
+                    return reverseContactItem;
+                }
+            }
+        }
+        return null;
+    }
+
 }

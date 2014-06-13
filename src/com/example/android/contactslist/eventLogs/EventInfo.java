@@ -5,7 +5,7 @@ public class EventInfo {
    //Primarily for phonecalls
     public String eventContactName;
     public String eventContactKey;
-    public long eventDuration;
+    public long eventDuration; //seconds be default - chartMaker has a special use for this variable as minutes
     public long rowId;
 
     // Primarily for SMS
