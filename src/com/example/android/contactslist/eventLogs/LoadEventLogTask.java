@@ -2,7 +2,6 @@ package com.example.android.contactslist.eventLogs;
 
 import android.content.Context;
 import android.os.AsyncTask;
-
 import com.example.android.contactslist.ChartMakerCallback;
 
 import java.util.ArrayList;

@@ -412,22 +412,4 @@ public class ContactsListActivity extends FragmentActivity implements
         getActionBar().setTitle(mTitle);
     }
 
-/*    private void addItemsToGroupsSpinner() {
-        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
-        List<String> list = new ArrayList<String>();
-
-        for (GroupInfo groupInfo:groups) {
-            list.add(groupInfo.toString());
-        }
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, list);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        groupSpinner.setAdapter(dataAdapter);
-    }
-
-    public void addListenerOnSpinnerItemSelection() {
-        groupSpinner = (Spinner) findViewById(R.id.contactGroups);
-        groupSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-    }
-*/
 }

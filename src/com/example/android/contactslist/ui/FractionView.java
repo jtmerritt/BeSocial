@@ -4,12 +4,12 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.text.format.Time;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.graphics.RectF;
@@ -17,10 +17,14 @@ import android.graphics.RectF;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import com.example.android.contactslist.FractionViewCallback;
+import com.example.android.contactslist.contactStats.LoadContactStatsTask;
+import com.example.android.contactslist.contactStats.ContactInfo;
 
-import com.example.android.contactslist.R;
 
-public class FractionView extends View {
+import java.util.List;
+
+public class FractionView extends View implements FractionViewCallback {
 
     private String TAG = "FractionView";
     private Paint mCirclePaint;
@@ -42,6 +46,7 @@ public class FractionView extends View {
     private TranslateAnimation translateAnimation;
     private int textSize = 25;
     private boolean mLargeCanvas = false;
+    private Context mContext;
 
 
 
@@ -114,6 +119,7 @@ public class FractionView extends View {
         setFractionFloat(mfraction);
     }
 
+
     public void setFraction(int days_remaining, int total_days) {
         // Prevent invalid state
         //TODO: Create a special display case for the due date being in the past.  Color things black?
@@ -138,7 +144,42 @@ public class FractionView extends View {
         setDisplayStrings();
     }
 
-    public void setFractionFloat(float fraction) {
+    public void setFraction(String contactKey, Context context ) {
+        mContext = context;
+
+        // run an asyncTask that queries the Contact stats database
+        AsyncTask<Void, Void, ContactInfo> task = new LoadContactStatsTask(
+                contactKey,
+                this,
+                mContext);
+        task.execute();
+
+        // set a default display until the data loads
+        mfraction = (float)1;
+        invalidate();
+    }
+
+
+    public void finishedLoading(ContactInfo contactInfo) {
+
+        final int ONE_DAY = 86400000;
+
+        // set the fraction view with current state of contact countdown
+        // based on contact due date stored at the contact Event date
+        Time now = new Time();
+        now.setToNow();
+
+        Long last_event = ( contactInfo.getDateLastEventIn() > contactInfo.getDateLastEventOut() ?
+                contactInfo.getDateLastEventIn() : contactInfo.getDateLastEventOut());
+
+        int days_remaining = (int)( contactInfo.getDateEventDue()- now.toMillis(true))/ONE_DAY;
+        int total_days = (int)(contactInfo.getDateEventDue() - last_event)/ONE_DAY;
+
+
+        setFraction(days_remaining, total_days);
+    }
+
+        public void setFractionFloat(float fraction) {
         if (fraction < 0) return;
         // Prevent invalid state
         if (fraction > 1) return;

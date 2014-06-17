@@ -60,7 +60,6 @@ import android.widget.QuickContactBadge;
 import android.widget.SearchView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
@@ -485,6 +484,16 @@ public class ContactsListFragment extends ListFragment implements
         return super.onOptionsItemSelected(item);
     }
 
+    public void setGroupQuery(int groupID) {
+        if (groupID == -1 ) {
+            mGroupID = groupID; ///um...
+        } else {
+            mGroupID = groupID;
+            getLoaderManager().restartLoader(
+                    ContactsGroupQuery.QUERY_ID, null, ContactsListFragment.this);
+
+        }
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -600,7 +609,7 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        // maybe need to save the group ID as part of the state
+        //TODO: maybe need to save the group ID as part of the state
         if ((loader.getId() == ContactsQuery.QUERY_ID) ||
                 (loader.getId() == ContactsGroupQuery.QUERY_ID)){
             // When the loader is being reset, clear the cursor from the adapter. This allows the
@@ -864,21 +873,12 @@ public class ContactsListFragment extends ListFragment implements
             // background worker thread
             mImageLoader.loadImage(photoUri, holder.icon);
 
-            long lastTimeContacted = cursor.getLong(ContactsQuery.LAST_TIME_CONTACTED);
+            //long lastTimeContacted = cursor.getLong(ContactsQuery.LAST_TIME_CONTACTED);
             //According to some sources, this value isn't properly maintained on all handsets
 
-            // set the fraction view with current state of contact countdown
-            // based on contact due date stored at the contact Event date
-            DateCalculations dateCalc =
-                    new DateCalculations(context,  cursor.getString(ContactsQuery.LOOKUP_KEY));
-            dateCalc.getContactDueDate();
-            int days_left = dateCalc.getDaysUntilContactDueDate();
-            int days_in_span =dateCalc.getDaysFromLastContactUntilDueDate(lastTimeContacted);
-            Log.d(TAG, "Days since contact - " + (days_in_span-days_left));
-
-            //final int six_weeks = 42;//days
-
-            holder.fractionView.setFraction(days_left, days_in_span);
+            // set the fraction view with current state of contact
+            // The view runs an asyncTask to pull contactStats data
+            holder.fractionView.setFraction(cursor.getString(ContactsQuery.LOOKUP_KEY), mContext);
         }
 
         /**
@@ -1040,16 +1040,6 @@ public class ContactsListFragment extends ListFragment implements
         final static int SORT_KEY = 6;
     }
 
-    public void setGroupQuery(int groupID) {
-        if (groupID == -1 ) {
-            mGroupID = groupID; ///um...
-        } else {
-            mGroupID = groupID;
-            getLoaderManager().restartLoader(
-                    ContactsGroupQuery.QUERY_ID, null, ContactsListFragment.this);
-
-        }
-    }
 
     /**
      * This interface defines constants for the Cursor and CursorLoader, based on constants defined

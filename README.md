@@ -1,31 +1,61 @@
-TODO:
+TODO: All THIS STUFF
 ___________________________________________________________________
-Maybe have a ContentProvider for the contact database but not the event database.
-Swipe geusture for changing date range on data plot.
 
 ***Small Tasks***
-- change span of chart based on chart taps
-- disallow viewPager for chartView - http://stackoverflow.com/questions/19359516/achartengine-with-panning-inside-a-viewpager
-- Save output of chart engine as bitmap? http://stackoverflow.com/questions/3107527/android-save-view-to-jpg-or-png
-- Background fetching data from the database for the chart
-- Titles on pages for "Call log", "SMS log", "Email Log"
-- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
-- display text in the middle of the fraction chart indicating the value,
-      toggling text with a tap.
-- set text of chart spinner to be centered
 - Add Notification graphic to indicate that the data is still being collected - “Progress Bar” “Dialogs” “Intermediate” - for a dialog box with the cirular progress indicator
-- Implement tab listeners to only have tab data loaded when needed - “Slow Adaptor” to load items to a scrolling list on the fly
-- Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
-- Implement date range function for chart
-    - Make the standard range up to 1 year
-    - if there is more data before, display a "back arrow" button on the bottom.
-        When the button is pressed, redraw the chart with the previous set of data
-    - When displaying the previous set of data, show a "forward arrow" button.
+    - kind of how PocketCast has the notification animation for downloading media
+- create file to indicate when data is last accessed for each source, XML?
+- restrict to portrait mode
 
 ***Medium Tasks***
+- Create routine for producing the long duration statistics:
+    - average time
+    - score over time
+- Create class to estimate contact due date
+- Have a nightly database update routine
+- Have a nightly database maintenance routine
+- Create interface for manually adding events
+- Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
+
+
+***Large Tasks***
+- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
+- Create a startup UI
+- Access gmail through official API: https://developers.google.com/gmail/android/
+- Access hangouts data: ?
+- Access facebook through official API: https://developers.facebook.com/docs/android
+- fix crash when setDisplayChartValues(true) for renderer_SMS
+- On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
+- Fix Default Contact Group of the Preferences menu, currently hard set
+
+
+
+***Not Sure if Needed***
 - Find a cluster analysis package.
-- add action listeners to tabs so they might load the data only when selected.
--  Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
+- Cloud-based backup?
+- disallow viewPager for chartView - http://stackoverflow.com/questions/19359516/achartengine-with-panning-inside-a-viewpager
+- Save output of chart engine as bitmap? http://stackoverflow.com/questions/3107527/android-save-view-to-jpg-or-png
+- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
+- Implement tab listeners to only have tab data loaded when needed - “Slow Adaptor” to load items to a scrolling list on the fly
+- Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
+
+
+
+Notes
+___________________________________________________________________
+Get library for a chartengine: https://code.google.com/p/achartengine/
+
+
+Done
+___________________________________________________________________
+- make charts on contact list update
+
+- Maybe have a ContentProvider for the contact database but not the event database.
+- Swipe geusture for changing date range on data plot.
+- display text in the middle of the fraction chart indicating the value,
+      toggling text with a tap.
+- change span of chart based on chart taps
+- Background fetching data from the database for the chart
 - Populate the screen of statistics with real data
     - Average days between events
     - Max days between events
@@ -33,21 +63,11 @@ Swipe geusture for changing date range on data plot.
     - Total call time
     - Average Call time
     - Reciprocity for each event Kind
-- Create interface for manually adding events
-
-***Large Tasks***
-- Cloud-based backup?
-- fix crash when setDisplayChartValues(true) for renderer_SMS
-- On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
-
-
-Notes
-___________________________________________________________________
-See to get library for a chartengine: https://code.google.com/p/achartengine/
-
-
-Done
-___________________________________________________________________
+- Implement date range function for chart
+    - Make the standard range up to 1 year
+    - if there is more data before, display a "back arrow" button on the bottom.
+        When the button is pressed, redraw the chart with the previous set of data
+    - When displaying the previous set of data, show a "forward arrow" button.
 - Using selection from drop down box, populate the rest of the list of contacts
 - Show the number of people in the group
 - Only show 2 groups in the group list: Starred and BeSocial
