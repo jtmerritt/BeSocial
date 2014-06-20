@@ -116,6 +116,10 @@ public class ContactDetailFragment extends Fragment implements
 
     private Uri mContactUri; // Stores the contact Uri for this fragment instance
     private ContactInfo mContactStats = null;
+    private String mContactLookupKey;
+    private String mVoiceNumber = "";
+    private String mSMSNumber = "";
+    private String mEmailAddress = "";
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -213,8 +217,17 @@ public class ContactDetailFragment extends Fragment implements
                 mEditContactMenuItem.setVisible(true);
             }
 
-            setBasicContactInfo(); // using the loaderManager
-            getContactStats();  // using the loaderManager
+            // Set the contact lookup key
+            // Parse the contact uri to get the lookup key for the contact
+            List<String> path = mContactUri.getPathSegments();
+            mContactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
+
+            // Get a bunch of data using the loaderManager
+            setBasicContactInfo();
+            getContactStats();
+            getVoiceNumber();
+            getSMSNumber();
+            getEmailAddress();
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -395,6 +408,16 @@ public class ContactDetailFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactStatsQuery.QUERY_ID, null, this);
     }
 
+    private void getVoiceNumber(){
+        getLoaderManager().restartLoader(ContactVoiceNumberQuery.QUERY_ID, null, this);
+    }
+    private void getSMSNumber(){
+        getLoaderManager().restartLoader(ContactSMSNumberQuery.QUERY_ID, null, this);
+    }
+    private void getEmailAddress(){
+        getLoaderManager().restartLoader(ContactEmailAddressQuery.QUERY_ID, null, this);
+    }
+
 
     /**
      * When the Fragment is being saved in order to change activity state, save the
@@ -482,22 +505,55 @@ public class ContactDetailFragment extends Fragment implements
             case ContactStatsQuery.QUERY_ID:
                 // This query loads data from ContactStatsContentProvider.
 
-
-                // Parse the contact uri to get the lookup key for the contact
-                List<String> path = mContactUri.getPathSegments();
-
-                //add the second to last lath element, which should be the lookup key
-                Uri contactStatsUri = Uri.withAppendedPath(ContactStatsContentProvider.CONTACT_STATS_URI,
-                        path.get(path.size() - 2));
-
                 //prepare the shere and args clause for the contact lookup key
-                final String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "= ? ";
-                String[] whereArgs ={ path.get(path.size() - 2) };
+                final String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+                String[] whereArgs ={ mContactLookupKey };
 
                 return new CursorLoader(getActivity(),
                         ContactStatsContentProvider.CONTACT_STATS_URI,
                         null,
                         where, whereArgs, null);
+
+
+            case ContactVoiceNumberQuery.QUERY_ID:
+                // get all the phone numbers for this contact, sorted by whether it is super primary
+                // https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
+                return new CursorLoader(getActivity(),
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
+                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?",
+                        new String[] { mContactLookupKey },
+                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
+
+            /*
+            https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
+                return new CursorLoader(getActivity(),
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER },
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + contactId,
+                        null,
+                    ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
+                    */
+            case ContactSMSNumberQuery.QUERY_ID:
+                // get all the phone numbers for this contact, sorted by whether it is super primary
+
+                return new CursorLoader(getActivity(),
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
+                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
+                        + ContactsContract.CommonDataKinds.Phone.TYPE + " = ?",
+                        new String[] { mContactLookupKey, Integer.toString(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) },
+                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
+
+            case ContactEmailAddressQuery.QUERY_ID:
+                // get all the phone numbers for this contact, sorted by whether it is super primary
+
+                return new CursorLoader(getActivity(),
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        new String[] { ContactsContract.CommonDataKinds.Email.ADDRESS }, //null
+                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? ",
+                        new String[] { mContactLookupKey },
+                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
         }
         return null;
     }
@@ -637,6 +693,40 @@ public class ContactDetailFragment extends Fragment implements
                     setFractionView();
                 }
                     break;
+            case ContactVoiceNumberQuery.QUERY_ID:
+                if(data.moveToFirst()){
+                    //Select the first phone number in the list of phone numbers sorted by super_primary
+                    mVoiceNumber = data.getString(data
+                            .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    /*
+                    If we're only getting the first number, no reason to make the list
+                    List<String> phoneNumberList = new ArrayList<String>();
+                    String phoneNumber = "";
+                    do{
+                        // phone number comes out formatted with dashes or dots, as 555-555-5555
+                        phoneNumber = data.getString(data
+                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        //phoneNumber = convertNumber(phoneNumber); //this utility causes memory problems
+
+                        phoneNumberList.add(phoneNumber);
+                    }while (data.moveToNext());
+                    */
+                }
+                break;
+            case ContactSMSNumberQuery.QUERY_ID:
+                if(data.moveToFirst()) {
+                    //Select the first phone number in the list of phone numbers sorted by super_primary
+                    mSMSNumber = data.getString(data
+                            .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+                break;
+            case ContactEmailAddressQuery.QUERY_ID:
+                if(data.moveToFirst()) {
+                    //Select the first phone number in the list of phone numbers sorted by super_primary
+                    mEmailAddress = data.getString(data
+                            .getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
+                }
+                break;
         }
     }
 
@@ -954,7 +1044,20 @@ public class ContactDetailFragment extends Fragment implements
         // no projection as we just grab all the data and place it in a ContactInfo
     }
 
+    // for getting the super primary voic number
+    public interface ContactVoiceNumberQuery{
+        final static int QUERY_ID = 6;
+    }
 
+    // for getting the super primary SMS number
+    public interface ContactSMSNumberQuery{
+        final static int QUERY_ID = 7;
+    }
+
+            // for getting the super primary voic number
+    public interface ContactEmailAddressQuery{
+        final static int QUERY_ID = 8;
+    }
 
             /* INTERFACE ELEMENTS*/
             private LinearLayout buildActionLayout() {
@@ -1007,7 +1110,7 @@ public class ContactDetailFragment extends Fragment implements
             private void startPhoneCall() {
                 Intent implicitIntent = new Intent();
                 implicitIntent.setAction(Intent.ACTION_DIAL);
-                implicitIntent.setData(Uri.parse("tel:3105310531"));
+                implicitIntent.setData(Uri.parse("tel:" + mVoiceNumber));
 
                 try{
                     startActivity(implicitIntent);
@@ -1018,10 +1121,9 @@ public class ContactDetailFragment extends Fragment implements
             private void startSMS() {
                 Intent implicitIntent = new Intent();
                 implicitIntent.setAction(Intent.ACTION_VIEW);
-                implicitIntent.setData(Uri.parse("smsto:3105310531"));
-                implicitIntent.putExtra("sms_body", "Good Morning ! how r U ?");
-                //Uri.fromParts("sms", number, null)
-                // or use the SMS manager to send sms directly
+                implicitIntent.setData(Uri.parse("smsto:" + mSMSNumber));
+                implicitIntent.putExtra("sms_body", "Hey!");
+                //TODO: AutoGenerate suggested message
 
                 try{
                     startActivity(implicitIntent);
@@ -1032,7 +1134,7 @@ public class ContactDetailFragment extends Fragment implements
             private void startEmail() {
                 Intent implicitIntent = new Intent();
                 implicitIntent.setAction(Intent.ACTION_SENDTO);
-                implicitIntent.setData(Uri.parse("mailto:tmacdona@gmail.com"));
+                implicitIntent.setData(Uri.parse("mailto:"+ mEmailAddress));
 
                 try{
                     startActivity(implicitIntent);
@@ -1107,12 +1209,9 @@ public class ContactDetailFragment extends Fragment implements
 
 
             public void loadChartView(){
-                // Parse the contact uri to get the lookup key for the contact
-                List<String> path = mContactUri.getPathSegments();
-
                 //Build the chart view
                 mChartMaker = new chartMaker(
-                        path.get(path.size() - 2), //contact lookup key
+                        mContactLookupKey, //contact lookup key
                         getActivity().getContentResolver(),
                         getActivity(),
                         this);
@@ -1210,14 +1309,12 @@ Set the FractionView with appropriate time data
                 fractionView.setFraction(days_left, days_in_span);
             }
 
+
+            /*
+            Callback from chartMaker to repaint the chart after refreshing the data
+             */
     public void finishedLoading() {
-
-
         mChartView.repaint();
-        //Display all the data
-        //displayCallLog();
-        //displaySMSLog();
-        //displayAddressLog();
     }
 
 
@@ -1373,6 +1470,7 @@ Set the FractionView with appropriate time data
                     final TextView statsTextView4 =
                             (TextView) mActionLayout.findViewById(R.id.statsTextView4);
 
+                    //TODO: Get all text into Strings File
                     statsTextView1.setText("Calls In: "+mContactStats.getCallCountIn() +
                         "\t\tCalls Out: " + mContactStats.getCallCountOut());
 

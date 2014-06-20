@@ -19,6 +19,7 @@ ___________________________________________________________________
 
 
 ***Large Tasks***
+- Need to have some kind of happy chime and message after making contact with a friend
 - Create a startup UI
 - Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 - Access gmail through official API: https://developers.google.com/gmail/android/
@@ -31,6 +32,7 @@ ___________________________________________________________________
 
 
 ***Not Sure if Needed***
+- Is it possible to monitor when communication happens from a different app?
 - Find a cluster analysis package.
 - Cloud-based backup?
 - disallow viewPager for chartView - http://stackoverflow.com/questions/19359516/achartengine-with-panning-inside-a-viewpager
@@ -48,6 +50,7 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- The various contact initiation buttons now reference correct contact information, so pressing them initiates the correct address
 - Have a nightly database update routine
 - used event database to keep track of when each data source is pulled from
 - used the SocialEventsContract to inform PhoneLogAccess methods how far back the last update covered.
