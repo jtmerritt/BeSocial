@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /*
+    NO LONGER USED
     Loading event logs (phone and SMS) from the android phone and SMS database
  */
 

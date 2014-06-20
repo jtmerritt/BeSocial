@@ -11,11 +11,15 @@ import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
+import com.example.android.contactslist.notification.Notification;
+import com.example.android.contactslist.notification.UpdateNotification;
 import com.example.android.contactslist.ui.ContactGroupsList;
 import com.example.android.contactslist.dataImport.CallLogXmlParser;
 import com.example.android.contactslist.contactStats.ContactInfo;
@@ -43,7 +47,7 @@ import java.util.List;
 
 // Based on example at http://developer.android.com/guide/topics/ui/notifiers/notifications.html
     //the page has more info on updating and removing notifications in code
-public class Updates extends AsyncTask<Void, Void, String> {
+public class Updates {
 
     private Context mContext;
     private String mXMLFilePath;
@@ -51,89 +55,104 @@ public class Updates extends AsyncTask<Void, Void, String> {
     private ContactGroupsList.GroupInfo largestGroup;
     private List<EventInfo> mSMSEventLog = new ArrayList<EventInfo>();
     private List<EventInfo> mXMLEventLog = new ArrayList<EventInfo>();
+    private ProgressBar activity_progress_bar;
+    private UpdateNotification updateNotification;
+    private Boolean continueDBRead = true;
+    private Boolean continueXMLRead = true;
+    private SharedPreferences sharedPref;
 
 
 
-    public Updates(Context context, String xml_file_path){
+    public Updates(Context context){
         mContext = context;
-        mXMLFilePath = xml_file_path;
+        activity_progress_bar = null;
+        updateNotification = null;
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
-    @Override
-    protected String doInBackground(Void... v1) {
+    public Updates(Context context, ProgressBar activity_progress_bar,
+                   UpdateNotification updateNotification){
+        mContext = context;
+        this.activity_progress_bar = activity_progress_bar;
+        this.updateNotification = updateNotification;
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
 
-        if(mXMLFilePath != null){
-            localXMLRead();
-            return "done";
-        }
-
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        Boolean access_web = sharedPref.getBoolean("sync_with_internet_sources_checkbox_preference_key", false);
-        Boolean enable_local_db_read = sharedPref.getBoolean("sync_with_local_db_checkbox_preference_key", false);
-        Boolean enable_local_xml_read = sharedPref.getBoolean("sync_with_local_xml_checkbox_preference_key", false);
-
-
-        if(access_web) {  //things to do when accessing data on-line
-            //Toast.makeText(mContext, "Accessing Web Data", Toast.LENGTH_SHORT).show();
-        }
-        if(enable_local_db_read){ //Things to do when accessing local data
-            localSourceRead();
-        }
-        if(enable_local_xml_read){
-            //TODO Is this not used anymore?
-        }
-
-      return "done";
-    }
-
-    protected void onProgressUpdate(Integer... progress) {
-                // do something
-            }
-
-    protected void onPostExecute(int result) {
-                // do something
     }
 
 
-    private void localSourceRead(){
+    public void localSourceRead(){
 
         if(getLargestGroup()){
             List<ContactInfo> masterContactList = getGroupContactList();
+
+
 
             // only work with a non-empty list
             if(!masterContactList.isEmpty()){
 
+                int contactCount = masterContactList.size();
+
                 Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
 
                 // grab the SMS database for the master list of contacts
-                mSMSEventLog = getAllSMSLogs(masterContactList);
+                mSMSEventLog = getAllSMSLogs(masterContactList);  //also updates the progress bar
 
                 Log.d("LOCAL SOURCE READ: ", "Got SMS log");
 
+                int i = 0;
                 for(ContactInfo contact:masterContactList){
-                    // there is a chance that the contact is completely new to the db
-                    // Contact groups are read from google and may be updated on the website
-                    addContactToDbIfNew(contact);
+                    if(continueDBRead == false){
+                        break;
+                    }
 
-                    // feed the all events for contact to the local databases
-                    insertEventLogIntoDatabases(getAllEventLogsForContact(contact));
 
-                    // test that we can retrieve the contact from the db
-                    testContact(contact);
+                    //Only update the database if okayed by the preferences
+                    if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
+                        // there is a chance that the contact is completely new to the db
+                        // Contact groups are read fro/m google and may be updated on the website
+                        addContactToDbIfNew(contact);
+
+                        // feed the all events for contact to the local databases
+                        insertEventLogIntoDatabases(getAllEventLogsForContact(contact));
+
+
+                    }else {
+                        //otherwise we just go through the motions
+                        getAllEventLogsForContact(contact);
+                    }
+
+                    //update the progress bar
+                    i++;
+                    updateProgress((int)(((float)i/(float)contactCount)*100));
                 }
+
+                //set the  time of this database update
+                // It's not quite right, since we're actually working with both phone and SMS
+                ImportLog importLog = new ImportLog(mContext);
+                importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
+                importLog.setImportTimeRecord(EventInfo.SMS_CLASS);
             }
         }
     }
 
+    public void cancelReadDB(){
+        continueDBRead = false;
+    }
 
-    private void localXMLRead(){
+    public void localXMLRead(String XMLFilePath){
+        mXMLFilePath = XMLFilePath;
+
+        if(mXMLFilePath == null){
+            return;
+        }
 
         if(getLargestGroup()){
             List<ContactInfo> masterContactList = getGroupContactList();
-            CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList, mContext.getContentResolver());
+            CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList,
+                    mContext.getContentResolver(), activity_progress_bar, updateNotification);
             FileInputStream fileStream;
 
+            int contactCount = masterContactList.size();
 
             // only work with a non-empty list
             if(!masterContactList.isEmpty()){
@@ -145,6 +164,9 @@ public class Updates extends AsyncTask<Void, Void, String> {
                     File file = new File(mXMLFilePath);
                     if(file.exists()) {
                         fileStream = new FileInputStream(file);
+
+                        //update progress bar
+                        updateProgress(1);
                         mXMLEventLog = callLogXmlParser.parse(fileStream);
                         fileStream.close();
                     }else{
@@ -156,21 +178,56 @@ public class Updates extends AsyncTask<Void, Void, String> {
                     e.printStackTrace();
                 }
 
+                int i =0;
                 for(ContactInfo contact:masterContactList){
-                    // there is a chance that the contact is completely new to the db
-                    // Contact groups are read from google and may be updated on the website
-                    addContactToDbIfNew(contact);
+                    if(continueXMLRead == false){
+                        break;
+                    }
 
-                    // feed the all events for contact to the local databases
-                    insertEventLogIntoDatabases(getAllXMLLogsForContact(contact));
+                    i++;
 
-                    // test that we can retrieve the contact from the db
-                    //testContact(contact);
+                    //Only update the database if okayed by the preferences
+                    if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
+                        // there is a chance that the contact is completely new to the db
+                        // Contact groups are read from google and may be updated on the website
+                        addContactToDbIfNew(contact);
+
+                        // feed the all events for contact to the local databases
+                        insertEventLogIntoDatabases(getAllXMLLogsForContact(contact));
+                    }else{
+                        getAllXMLLogsForContact(contact);
+
+                    }
+
+
+
+
+                    updateProgress((int)(((float)i/(float)contactCount)*100));
                 }
             }
         }
     }
 
+    public void cancelReadXML(){
+        continueXMLRead = false;
+    }
+
+
+    /*
+    Method to update the notification window and the activity progress bar, if available
+     */
+    private void updateProgress(int progress){
+
+        //update progress out of 100
+        if(activity_progress_bar != null){
+            activity_progress_bar.setProgress(progress);
+        }
+
+        if(updateNotification != null){
+            updateNotification.updateNotification(progress);
+        }
+
+    }
 
 
 // TODO enable switching to a smaller group for testing
@@ -350,7 +407,7 @@ public class Updates extends AsyncTask<Void, Void, String> {
 
         // We're already in an async task, and we should probably do this sequentially
         PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(),
-                mContext);
+                mContext, activity_progress_bar, updateNotification);
 
         // get list of SMS events for named contacts, if masterList is null, returns all SMS events
         return phoneLogAccess.getSMSLogsForContactList(masterList); // gather up event data from phone logs
@@ -400,13 +457,14 @@ public class Updates extends AsyncTask<Void, Void, String> {
 
         //proceed if the event is likely new
         if(eventDb.checkEventExists(event) == -1) {
+            //TODO: what todo about the error state, 0;
 
             //insert event into database
             dbRowID = eventDb.addEvent(event);
             //Log.d("Insert: ", "Row ID: " + dbRowID);
 
-            String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
-                    + " ,Class: " + event.getEventClass();
+            //String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+            //        + " ,Class: " + event.getEventClass();
             // Writing Contacts to log
             //Log.d("db Read: ", log);
 
@@ -476,30 +534,6 @@ public class Updates extends AsyncTask<Void, Void, String> {
         final static int ID = 1;
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
-    }
-
-
-    private void phone_update(Context context){
-        int mId = 1;
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_action_statistics)
-                        .setContentTitle(context.getString( R.string.app_name))
-                        .setContentText("Updating Phone Logs");
-
-        NotificationCompat.InboxStyle inboxStyle =
-                new NotificationCompat.InboxStyle();
-
-// Moves the big view style object into the notification object.
-        mBuilder.setStyle(inboxStyle);
-
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
-        mNotificationManager.notify(mId, mBuilder.build());
-
     }
 
 }

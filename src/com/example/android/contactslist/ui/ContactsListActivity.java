@@ -208,7 +208,7 @@ public class ContactsListActivity extends FragmentActivity implements
                 //Log.d("OnClickListener: ", "Entered");
                 //Toast.makeText(getApplicationContext(), "Clicked!!!", Toast.LENGTH_SHORT).show();
 
-                startFileImportActivity();
+                startImportActivity();
             }
         });
 
@@ -220,10 +220,10 @@ public class ContactsListActivity extends FragmentActivity implements
     /*
     Send intent for opening the XML file import activity
      */
-    private void startFileImportActivity(){
+    private void startImportActivity(){
 
         Intent explicitlyLoadedIntent = new Intent();
-        explicitlyLoadedIntent.setClass(this, FileImportActivity.class);
+        explicitlyLoadedIntent.setClass(this, ImportActivity.class);
         startActivity(explicitlyLoadedIntent);
     }
 

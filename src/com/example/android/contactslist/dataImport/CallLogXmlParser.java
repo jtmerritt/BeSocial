@@ -2,9 +2,11 @@ package com.example.android.contactslist.dataImport;
 
 import android.content.ContentResolver;
 import android.util.Xml;
+import android.widget.ProgressBar;
 
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.notification.UpdateNotification;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -28,10 +30,24 @@ public class CallLogXmlParser {
     private static final String ns = null;      // We don't use namespaces
     private ContentResolver mContentResolver;
     List<ContactInfo> mMasterContactList;
+    private ProgressBar activity_progress_bar;
+    private UpdateNotification updateNotification;
+
+
+    public CallLogXmlParser(List<ContactInfo> list, ContentResolver contentResolver,
+                            ProgressBar activity_progress_bar,
+                            UpdateNotification updateNotification){
+        mContentResolver = contentResolver;
+        mMasterContactList = list;
+        this.activity_progress_bar = activity_progress_bar;
+        this.updateNotification = updateNotification;
+    }
 
     public CallLogXmlParser(List<ContactInfo> list, ContentResolver contentResolver){
         mContentResolver = contentResolver;
         mMasterContactList = list;
+        activity_progress_bar = null;
+        updateNotification = null;
     }
 
     // contentResolver can be null, but is needed to retrieve lookup keys for the event contacts
@@ -39,6 +55,25 @@ public class CallLogXmlParser {
         mContentResolver = null;
         mMasterContactList = null;
     }
+
+
+    /*
+Method to update the notification window and the activity progress bar, if available
+ */
+    private void updateProgress(int progress, int total){
+        progress = (int)(((float)progress/(float)total)*100);
+
+        //update progress out of 100
+        if(activity_progress_bar != null){
+            activity_progress_bar.setProgress(progress);
+        }
+
+        if(updateNotification != null){
+            updateNotification.updateNotification(progress);
+        }
+
+    }
+
 
     public List<EventInfo> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
@@ -54,9 +89,11 @@ public class CallLogXmlParser {
     private List<EventInfo> readCalls(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<EventInfo> newCallLog = new ArrayList<EventInfo>();
         EventInfo eventInfo = null;
+        int i = 0;
 
         parser.require(XmlPullParser.START_TAG, ns, "calls");
-       // String call_count = parser.getAttributeValue(null, "count");
+       String call_count = parser.getAttributeValue(null, "count");
+        int callCount = Integer.valueOf(call_count);
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -75,6 +112,10 @@ public class CallLogXmlParser {
             if(eventInfo != null){
                 newCallLog.add(eventInfo);
             }
+
+            i++;
+            updateProgress(i, callCount);
+
         }
         return newCallLog;
     }

@@ -86,7 +86,7 @@
 
         </activity>
 
-        <activity android:name=".ui.FileImportActivity"
+        <activity android:name=".ui.ImportActivity"
             android:label="@string/file_import_activity"
             android:parentActivityName=".ui.ContactsListActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY"

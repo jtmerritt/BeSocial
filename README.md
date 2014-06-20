@@ -2,25 +2,25 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- Add Notification graphic to indicate that the data is still being collected - “Progress Bar” “Dialogs” “Intermediate” - for a dialog box with the cirular progress indicator
-    - kind of how PocketCast has the notification animation for downloading media
-- create file to indicate when data is last accessed for each source, XML?
+-- pretty major big where the auto_update ran repeatedly in quick successsion
+- Have a nightly database maintenance routine
 - restrict to portrait mode
+- move the interactive chart to it's own full screen activity
+- fix the fact that tapping on the update notification initiates a new file import activity
 
 ***Medium Tasks***
 - Create routine for producing the long duration statistics:
     - average time
     - score over time
 - Create class to estimate contact due date
-- Have a nightly database update routine
-- Have a nightly database maintenance routine
 - Create interface for manually adding events
+- Create interface for adding contacts to group
 - Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
 
 
 ***Large Tasks***
-- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 - Create a startup UI
+- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Access hangouts data: ?
 - Access facebook through official API: https://developers.facebook.com/docs/android
@@ -48,8 +48,12 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- Have a nightly database update routine
+- used event database to keep track of when each data source is pulled from
+- used the SocialEventsContract to inform PhoneLogAccess methods how far back the last update covered.
 - make charts on contact list update
-
+- Add Notification graphic to indicate that the data is still being collected - “Progress Bar” “Dialogs” “Intermediate” - for a dialog box with the cirular progress indicator
+    - kind of how PocketCast has the notification animation for downloading media
 - Maybe have a ContentProvider for the contact database but not the event database.
 - Swipe geusture for changing date range on data plot.
 - display text in the middle of the fraction chart indicating the value,

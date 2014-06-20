@@ -1107,12 +1107,13 @@ public class ContactDetailFragment extends Fragment implements
 
 
             public void loadChartView(){
+                // Parse the contact uri to get the lookup key for the contact
+                List<String> path = mContactUri.getPathSegments();
+
                 //Build the chart view
                 mChartMaker = new chartMaker(
-                        //contactID, contactName,
-                        mContactNameString,
+                        path.get(path.size() - 2), //contact lookup key
                         getActivity().getContentResolver(),
-                        //mEventLog,
                         getActivity(),
                         this);
                 mChartView = mChartMaker.getBarChartView();
@@ -1203,8 +1204,8 @@ Set the FractionView with appropriate time data
                 Long last_event = ( mContactStats.getDateLastEventIn() > mContactStats.getDateLastEventOut() ?
                         mContactStats.getDateLastEventIn() : mContactStats.getDateLastEventOut());
 
-                int days_left = (int)( mContactStats.getDateEventDue()- now.toMillis(true))/ONE_DAY;
-                int days_in_span = (int)(mContactStats.getDateEventDue() - last_event)/ONE_DAY;
+                int days_left = (int)(( mContactStats.getDateEventDue()- now.toMillis(true))/ONE_DAY);
+                int days_in_span = (int)((mContactStats.getDateEventDue() - last_event)/ONE_DAY);
 
                 fractionView.setFraction(days_left, days_in_span);
             }

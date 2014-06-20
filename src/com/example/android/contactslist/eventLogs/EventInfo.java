@@ -5,7 +5,7 @@ public class EventInfo {
    //Primarily for phonecalls
     public String eventContactName;
     public String eventContactKey;
-    public long eventDuration; //seconds be default - chartMaker has a special use for this variable as minutes
+    public long eventDuration; //seconds by default - chartMaker has a special use for this variable as minutes
     public long rowId;
 
     // Primarily for SMS
@@ -18,12 +18,15 @@ public class EventInfo {
 
     public int eventClass;
     //eventClass definition
+    final public static int ALL_CLASS = 0;
     final public static int PHONE_CLASS = 1;
     final public static int SMS_CLASS = 2;
     final public static int EMAIL_CLASS = 3;
     final public static int FACEBOOK = 4;
     final public static int GOOGLE_HANGOUTS = 5;
     final public static int SKYPE = 6;
+    final public static int MEETING_CLASS = 7; //in the meatspace
+
 
     public void clear(){
         eventContactName = null;

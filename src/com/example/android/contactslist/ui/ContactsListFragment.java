@@ -568,13 +568,9 @@ public class ContactsListFragment extends ListFragment implements
             case ContactsGroupQuery.QUERY_ID:
                 mAdapter.swapCursor(data);
 
-                //TODO: test only
-                FileIO.logNames(getActivity(), data);
+                //TODO: find a better place to stick the alarm setting
                 SetAlarm alarm = new SetAlarm();
-                alarm.set_Alarm(getActivity());
-
-
-
+                alarm.setAutoUpdate(getActivity());
 
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected

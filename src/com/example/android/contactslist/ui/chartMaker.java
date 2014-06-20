@@ -43,7 +43,7 @@ public class chartMaker implements ChartMakerCallback {
     private List<EventInfo> mBarChartEventLog;
     List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private Long contactID;
-    private String mContactName;
+    private String mContactLookupKey;
     private ContentResolver mContentResolver;
     private ContactDetailFragmentCallback mContactDetailFragmentCallback;
     private double mChartMin; //Time ms
@@ -69,14 +69,14 @@ public class chartMaker implements ChartMakerCallback {
 
     public chartMaker(
             //Long cID, String cName,
-            String contactName,
+            String contactLookupKey,
             ContentResolver contentResolver, 
             //List<EventInfo> eventLog,
             Context context,
             ContactDetailFragmentCallback contactDetailFragmentCallback)
     {
         //contactID = cID;
-        mContactName = contactName;
+        mContactLookupKey = contactLookupKey;
         mContentResolver = contentResolver;
         //mEventLog = eventLog;
         mContactDetailFragmentCallback = contactDetailFragmentCallback;
@@ -275,9 +275,8 @@ public class chartMaker implements ChartMakerCallback {
 
     private void loadContactEventLogs(){
         mEventLog.clear();
-        // KS TODO: look into possibility of sending parameters in execute instead
         AsyncTask<Void, Void, List<EventInfo>> eventLogsTask = new LoadEventLogTask(
-                mContactName,
+                mContactLookupKey,
                 mDataFeedClass,
                 (long)mDateMin,
                 (long)mDateMax,
@@ -328,7 +327,7 @@ public class chartMaker implements ChartMakerCallback {
         long eventDuration;
         long wordCount;
         mBarChartEventLog = new ArrayList<EventInfo>();
-
+        final int conversion_ratio = mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
 
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
         Calendar cal = Calendar.getInstance();
@@ -395,7 +394,7 @@ public class chartMaker implements ChartMakerCallback {
                         eventDuration = mBarChartEventLog.get(j).getDuration();
                         wordCount = mBarChartEventLog.get(j).getWordCount();
                         mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
-                                (double)wordCount/(double)10 +(double)eventDuration /*Length of event*/
+                                (double)wordCount/(double)conversion_ratio +secondsToDecimalMinutes(eventDuration) /*Length of event*/
                                 // normalized combined data
                         );
                 }
@@ -491,7 +490,7 @@ public class chartMaker implements ChartMakerCallback {
     {
         //Calendar http://developer.android.com/reference/java/util/Calendar.html
         Calendar cal = Calendar.getInstance();
-        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.setFirstDayOfWeek(Calendar.MONDAY);  //TODO: make first day of the week into a setting
         EventInfo ChartEventInfo;
 
         int j=mEventLog.size();

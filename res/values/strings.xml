@@ -20,7 +20,7 @@
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>
-    <string name="app_description">This is a sample app, demonstrating use of the Android system Contacts Provider.</string>
+    <string name="app_description">Contacts List replacement, enabling analysis of the communication quality.</string>
     <string name="imageview_description">Contact Thumbnail</string>
     <string name="address_button_description">View Address</string>
     <string name="menu_search">Search</string>
@@ -42,32 +42,39 @@
          -->
     <string name="search_match_other">Matches Other Field</string>
 
-    <string name="no_address">No addresses found</string>
     <string name="no_intent_found">No application found to handle this action</string>
 
-
-    <string name="preferences_fragment">Preferences</string>
     <string name="file_import_activity">File Selection</string>
 
-    <string name="notification_checkbox_preference_title"
-            >Enabel Broadcast receiver</string>
-    <string name="notification_checkbox_preference_summary"
-        >Annoying vibrtioning allerts every 5 minutes</string>
+    <!-- Strings for Contact Detail Fragment -->
+     <string name="contact_action_fragment_title"
+         >Reach Out</string>
+
+     <string name="no_data"
+         >No Data</string>
+
+    <string name="no_address">No addresses found</string>
+
+
+
+    <!-- Strings for preferences-->
+
+    <string name="preferences_fragment">Preferences</string>
 
     <string name="update_db_preference_title"
-            >Update Database</string>
+            >Enabel Automatic Updates</string>
     <string name="update_db_preference_summary"
-        >Load available data into database</string>
+        >Schedule nightly (3AM) update from your data</string>
 
     <string name="sync_with_local_sources_preference_title"
             >Sync with phone and SMS logs</string>
     <string name="sync_with_local_sources_preference_summary"
         >Gather data from local phone and SMS database?</string>
 
-    <string name="sync_with_local_xml_preference_title"
-            >Sync with phone XML backup</string>
-    <string name="sync_with_local_xml_preference_summary"
-        >Gather data from local phone XML bachup?</string>
+    <string name="sync_only_with_power_preference_title"
+            >Require Power for Database Update</string>
+    <string name="sync_only_with_power_preference_summary"
+        >Only update the database when device is plugged in with power.</string>
 
     <string name="sync_with_web_sources_preference_title"
         >Sync with Web</string>
@@ -110,20 +117,20 @@
         <item>2</item>
     </string-array>
 
+
+
+    <!-- Strings for Navigation Drawer -->
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
-
-     <string name="contact_action_fragment_title"
-            >Reach Out</string>
-
-     <string name="footer_text"
+    <string name="footer_text"
              >Update Database</string>
 
-         <string name="no_data"
-             >No Data</string>
 
-    <!--List Data Feeds -->
+
+
+
+    <!--List Data Feeds for Spinner-->
     <string-array name="data_feed_list_for_chart_selection">
         <item>All Communications</item>
         <item>Phone</item>

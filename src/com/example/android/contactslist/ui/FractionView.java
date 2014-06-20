@@ -155,7 +155,7 @@ public class FractionView extends View implements FractionViewCallback {
         task.execute();
 
         // set a default display until the data loads
-        mfraction = (float)1;
+        mfraction = (float)0;
         invalidate();
     }
 
@@ -164,19 +164,24 @@ public class FractionView extends View implements FractionViewCallback {
 
         final int ONE_DAY = 86400000;
 
-        // set the fraction view with current state of contact countdown
-        // based on contact due date stored at the contact Event date
-        Time now = new Time();
-        now.setToNow();
+        if(contactInfo != null){
+            // set the fraction view with current state of contact countdown
+            // based on contact due date stored at the contact Event date
+            Time now = new Time();
+            now.setToNow();
 
-        Long last_event = ( contactInfo.getDateLastEventIn() > contactInfo.getDateLastEventOut() ?
-                contactInfo.getDateLastEventIn() : contactInfo.getDateLastEventOut());
+            Long last_event = ( contactInfo.getDateLastEventIn() > contactInfo.getDateLastEventOut() ?
+                    contactInfo.getDateLastEventIn() : contactInfo.getDateLastEventOut());
 
-        int days_remaining = (int)( contactInfo.getDateEventDue()- now.toMillis(true))/ONE_DAY;
-        int total_days = (int)(contactInfo.getDateEventDue() - last_event)/ONE_DAY;
+            int days_remaining = (int)(( contactInfo.getDateEventDue()- now.toMillis(true))/ONE_DAY);
+            int total_days = (int)((contactInfo.getDateEventDue() - last_event)/ONE_DAY);
 
+            setFraction(days_remaining, total_days);
 
-        setFraction(days_remaining, total_days);
+        }else{
+            setFraction(0, 1);
+        }
+
     }
 
         public void setFractionFloat(float fraction) {
@@ -235,6 +240,7 @@ public class FractionView extends View implements FractionViewCallback {
     }
 
     private void setDisplayStrings(){
+        //TODO: Add to strings.xml
         //for reasons unknown, breaking this operation into several lines was essential for operation
         /*
        float displayValue = mfraction*100;
