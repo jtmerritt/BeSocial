@@ -29,6 +29,8 @@
     <string name="no_contacts">No Contacts Found</string>
     <string name="no_contact_selected">No Contact Selected</string>
     <string name="search_hint">Find contacts</string>
+    <string name="default_group_not_found">Choose a Default Contact Group in the Settings</string>
+
 
     <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by
          alphabet using ListView fast scroll. -->
@@ -45,6 +47,8 @@
     <string name="no_intent_found">No application found to handle this action</string>
 
     <string name="file_import_activity">File Selection</string>
+    <string name="event_entry_activity">New Event</string>
+
 
     <!-- Strings for Contact Detail Fragment -->
      <string name="contact_action_fragment_title"
@@ -102,15 +106,21 @@
     <string name="Hangouts_web_sources_preference_summary"
         >Gather communications data from Hangouts?</string>
 
+
+
+
+    <!--Default group -->
     <string name="choose_source_group_list_preference_title"
         >Default Contact Group</string>
+    <string name="contact_group_preference_default"
+            >Starred in Android</string>
+    <!--These two arrays are overwritten programatically, but we still need them -->
     <string-array name="string_array_list_of_contact_groups">
         <item>Starred in Android</item>
         <item>Socia</item>
+        <item>Collaborators</item>
         <item>6 Weeks</item>
     </string-array>
-    <string name="contact_group_preference_default"
-        >Starred in Android</string>
     <string-array name="contact_group_data">
         <item>0</item>
         <item>1</item>
@@ -124,14 +134,16 @@
     <string name="drawer_close">Close navigation drawer</string>
 
     <string name="footer_text"
-             >Update Database</string>
+             >Import Data</string>
+        <string name="settings_droor_text"
+            >Settings</string>
 
 
 
 
 
     <!--List Data Feeds for Spinner-->
-    <string-array name="data_feed_list_for_chart_selection">
+    <string-array name="array_of_event_classes">
         <item>All Communications</item>
         <item>Phone</item>
         <item>SMS</item>
@@ -140,4 +152,18 @@
         <item>Google Hangouts</item>
         <item>Skype</item>
     </string-array>
+
+
+    <!-- Event Classifications -->
+    <string name="incoming">Incoming</string>
+    <string name="outgoing">Outgoing</string>
+    <string name="missed">Missed</string>
+    <string name="draft">Draft</string>
+
+
+
+
+
+
+
 </resources>

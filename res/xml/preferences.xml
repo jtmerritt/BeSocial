@@ -62,6 +62,6 @@
         android:title="@string/choose_source_group_list_preference_title"
         android:dialogTitle="@string/choose_source_group_list_preference_title"
         android:entries="@array/string_array_list_of_contact_groups"
-        android:entryValues="@array/contact_group_data"
+        android:entryValues="@array/string_array_list_of_contact_groups"
         android:defaultValue="@string/contact_group_preference_default" />
 </PreferenceScreen>

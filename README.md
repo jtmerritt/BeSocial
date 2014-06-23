@@ -2,13 +2,16 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
--- pretty major big where the auto_update ran repeatedly in quick successsion
+-- pretty major bug where the auto_update ran repeatedly in quick successsion
+-- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine
 - restrict to portrait mode
 - move the interactive chart to it's own full screen activity
 - fix the fact that tapping on the update notification initiates a new file import activity
 
 ***Medium Tasks***
+- Make event browser
+- which group is viewed by defautl should be indicated in the menu drawer
 - Create routine for producing the long duration statistics:
     - average time
     - score over time
@@ -19,8 +22,10 @@ ___________________________________________________________________
 
 
 ***Large Tasks***
+- add contacts to a group
+- add a group
 - Need to have some kind of happy chime and message after making contact with a friend
-- Create a startup UI
+- Create a first-time startup UI
 - Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Access hangouts data: ?
@@ -50,6 +55,7 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- Default group bug fix AND the list of groups to choose from is automatically updated
 - The various contact initiation buttons now reference correct contact information, so pressing them initiates the correct address
 - Have a nightly database update routine
 - used event database to keep track of when each data source is pulled from

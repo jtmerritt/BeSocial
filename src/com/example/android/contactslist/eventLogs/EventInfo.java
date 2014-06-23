@@ -1,6 +1,9 @@
 package com.example.android.contactslist.eventLogs;
 
 
+import com.example.android.contactslist.R;
+import android.content.res.Resources;
+
 public class EventInfo {
    //Primarily for phonecalls
     public String eventContactName;
@@ -11,10 +14,11 @@ public class EventInfo {
     // Primarily for SMS
     public String eventID; //TODO Why string?
     public long eventDate;  /*date of SMS. Time of day?*/
-    public String eventContactAddress;
-    public long eventContactID;  /*name of SMSer, if available. Person who sends it*/
+    public String eventContactAddress;  //phone number
+    public long eventContactID;  /*ID of SMSer, if available. Person who sends it*/
     public long eventWordCount;  /*number of tokens broken by spaces*/
     public long eventCharCount; /*number of characters in message*/
+    public String eventNotes;
 
     public int eventClass;
     //eventClass definition
@@ -124,25 +128,7 @@ public class EventInfo {
         return getEventTypeSting();
     }
 
-    public String getEventClassSting() {
-        switch (eventClass){
-            case PHONE_CLASS:
-                return "Phone";
-            case SMS_CLASS:
-                return "SMS";
-            case EMAIL_CLASS:
-                return "Email";
-            case FACEBOOK:
-                return "Facebook";
-            case GOOGLE_HANGOUTS:
-                return "Google Hangouts";
-            case SKYPE:
-                return "Skype";
 
-            default:
-                return "Unknown";
-        }
-    }
     public String getEventTypeSting() {
         switch (eventType){
             case 1:

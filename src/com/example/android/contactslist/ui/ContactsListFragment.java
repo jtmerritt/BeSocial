@@ -344,7 +344,7 @@ public class ContactsListFragment extends ListFragment implements
             searchItem.setVisible(false);
         }
 
-        MenuItem settingsItem = menu.add("Settings");
+        //MenuItem settingsItem = menu.add("Settings");
 
 
         // In version 3.0 and later, sets up and configures the ActionBar SearchView

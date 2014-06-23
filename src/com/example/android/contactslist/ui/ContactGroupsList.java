@@ -3,6 +3,10 @@ package com.example.android.contactslist.ui;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.preference.Preference;
+import android.preference.PreferenceGroup;
+import android.preference.ListPreference;
+import android.preference.PreferenceScreen;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +48,8 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
             return Integer.parseInt(id);
         }
     }
+
+
     public ArrayList<GroupInfo> loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
@@ -77,6 +83,8 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
                     g.title.contains("Week") ||
                     g.title.contains("Days") ||
                     g.title.contains("Day") ||
+                    g.title.contains("test") ||
+
                     g.title.contains("Collaborators")
                     ){
                 g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
@@ -111,4 +119,8 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
             return null;
         }
     }
+
+
+
+
 }

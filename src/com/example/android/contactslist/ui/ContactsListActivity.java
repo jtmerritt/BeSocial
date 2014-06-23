@@ -50,6 +50,7 @@ import android.widget.Toast;
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.util.Utils;
+import com.example.android.contactslist.ui.ContactGroupsList.GroupInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,7 +85,6 @@ public class ContactsListActivity extends FragmentActivity implements
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
 
-    private Spinner groupSpinner;
     ContactGroupsList contactGroupsList = new ContactGroupsList();
     List<ContactGroupsList.GroupInfo> mGroups;// = new ArrayList<GroupInfo>();
 
@@ -174,6 +174,10 @@ public class ContactsListActivity extends FragmentActivity implements
         }
     }
 
+
+    /*
+    Populate the activity navigation drawer
+     */
     private void addItemsToGroupsDrawerList() {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -197,29 +201,37 @@ public class ContactsListActivity extends FragmentActivity implements
         TextView footerView =
                 (TextView) LayoutInflater.from(getApplicationContext())
                         .inflate(R.layout.droor_footer_view, mDrawerList, false);
+        //set up the footer
+        TextView footerSettingsView =
+                (TextView) LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.droor_footer_settings_view, mDrawerList, false);
 
+        //The other footer view
         mDrawerList.addFooterView(footerView);
+        mDrawerList.addFooterView(footerSettingsView);
 
 
         footerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //Log.d("OnClickListener: ", "Entered");
-                //Toast.makeText(getApplicationContext(), "Clicked!!!", Toast.LENGTH_SHORT).show();
-
                 startImportActivity();
             }
         });
 
 
-        mDrawerList.setAdapter(dataAdapter);
+        footerSettingsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    startPreferenceActivity();
+            }
+        });
 
+        mDrawerList.setAdapter(dataAdapter);
     }
 
     /*
-    Send intent for opening the XML file import activity
-     */
+Send intent for opening the XML file import activity
+*/
     private void startImportActivity(){
 
         Intent explicitlyLoadedIntent = new Intent();
@@ -227,7 +239,13 @@ public class ContactsListActivity extends FragmentActivity implements
         startActivity(explicitlyLoadedIntent);
     }
 
-
+    private void startPreferenceActivity(){
+        // Display the fragment as the main content.
+        Intent launchPreferencesIntent2 = new Intent();
+        launchPreferencesIntent2.setClass(this, UserPreferencesActivity.class);
+        // Make it a subactivity so we know when it returns
+        startActivity(launchPreferencesIntent2);
+    }
 
     /**
      * Overrides newView() to inflate the list item views.
@@ -386,23 +404,31 @@ public class ContactsListActivity extends FragmentActivity implements
 
     private void setDefaultContactGroup() {
 
-        int pos = 3;
+        int i=0;
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //TODO: Actually read the preferences for which group gets displayed by default.
-        //There seems to be versioning problems regarding data types.
-        //int position = sharedPref.getInt("source_group_list_preference_key",0);
-        //pos = position;//Integer.parseInt(position);
+        //Read the preferences to get the default group for display
+        String preferredDefaultGroupName = sharedPref.getString("source_group_list_preference_key",
+                getResources().getString(R.string.contact_group_preference_default));
 
         // update the main content by replacing fragments
         ContactsListFragment mContactsListFragment = (ContactsListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-        mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
+       for(GroupInfo group:mGroups){
+           if(preferredDefaultGroupName.equals(group.title)){
+               mContactsListFragment.setGroupQuery(group.getId()); //passing the integer ID
 
-        // update selected item and title
-        mDrawerList.setItemChecked(pos, true);
-        setTitle(mGroups.get(pos).toString());
+               // update selected item and title
+               mDrawerList.setItemChecked(i, true);
+               setTitle(mGroups.get(i).toString());
+
+               return;
+           }
+           i++;
+       }
+        Toast.makeText(getApplicationContext(), R.string.default_group_not_found, Toast.LENGTH_SHORT).show();
+
     }
 
 

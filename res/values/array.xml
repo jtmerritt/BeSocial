@@ -3,6 +3,7 @@
     <integer-array name="contact_group_data_int">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
     </integer-array>
 
     <integer-array name="alert_vibrate_pattern_int"> <!--milliSecs-->

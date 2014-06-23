@@ -17,8 +17,6 @@
 package com.example.android.contactslist.ui;
 
 
-import java.util.*;  // for date formatting
-import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
@@ -43,10 +41,6 @@ import android.support.v4.content.Loader;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -61,26 +55,33 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
+import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
-import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.util.Utils;
-import com.example.android.contactslist.contactStats.ContactInfo;
+
+import org.achartengine.GraphicalView;
+import org.achartengine.model.SeriesSelection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.achartengine.GraphicalView;
-import org.achartengine.model.SeriesSelection;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -89,15 +90,14 @@ import org.achartengine.model.SeriesSelection;
  *
  * This fragment appears full-screen in an activity on devices with small screen sizes, and as
  * part of a two-pane layout on devices with larger screens, alongside the
- * {@link ContactsListFragment}.
+ * {@link com.example.android.contactslist.ui.ContactsListFragment}.
  *
  * To create an instance of this fragment, use the factory method
- * {@link ContactDetailFragment#newInstance(android.net.Uri)}, passing as an argument the contact
+ * {@link com.example.android.contactslist.ui.EventEntryFragment#newInstance(android.net.Uri)}, passing as an argument the contact
  * Uri for the contact you want to display.
  */
-public class ContactDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>,
-        ContactDetailFragmentCallback
+public class EventEntryFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor>
         //, View.OnClickListener
         {
 
@@ -105,7 +105,7 @@ public class ContactDetailFragment extends Fragment implements
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
 
     // Defines a tag for identifying log entries
-    private static final String TAG = "ContactDetailFragment";
+    private static final String TAG = "EventEntryFragment";
 
     // The geo Uri scheme prefix, used with Intent.ACTION_VIEW to form a geographical address
     // intent that will trigger available apps to handle viewing a location (such as Maps)
@@ -127,20 +127,13 @@ public class ContactDetailFragment extends Fragment implements
     // in multiple methods throughout this class.
     private ImageView mImageView;
     private LinearLayout mDetailsLayout;
-    private LinearLayout mDetailsCallLogLayout;
-    private LinearLayout mDetailsSMSLogLayout;
-    private LinearLayout mActionTab;
-    private LinearLayout mChartLayout;
-    private LinearLayout mPChartView;
     private LinearLayout mActionLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
     private MenuItem mEditContactMenuItem;
     private GraphicalView mChartView = null;
     private String mContactNameString;
-    private FractionView fractionView = null;
-    private Spinner chartSpinner = null;
-    private chartMaker mChartMaker;
+
     private Context mContext;
 
 
@@ -151,11 +144,11 @@ public class ContactDetailFragment extends Fragment implements
      * setting the bundle as an argument.
      *
      * @param contactUri The contact Uri to load
-     * @return A new instance of {@link ContactDetailFragment}
+     * @return A new instance of {@link com.example.android.contactslist.ui.EventEntryFragment}
      */
-    public static ContactDetailFragment newInstance(Uri contactUri) {
+    public static EventEntryFragment newInstance(Uri contactUri) {
         // Create new instance of this fragment
-        final ContactDetailFragment fragment = new ContactDetailFragment();
+        final EventEntryFragment fragment = new EventEntryFragment();
 
         // Create and populate the args bundle
         final Bundle args = new Bundle();
@@ -171,7 +164,7 @@ public class ContactDetailFragment extends Fragment implements
     /**
      * Fragments require an empty constructor.
      */
-    public ContactDetailFragment() {}
+    public EventEntryFragment() {}
 
 
     /**
@@ -224,10 +217,8 @@ public class ContactDetailFragment extends Fragment implements
 
             // Get a bunch of data using the loaderManager
             setBasicContactInfo();
-            getContactStats();
-            getVoiceNumber();
-            getSMSNumber();
-            getEmailAddress();
+            //getContactStats();
+
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -239,7 +230,6 @@ public class ContactDetailFragment extends Fragment implements
             mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
-            mDetailsCallLogLayout.removeAllViews();
 
             if (mContactNameView != null) {
                 mContactNameView.setText("");
@@ -299,26 +289,13 @@ public class ContactDetailFragment extends Fragment implements
 
         // Inflates the main layout to be used by this fragment
         final View detailView =
-                inflater.inflate(R.layout.contact_detail_fragment, container, false);
+                inflater.inflate(R.layout.event_entry_fragment, container, false);
 
         // Gets handles to view objects in the layout
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_call_details_layout);
-        mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_sms_details_layout);
-        mActionTab = (LinearLayout) detailView.findViewById(R.id.tab_action);
-        mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+        mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
 
-        // Inflates the tab_action view with the new fragment.
-        mActionLayout = (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_action_fragment, mActionTab, false);
-
-
-        //***********9********** chart
-        mPChartView = (LinearLayout) detailView.findViewById(R.id.pchart);
-
-        //Fraction View
-        fractionView = (FractionView) detailView.findViewById(R.id.fraction);
 
 
         if (mIsTwoPaneLayout) {
@@ -327,6 +304,7 @@ public class ContactDetailFragment extends Fragment implements
             mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
             mContactNameView.setVisibility(View.VISIBLE);
         }
+
 
         return detailView;
     }
@@ -346,42 +324,7 @@ public class ContactDetailFragment extends Fragment implements
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
         }
 
-        //TODO redo all the tab stuff to be more like a photo viewer where swiing left/right changes the contact
-        TabHost tabHost=(TabHost)getActivity().findViewById(R.id.tabHost);
-        tabHost.setup();
 
-        TabSpec spec1=tabHost.newTabSpec("Tab Chart");
-        spec1.setIndicator("", getResources().getDrawable(R.drawable.ic_action_statistics));
-        spec1.setContent(R.id.tab_chart);
-
-        TabSpec spec2=tabHost.newTabSpec("Tab Call");
-        spec2.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
-        spec2.setContent(R.id.tab_call);
-
-        TabSpec spec3=tabHost.newTabSpec("Tab SMS");
-        spec3.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
-        spec3.setContent(R.id.tab_sms);
-
-        TabSpec spec4=tabHost.newTabSpec("Tab Statistics");
-        spec4.setIndicator("", getResources().getDrawable(R.drawable.ic_action_settings));
-        spec4.setContent(R.id.tab_stats);
-
-        TabSpec spec5=tabHost.newTabSpec("Tab Action");
-        spec5.setIndicator("", getResources().getDrawable(R.drawable.ic_action_send_now));
-        spec5.setContent(R.id.tab_action);
-
-        tabHost.addTab(spec5);
-        tabHost.addTab(spec1);
-        tabHost.addTab(spec2);
-        tabHost.addTab(spec3);
-        tabHost.addTab(spec4);
-
-        tabHost.setCurrentTab(0);
-
-
-        // Inflates the tab_action view with the new fragment.
-        mActionTab.addView(buildActionLayout());
-        mPChartView.addView(buildChartLayout());
     }
 
     private void setBasicContactInfo(){
@@ -390,14 +333,6 @@ public class ContactDetailFragment extends Fragment implements
         // multiple times.
 
         getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
-    }
-
-    private void xdisplayCallLog(){
-        getLoaderManager().restartLoader(LoadContactLogsTask.ContactCallLogQuery.QUERY_ID, null, this);
-    }
-
-    private void xdisplaySMSLog(){
-        getLoaderManager().restartLoader(LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID, null, this);
     }
 
     private void displayAddressLog(){
@@ -595,12 +530,6 @@ public class ContactDetailFragment extends Fragment implements
                         // the ActionBar title text.
                         getActivity().setTitle(mContactNameString);
                     }
-
-                    //  using the contact name build the log of events
-                    //loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
-
-                    loadChartView();
-
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -619,6 +548,7 @@ public class ContactDetailFragment extends Fragment implements
                 // layout has addresses from a previous data load still
                 // added as children.
 
+                /*
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
                     do {
@@ -634,71 +564,17 @@ public class ContactDetailFragment extends Fragment implements
                     // If nothing found, adds an empty address layout
                     mDetailsLayout.addView(buildEmptyAddressLayout(), layoutParams);
                 }
+                */
                 break;
-            // being the second case of this query_ID, this section will not get called.
-            //
-            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                if (data.moveToFirst()) {
-                    // This query loads the contact call log details for the contact. More than
-                    // one log is possible, so move each one to a
-                    // LinearLayout in a Scrollview so multiple addresses can
-                    // be scrolled by the user.
-                }
-                break;
-            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
-                if (data.moveToFirst()) {
-                    // This query loads the contact SMS log details for the contact. More than
-                    // one log is possible, so move each one to a
-                    // LinearLayout in a Scrollview so multiple addresses can
-                    // be scrolled by the user.
-
-                    // Each LinearLayout has the same LayoutParams so this can
-                    // be created once and used for each address.
-                    final LinearLayout.LayoutParams CallLoglayoutParams =
-                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                    // Clears out the details layout first in case the details
-                    // layout has CallLogs from a previous data load still
-                    // added as children.
-
-                    // Loops through all the rows in the Cursor
-                    if (!mEventLog.isEmpty()) {
-
-                        int j=mEventLog.size();
-                        do {
-                            // Implentation reverses the display order of the call log.
-                            j--;
-
-                            // If the item in the event log is for phone calls, display it.
-                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
-                                // Builds the address layout
-                                final LinearLayout layout = buildCallLogLayout(
-                                        mContactNameString,  /*name of caller, if available.*/
-                                        mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                        mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                        mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
 
 
-                                // Adds the new address layout to the details layout
-                                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-                            }
-                        } while (j>0);
-
-                    } else {
-                        // If nothing found, adds an empty address layout
-                        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
-                    }
-                }
-                break;
             case ContactStatsQuery.QUERY_ID:
 
                 setContactStatsFromCursor(data);
                 if (mContactStats != null) {
 
                     // put the stats up on display
-                    displayContactStatsInfo();
-                    setFractionView();
+
                 }
                     break;
             case ContactVoiceNumberQuery.QUERY_ID:
@@ -944,6 +820,18 @@ public class ContactDetailFragment extends Fragment implements
         return null;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * This interface defines constants used by contact retrieval queries.
      */
@@ -966,7 +854,7 @@ public class ContactDetailFragment extends Fragment implements
 
 
         final String SELECTION =
-                ContactsContract.Data.MIMETYPE + "= ? "
+                Data.MIMETYPE + "= ? "
                 + " AND " + ContactsContract.CommonDataKinds.Event.LABEL + "= ? ";
         //final String ARGS[] = {ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, contact_due_date_label};
 
@@ -1036,614 +924,12 @@ public class ContactDetailFragment extends Fragment implements
         final static int QUERY_ID = 8;
     }
 
-            /* INTERFACE ELEMENTS*/
-            private LinearLayout buildActionLayout() {
 
-                // Gets handles to the view objects in the layout
-                final ImageButton callButton =
-                        (ImageButton) mActionLayout.findViewById(R.id.imageButton_call);
-                callButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        startPhoneCall();
-                    }
-                });
 
 
-                final ImageButton smsButton =
-                        (ImageButton) mActionLayout.findViewById(R.id.imageButton_chat);
-                smsButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        startSMS();
-                    }});
 
 
-                final ImageButton emailButton =
-                        (ImageButton) mActionLayout.findViewById(R.id.imageButton_email);
-                emailButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        startEmail();
-                    }
-                });
 
-                final ImageButton newEventButton =
-                        (ImageButton) mActionLayout.findViewById(R.id.imageButton_new_event);
-                newEventButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(getActivity(), "Logging Activity", Toast.LENGTH_SHORT).show();
-                        startNewEntry();
-                    }});
-
-                return mActionLayout;
-            }
-
-            private void startPhoneCall() {
-                Intent implicitIntent = new Intent();
-                implicitIntent.setAction(Intent.ACTION_DIAL);
-                implicitIntent.setData(Uri.parse("tel:" + mVoiceNumber));
-
-                try{
-                    startActivity(implicitIntent);
-                }catch (Exception e)
-                {}
-            }
-
-            private void startSMS() {
-                Intent implicitIntent = new Intent();
-                implicitIntent.setAction(Intent.ACTION_VIEW);
-                implicitIntent.setData(Uri.parse("smsto:" + mSMSNumber));
-                implicitIntent.putExtra("sms_body", "Hey!");
-                //TODO: AutoGenerate suggested message
-
-                try{
-                    startActivity(implicitIntent);
-                }catch (Exception e)
-                {}
-            }
-
-            private void startEmail() {
-                Intent implicitIntent = new Intent();
-                implicitIntent.setAction(Intent.ACTION_SENDTO);
-                implicitIntent.setData(Uri.parse("mailto:"+ mEmailAddress));
-
-                try{
-                    startActivity(implicitIntent);
-                }catch (Exception e)
-                {}
-            }
-
-
-            private void startNewEntry() {
-
-                // Otherwise single pane layout, start a new ContactDetailActivity with
-                // the contact Uri
-                Intent intent = new Intent(mContext, EventEntryActivity.class);
-                intent.setData(mContactUri);
-
-                //Notification.simpleNotification(this);
-                startActivity(intent);
-            }
-
-            private LinearLayout buildChartLayout() {
-
-                // Inflates the tab_action view with the new fragment.
-                final LinearLayout chartLayout =
-                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                                R.layout.chart_fragment, mPChartView, false);
-
-                mChartLayout = (LinearLayout) chartLayout.findViewById(R.id.chart);
-                chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
-
-
-                final CheckBox autoScale =
-                        (CheckBox) chartLayout.findViewById(R.id.autoScale);
-                autoScale.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-
-                    }});
-
-
-                final ImageButton full_screenButton =
-                        (ImageButton) chartLayout.findViewById(R.id.imageButton_switch_to_full_screen);
-                full_screenButton.setOnClickListener(new View.OnClickListener() {
-                    // perform function when pressed
-                    @Override
-                    public void onClick(View v) {
-                        //startEmail();
-                    }
-                });
-
-                //setup spinner which is just above the chart
-
-                   addItemsToChartSpinner();
-
-
-                chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-
-                        mChartMaker.selectDataFeed(pos);
-                        //repaint of the chartView is handeled in the callback
-                    }
-                    @Override
-                    public void onNothingSelected(AdapterView<?> arg0) {
-                        // TODO Auto-generated method stub
-                    }
-                });
-
-
-                return chartLayout;
-            }
-
-            private void addItemsToChartSpinner() {
-
-                //set the adapter to the string-array in the strings resource
-                ArrayAdapter<String> chartFeedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
-                        android.R.layout.simple_spinner_item,
-                        getResources().getStringArray(R.array.array_of_event_classes));
-
-                //choose the style of the list.
-                chartFeedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
-
-                chartSpinner.setAdapter(chartFeedSelectionAdapter);
-            }
-
-
-            public void loadChartView(){
-                //Build the chart view
-                mChartMaker = new chartMaker(
-                        mContactLookupKey, //contact lookup key
-                        getActivity().getContentResolver(),
-                        getActivity(),
-                        this);
-                mChartView = mChartMaker.getBarChartView();
-
-                try
-                {
-                    //add the chart view to the fragment.
-                    mChartLayout.addView(mChartView);
-                }
-                catch (Exception e)
-                {}
-
-
-
-                mChartView.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View view, MotionEvent event) {
-                        int xDiff;
-
-                        final int action = event.getAction();
-                        switch (action & MotionEvent.ACTION_MASK) {
-                            case MotionEvent.ACTION_DOWN:
-                                mChartMaker.xTouchPast = (int) event.getX();
-                                break;
-                            case MotionEvent.ACTION_UP:
-                                //TODO why is seriesSelection always null in the touch listener
-                                SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
-                                mChartMaker.xTouchPosition = (int) event.getX();
-                                xDiff = mChartMaker.xTouchPosition - mChartMaker.xTouchPast;
-                                if (Math.abs(xDiff) > 75) {
-                                    if (xDiff > 0) { //choosing the direction of the swipe
-                                        mChartMaker.adjustChartRange(true); //going left or back
-                                    } else {
-                                        mChartMaker.adjustChartRange(false); //going right or forward
-                                    }
-                                    //repaint of the chartView is handeled in the callback
-                                }
-                                if(Math.abs(xDiff) < 20){
-                                    if (seriesSelection != null) {
-                                        Toast.makeText(mContext, "Chart element in series index "
-                                                        + seriesSelection.getSeriesIndex() + " data point index "
-                                                        + seriesSelection.getPointIndex() + " was long pressed",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                                break;
-                            default:
-                        }
-                        return true;
-                    }
-                });
-
-
-
-                mChartView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
-
-                        if (seriesSelection == null) {
-                            Toast.makeText(mContext, "No chart element was long pressed",
-                                    Toast.LENGTH_SHORT).show();
-                            return false; // no chart element was long pressed, so let
-                            // something
-                            // else handle the event
-                        } else {
-                            Toast.makeText(mContext, "Chart element in series index "
-                                            + seriesSelection.getSeriesIndex() + " data point index "
-                                            + seriesSelection.getPointIndex() + " was long pressed",
-                                    Toast.LENGTH_SHORT).show();
-                            return true;
-                        }
-                    }
-                });
-            }
-
-    /*
-Set the FractionView with appropriate time data
- */
-            private void setFractionView(){
-                final int ONE_DAY = 86400000;
-
-                // set the fraction view with current state of contact countdown
-                // based on contact due date stored at the contact Event date
-                Time now = new Time();
-                now.setToNow();
-
-                Long last_event = ( mContactStats.getDateLastEventIn() > mContactStats.getDateLastEventOut() ?
-                        mContactStats.getDateLastEventIn() : mContactStats.getDateLastEventOut());
-
-                int days_left = (int)(( mContactStats.getDateEventDue()- now.toMillis(true))/ONE_DAY);
-                int days_in_span = (int)((mContactStats.getDateEventDue() - last_event)/ONE_DAY);
-
-                fractionView.setFraction(days_left, days_in_span);
-            }
-
-
-            /*
-            Callback from chartMaker to repaint the chart after refreshing the data
-             */
-    public void finishedLoading() {
-        mChartView.repaint();
-    }
-
-
-            /**
-             * Builds an empty callLog layout that just shows that no calls
-             * were found for this contact.
-             *
-             * @return A LinearLayout to add to the contact details layout
-             */
-            private LinearLayout buildEmptyCallLogLayout() {
-                return buildCallLogLayout("", 0, 0, "");
-            }
-
-            /********call log layout**************************/
-
-            private void displayCallLog(){
-                // Each LinearLayout has the same LayoutParams so this can
-                // be created once and used for each address.
-                final LinearLayout.LayoutParams CallLoglayoutParams =
-                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                // Clears out the details layout first in case the details
-                // layout has CallLogs from a previous data load still
-                // added as children.
-
-                // Loops through all the rows in the Cursor
-                if (!mEventLog.isEmpty()) {
-
-                    int j=mEventLog.size();
-                    do {
-                        // Implentation reverses the display order of the call log.
-                        j--;
-
-                        // If the item in the event log is for phone calls, display it.
-                        if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
-                            // Builds the address layout
-                            final LinearLayout layout = buildCallLogLayout(
-                                    mContactNameString,  /*name of caller, if available.*/
-                                    mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                    mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                    mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
-
-
-                            // Adds the new address layout to the details layout
-                            mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-                        }
-                    } while (j>0);
-
-                } else {
-                    // If nothing found, adds an empty address layout
-                    mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
-                }
-            }
-
-
-            private LinearLayout buildCallLogLayout(
-                    String eventContactName,  /*name of caller, if available.*/
-                    long CallDate, /*date of call. Time of day?*/
-                    long eventDuration,  /*Length of the call in seconds*/
-                    String eventType    /*Type of call: incoming, outgoing or missed */) {
-
-
-                // Inflates the address layout
-                final LinearLayout callLogLayout =
-                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                                R.layout.contact_detail_call_log_item, mDetailsCallLogLayout, false);
-
-                // Gets handles to the view objects in the layout
-                final TextView dateTextView =
-                        (TextView) callLogLayout.findViewById(R.id.contact_detail_call_date);
-                final TextView durationTextView =
-                        (TextView) callLogLayout.findViewById(R.id.contact_detail_call_duration);
-                final TextView typeTextView =
-                        (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
-
-                final ImageView typeImageView = (ImageView) callLogLayout.findViewById(R.id.call_type_image1);
-
-
-                // If there's no addresses for the contact, shows the empty view and message, and hides the
-                // header and button.
-                if (CallDate == 0) {
-                    dateTextView.setVisibility(View.GONE);
-                    typeTextView.setVisibility(View.GONE);
-                    durationTextView.setText("No Calls Found");
-
-                } else {
-
-                    // format date string
-                    Date date = new Date(CallDate);
-                    DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-                    //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-                    String formattedCallDate = format.format(date);
-
-                    //convert time to minutes: seconds
-                    long minute = TimeUnit.SECONDS.toMinutes(eventDuration);
-                    long second = TimeUnit.SECONDS.toSeconds(eventDuration) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventDuration));
-
-
-
-                    // Sets TextView objects in the layout
-                    dateTextView.setText(formattedCallDate);
-                    durationTextView.setText(minute + " mins " + second + " secs");
-                    typeTextView.setText(eventType);
-
-
-
-                    if (eventType.equalsIgnoreCase("incoming")){
-                        Log.d("typeTextView=", eventType);
-                        typeTextView.setTextColor(getResources().getColor(R.color.holo_blue));
-                        typeImageView.setBackgroundResource(R.drawable.incomingsmall);
-                    }
-                    else if (eventType.equalsIgnoreCase("outgoing")){
-                        Log.d("typeTextView=", eventType);
-                        typeTextView.setTextColor(getResources().getColor(R.color.yellow));
-                        typeImageView.setBackgroundResource(R.drawable.outgoingsmall);
-                    }
-                    else if (eventType.equalsIgnoreCase("missed/draft")){
-                        Log.d("typeTextView=", eventType);
-                        typeTextView.setTextColor(getResources().getColor(R.color.red));
-                        typeImageView.setBackgroundResource(R.drawable.missedsmall);
-                    }
-
-                }
-                return callLogLayout;
-            }
-            List<EventInfo> mEventLog = new ArrayList<EventInfo>();
-
-
-            /**
-             * Builds an empty SMSLog layout that just shows that no SMSs
-             * were found for this contact.
-             *
-             * @return A LinearLayout to add to the contact details layout
-             */
-            private LinearLayout buildEmptySMSLogLayout() {
-                return buildSMSLogLayout("", 0, 0, "");
-            }
-
-
-            /*********Contact Stats Layout**********/
-
-            private void displayContactStatsInfo(){
-                
-                if(mContactStats != null){
-                    final TextView statsTextView1 =
-                            (TextView) mActionLayout.findViewById(R.id.statsTextView1);
-                    final TextView statsTextView2 =
-                            (TextView) mActionLayout.findViewById(R.id.statsTextView2);
-                    final TextView statsTextView3 =
-                            (TextView) mActionLayout.findViewById(R.id.statsTextView3);
-                    final TextView statsTextView4 =
-                            (TextView) mActionLayout.findViewById(R.id.statsTextView4);
-
-                    //TODO: Get all text into Strings File
-                    statsTextView1.setText("Calls In: "+mContactStats.getCallCountIn() +
-                        "\t\tCalls Out: " + mContactStats.getCallCountOut());
-
-                    statsTextView2.setText("Average Call Duration: "+ mContactStats.getCallDurationAvg());
-
-                    statsTextView3.setText("Messages In: "+mContactStats.getMessagesCountIn() +
-                            "\t\tMessages Out: " + mContactStats.getMessagesCountOut());
-
-                    statsTextView4.setText("Word Count In: "+mContactStats.getWordCountIn() +
-                            "\t\tWord Count Out: " + mContactStats.getWordCountOut());
-                }
-                
-                
-            }
-            
-            
-            /********SMS log layout**************************/
-
-            private void displaySMSLog(){
-                // Each LinearLayout has the same LayoutParams so this can
-                // be created once and used for each SMS.
-                final LinearLayout.LayoutParams SMSLoglayoutParams =
-                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                // Loops through all the rows in the Cursor
-                if (!mEventLog.isEmpty()) {
-                    int j=mEventLog.size();
-                    do {
-                        // Implentation reverses the display order of the SMS log.
-                        j--;
-                        //If the item in the event Log is for SMS, display it.
-                        if(mEventLog.get(j).getEventClass() == mEventLog.get(j).SMS_CLASS) {
-
-                            // Builds the address layout
-                            final LinearLayout layout = buildSMSLogLayout(
-                                    mContactNameString,
-                                    //TODO: This date may not be in the correct format.
-                                    mEventLog.get(j).getDate(), /*date & time of SMS*/
-                                    mEventLog.get(j).getWordCount(), /*Length of the SMS in Minutes*/
-                                    mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
-
-
-                            // Adds the new SMS layout to the details layout
-                            mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
-                        }
-                    } while (j>0);
-                } else {
-                    // If nothing found, adds an empty address layout
-                    mDetailsSMSLogLayout.addView(buildEmptySMSLogLayout(), SMSLoglayoutParams);
-                }
-            }
-
-
-            private LinearLayout buildSMSLogLayout(
-                    String SMSerName,  /*name of SMSer, if available.*/
-                    long EventDate, /*date of SMS. Time of day?*/
-                    long SMSDuration,  /*Length of the SMS in seconds*/
-                    String SMSType    /*Type of SMS: incoming, outgoing or missed */) {
-
-                // Inflates the address layout
-                final LinearLayout SMSLogLayout =
-                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                                R.layout.contact_detail_sms_log_item, mDetailsSMSLogLayout, false);
-
-                // Gets handles to the view objects in the layout
-                final TextView dateTextView =
-                        (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_date);
-                final TextView durationTextView =
-                        (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_word_count);
-                final TextView typeTextView =
-                        (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_type);
-
-                // If there's no addresses for the contact, shows the empty view and message, and hides the
-                // header and button.
-                if (EventDate == 0) {
-                    dateTextView.setVisibility(View.GONE);
-                    typeTextView.setVisibility(View.GONE);
-                    durationTextView.setText("No SMSs Found");
-
-                } else {
-
-                    // format date string //TODO: correct date
-                    Date date = new Date(EventDate);
-                    DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-                    //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-                    String formattedEventDate = format.format(date);
-
-                    // Sets TextView objects in the layout
-                    dateTextView.setText(formattedEventDate);
-                    durationTextView.setText(SMSDuration + " words");
-                    typeTextView.setText(SMSType);
-
-                }
-                return SMSLogLayout;
-            }
-
-            /**
-             * Builds an empty address layout that just shows that no addresses
-             * were found for this contact.
-             *
-             * @return A LinearLayout to add to the contact details layout
-             */
-            private LinearLayout buildEmptyAddressLayout() {
-                return buildAddressLayout(0, null, null);
-            }
-
-            /**
-             * Builds an address LinearLayout based on address information from the Contacts Provider.
-             * Each address for the contact gets its own LinearLayout object; for example, if the contact
-             * has three postal addresses, then 3 LinearLayouts are generated.
-             *
-             * @param addressType From
-             * {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#TYPE}
-             * @param addressTypeLabel From
-             * {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#LABEL}
-             * @param address From
-             * {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#FORMATTED_ADDRESS}
-             * @return A LinearLayout to add to the contact details layout,
-             *         populated with the provided address details.
-             */
-            private LinearLayout buildAddressLayout(int addressType, String addressTypeLabel,
-                                                    final String address) {
-
-                // Inflates the address layout
-                final LinearLayout addressLayout =
-                        (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                                R.layout.contact_detail_item, mDetailsLayout, false);
-
-                // Gets handles to the view objects in the layout
-                final TextView headerTextView =
-                        (TextView) addressLayout.findViewById(R.id.contact_detail_header);
-                final TextView addressTextView =
-                        (TextView) addressLayout.findViewById(R.id.contact_detail_item);
-                final ImageButton viewAddressButton =
-                        (ImageButton) addressLayout.findViewById(R.id.button_view_address);
-
-                // If there's no addresses for the contact, shows the empty view and message, and hides the
-                // header and button.
-                if (addressTypeLabel == null && addressType == 0) {
-                    headerTextView.setVisibility(View.GONE);
-                    viewAddressButton.setVisibility(View.GONE);
-                    addressTextView.setText(R.string.no_address);
-                } else {
-                    // Gets postal address label type
-                    CharSequence label =
-                            StructuredPostal.getTypeLabel(getResources(), addressType, addressTypeLabel);
-
-                    // Sets TextView objects in the layout
-                    headerTextView.setText(label);
-                    addressTextView.setText(address);
-
-                    // Defines an onClickListener object for the address button
-                    viewAddressButton.setOnClickListener(new View.OnClickListener() {
-                        // Defines what to do when users click the address button
-                        @Override
-                        public void onClick(View view) {
-
-                            final Intent viewIntent =
-                                    new Intent(Intent.ACTION_VIEW, constructGeoUri(address));
-
-                            // A PackageManager instance is needed to verify that there's a default app
-                            // that handles ACTION_VIEW and a geo Uri.
-                            final PackageManager packageManager = getActivity().getPackageManager();
-
-                            // Checks for an activity that can handle this intent. Preferred in this
-                            // case over Intent.createChooser() as it will still let the user choose
-                            // a default (or use a previously set default) for geo Uris.
-                            if (packageManager.resolveActivity(
-                                    viewIntent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
-                                startActivity(viewIntent);
-                            } else {
-                                // If no default is found, displays a message that no activity can handle
-                                // the view button.
-                                Toast.makeText(getActivity(),
-                                        R.string.no_intent_found, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-
-                }
-                return addressLayout;
-            }
 
             /**
              * Constructs a geo scheme Uri from a postal address.
@@ -1658,7 +944,7 @@ Set the FractionView with appropriate time data
             }
 
 
-        }
+}
 
 
 

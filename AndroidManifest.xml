@@ -93,6 +93,13 @@
                 android:value=".ui.ContactsListActivity" />
 
         </activity>
+        <activity android:name=".ui.EventEntryActivity"
+            android:label="@string/event_entry_activity"
+            android:parentActivityName=".ui.ContactDetailActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ContactDetailActivity" />
+
+        </activity>
         <receiver
             android:name=".notification.timedUpdate"
             android:enabled="true">
