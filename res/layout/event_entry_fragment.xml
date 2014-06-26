@@ -32,46 +32,63 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/contact_layout">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="300dp"
+                android:layout_height="119dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp"
+                android:id="@+id/time_layout">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jan 1, 1970"
+                    android:id="@+id/edit_date"
+                    android:onClick="showDatePickerDialog"
+                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center_horizontal"
+                    android:textAlignment="center"
+                    android:singleLine="false"
+                    android:background="@android:drawable/alert_light_frame"
+                    android:shadowColor="#fff5f5f5"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingRight="20dp"
+                    android:paddingLeft="20dp" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12:00 AM"
+                    android:id="@+id/edit_time"
+                    android:onClick="showTimePickerDialog"
+                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center_horizontal"
+                    android:singleLine="false"
+                    android:background="@android:drawable/alert_light_frame"
+                    android:shadowColor="#fff5f5f5"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingRight="20dp"
+                    android:paddingLeft="20dp" />
+
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/contact_image"
-                android:layout_width="197dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_contact_picture_180_holo_light"
                 android:contentDescription="@string/imageview_description"
-                />
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="119dp"
-                android:weightSum="1">
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="date"
-                    android:ems="10"
-                    android:id="@+id/edit_date"
-                    android:layout_gravity="center_horizontal" />
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="time"
-                    android:ems="10"
-                    android:id="@+id/edit_time" />
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="numberDecimal"
-                    android:ems="10"
-                    android:id="@+id/edit_duration"
-                    android:layout_gravity="center_horizontal" />
-            </LinearLayout>
+                android:minWidth="197dp"
+                android:minHeight="197dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp" />
 
         </LinearLayout>
 
@@ -85,108 +102,244 @@
             style="@style/contactNameTitle"
             android:layout_weight="0.05" />
 
-        <LinearLayout
-            android:orientation="vertical"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="22.75"
-            android:weightSum="1">
+            android:layout_height="336dp"
+            android:id="@+id/scrollView"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="66.67">
 
-            <RelativeLayout
+
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1.69">
-
-                <Spinner
-                    android:layout_width="250dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/event_class_spinner"
-                    android:layout_alignParentTop="true" />
-
-                <RadioGroup
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/event_class_spinner"
-                    android:id="@+id/radioGroup">
-
-                    <RadioButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/incoming"
-                        android:id="@+id/radio_incoming_event_type"
-                        android:singleLine="true" />
-
-                    <RadioButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/outgoing"
-                        android:id="@+id/radio_outgoing_event_type" />
-
-                </RadioGroup>
+                android:layout_height="wrap_content"
+                android:divider="@android:drawable/divider_horizontal_textfield"
+                android:showDividers="beginning|middle">
 
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/event_class_spinner"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true">
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/class_layout"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp">
 
-                    <EditText
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
-                        android:inputType="phone"
-                        android:ems="10"
-                        android:id="@+id/event_phone"
-                        android:layout_below="@+id/spinner"
-                        android:layout_alignRight="@+id/radioGroup"
-                        android:layout_alignEnd="@+id/radioGroup" />
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                        android:text="Event Class"
+                        android:id="@+id/event_class_title" />
 
-                    <EditText
-                        android:layout_width="292dp"
+                    <Spinner
+                        android:layout_width="262dp"
                         android:layout_height="wrap_content"
-                        android:inputType="textEmailAddress"
-                        android:ems="10"
-                        android:id="@+id/editText6"
-                        android:layout_below="@+id/editText5"
-                        android:layout_alignLeft="@+id/editText5"
-                        android:layout_alignStart="@+id/editText5" />
+                        android:id="@+id/event_class_spinner"
+                        android:layout_alignParentTop="true"
+                        android:prompt="@string/class_prompt"
+                        android:spinnerMode="dialog" />
 
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textPostalAddress"
-                        android:ems="10"
-                        android:id="@+id/street_address"
-                        android:layout_below="@+id/editText6"
-                        android:layout_alignLeft="@+id/editText6"
-                        android:layout_alignStart="@+id/editText6" />
                 </LinearLayout>
-            </RelativeLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Event Notes"
-                android:id="@+id/textView2" />
-
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/scrollView"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1.15">
-
-                <EditText
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:ems="10"
-                    android:id="@+id/editText4"
-                    android:layout_gravity="center_horizontal" />
-            </ScrollView>
+                    android:id="@+id/type_layout"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:layout_width="125dp"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                        android:text="Event Type"
+                        android:id="@+id/event_type_title" />
+
+                    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/raidioGroup_incoming_outgoing"
+                        android:orientation="horizontal">
+
+
+
+                            <RadioButton
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/incoming"
+                                android:id="@+id/radio_incoming_event_type"
+                                android:singleLine="true"
+                                android:layout_above="@+id/radio_outgoing_event_type"
+                                android:layout_alignParentLeft="true"
+                                android:layout_alignParentStart="true"
+                                android:paddingEnd="20dp" />
+
+                            <RadioButton
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/outgoing"
+                                android:id="@+id/radio_outgoing_event_type"
+                                android:layout_alignParentBottom="true"
+                                android:layout_alignParentLeft="true"
+                                android:layout_alignParentStart="true" />
+
+
+                    </RadioGroup>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/address_layout"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:weightSum="1">
+
+                    <TextView
+                        android:layout_width="125dp"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                        android:text="Address"
+                        android:id="@+id/address_title" />
+
+                    <Button
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Address"
+                        android:id="@+id/address"
+                        android:layout_gravity="right"
+                        android:layout_weight="1.13"
+                        android:background="@android:drawable/alert_light_frame"
+                        android:textAlignment="center"
+                        android:shadowColor="#fff5f5f5"
+                        android:singleLine="false"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:paddingRight="20dp"
+                        android:paddingLeft="20dp"
+                        android:layout_marginRight="15dp"
+                        android:minHeight="60dp"
+                        android:minLines="2"
+                        android:maxLines="3" />
+
+                </LinearLayout>
+
+                <!--android:inputType="phone"
+                android:inputType="textEmailAddress"-->
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/event_duration_layout"
+                    android:focusableInTouchMode="false"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:layout_width="125dp"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                        android:text="Duration"
+                        android:id="@+id/event_duration_title" />
+
+                    <Spinner
+                        android:layout_width="190dp"
+                        android:layout_height="40dp"
+                        android:id="@+id/edit_duration"
+                        android:layout_marginLeft="25dp"
+                        android:spinnerMode="dialog"
+                        android:prompt="@string/duration_prompt"
+                        android:textAlignment="center" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/notes_layout"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:divider="@android:drawable/divider_horizontal_textfield">
+
+                    <TextView
+                        android:layout_width="125dp"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                        android:text="Event Notes"
+                        android:id="@+id/evetn_notes_title" />
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:inputType="textMultiLine"
+                        android:ems="10"
+                        android:id="@+id/event_notes"
+                        android:layout_gravity="center_horizontal"
+                        android:hint="..."
+                        android:textAlignment="textEnd"
+                        android:minLines="3"
+                        android:gravity="start"
+                        android:autoText="false"
+                        android:focusableInTouchMode="false" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/linearLayout">
+
+                    <Space
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:id="@+id/save_button"
+                android:baselineAlignBottom="false"
+                android:contentDescription="Save New Event"
+                android:cropToPadding="true"
+                android:src="@android:drawable/ic_input_add"
+                android:clickable="true"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp" />
+
+            <ImageButton
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:id="@+id/cancel_button"
+                android:cropToPadding="false"
+                android:contentDescription="Cancel New Event"
+                android:clickable="true"
+                android:src="@android:drawable/ic_delete"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp" />
 
         </LinearLayout>
 

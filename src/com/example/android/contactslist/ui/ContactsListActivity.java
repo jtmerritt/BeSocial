@@ -16,47 +16,36 @@
 
 package com.example.android.contactslist.ui;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.SearchManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.QuickContactBadge;
-import android.widget.Spinner;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.util.Utils;
-import com.example.android.contactslist.ui.ContactGroupsList.GroupInfo;
+import com.example.android.contactslist.contactGroups.ContactGroupsList.GroupInfo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * FragmentActivity to hold the main {@link ContactsListFragment}. On larger screen devices which

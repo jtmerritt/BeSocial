@@ -1,14 +1,12 @@
 package com.example.android.contactslist.ui;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
-import android.preference.PreferenceManager;
 
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
 
 import java.util.List;
 

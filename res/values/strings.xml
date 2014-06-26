@@ -144,13 +144,14 @@
 
     <!--List Data Feeds for Spinner-->
     <string-array name="array_of_event_classes">
-        <item>All Communications</item>
         <item>Phone</item>
         <item>SMS</item>
-        <item>Gmail</item>
+        <item>Email</item>
+        <item>Meeting</item>
         <item>Facebook</item>
         <item>Google Hangouts</item>
         <item>Skype</item>
+
     </string-array>
 
 
@@ -161,7 +162,23 @@
     <string name="draft">Draft</string>
 
 
+    <!-- Event Entry Fragment -->
+    <string-array name="array_of_duration_value_strings">
+        <item>1 Minute</item>
+        <item>5 Minutes</item>
+        <item>10 Minutes</item>
+        <item>15 Minutes</item>
+        <item>20 Minutes</item>
+        <item>30 Minutes</item>
+        <item>45 Minutes</item>
+        <item>60 Minutes</item>
+        <item>1.5 Hours</item>
+        <item>2 Hours</item>
 
+    </string-array>
+
+    <string name="duration_prompt">Choose best event duration</string>
+    <string name="class_prompt">Select Event Class</string>
 
 
 

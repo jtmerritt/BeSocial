@@ -26,10 +26,10 @@ public class EventInfo {
     final public static int PHONE_CLASS = 1;
     final public static int SMS_CLASS = 2;
     final public static int EMAIL_CLASS = 3;
-    final public static int FACEBOOK = 4;
-    final public static int GOOGLE_HANGOUTS = 5;
-    final public static int SKYPE = 6;
-    final public static int MEETING_CLASS = 7; //in the meatspace
+    final public static int MEETING_CLASS = 4; //in the meatspace
+    final public static int FACEBOOK = 5;
+    final public static int GOOGLE_HANGOUTS = 6;
+    final public static int SKYPE = 7;
 
 
     public void clear(){

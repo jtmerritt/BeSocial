@@ -2,6 +2,9 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
+- Collect stats for the group by creating new contacts with ContactKey "Group"
+  - group stats must be collected just like contact stats
+  - perhaps there needs to be a contactStats data field for dominating group
 -- pretty major bug where the auto_update ran repeatedly in quick successsion
 -- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine

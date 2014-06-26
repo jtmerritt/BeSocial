@@ -1,27 +1,20 @@
 package com.example.android.contactslist.dataImport;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
-import com.example.android.contactslist.notification.Notification;
 import com.example.android.contactslist.notification.UpdateNotification;
-import com.example.android.contactslist.ui.ContactGroupsList;
-import com.example.android.contactslist.dataImport.CallLogXmlParser;
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
@@ -432,7 +425,7 @@ public class Updates {
 
     All events need to be for valid contacts of the group defined for the application.
      */
-    private void insertEventLogIntoDatabases(List<EventInfo> eventLog){
+    public void insertEventLogIntoDatabases(List<EventInfo> eventLog){
         SocialEventsContract eventDb = new SocialEventsContract(mContext);
         ContactStatsHelper csh = new ContactStatsHelper(mContext);
 

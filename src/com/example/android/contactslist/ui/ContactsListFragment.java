@@ -296,7 +296,6 @@ public class ContactsListFragment extends ListFragment implements
                 cursor.getString(ContactsQuery.LOOKUP_KEY));
 
 
-        //TODO Fix the fact that the ID used here is the group ID
 
         // Notifies the parent activity that the user selected a contact. In a two-pane layout, the
         // parent activity loads a ContactDetailFragment that displays the details for the selected
@@ -583,7 +582,8 @@ public class ContactsListFragment extends ListFragment implements
                         // Creates the content Uri for the previously selected contact by appending the
                         // contact's ID to the Contacts table content Uri
                         final Uri uri = Uri.withAppendedPath(
-                            Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsQuery.ID)));
+                            Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsGroupQuery.ID)));
+
                         mOnContactSelectedListener.onContactSelected(uri);
                         getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
                     } else {
@@ -1028,7 +1028,7 @@ public class ContactsListFragment extends ListFragment implements
         };
 
         // The query column numbers which map to each value in the projection
-        final static int ID = 0;
+        final static int ID = 1;  // index 1 so as to be consistant with the groupQuery ID column
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
         final static int PHOTO_THUMBNAIL_DATA = 4;

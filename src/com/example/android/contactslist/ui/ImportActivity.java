@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.dataImport.Updates;
 import com.example.android.contactslist.notification.UpdateNotification;
@@ -44,9 +45,7 @@ public class ImportActivity extends FragmentActivity {
 
     private static final int FILE_SELECT_CODE = 3;
 
-    final private int IMPORT_TEST = 0;
-    final private int IMPORT_LOCAL_DB = 1;
-    final private int IMPORT_XML_FILE = 2;
+
 
 
     @Override
@@ -103,7 +102,8 @@ public class ImportActivity extends FragmentActivity {
         });
 
         final AsyncTask<Void, Integer, String> xmlImport =
-                new Imports(mXmlProgressBar, IMPORT_XML_FILE);
+                new Imports(mXmlProgressBar, 2/*IMPORT_XML_FILE*/,
+                        xml_file_path, mContext);
         mParseFile =(Button) findViewById(R.id.parse_file);
         mParseFile.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
@@ -133,7 +133,8 @@ public class ImportActivity extends FragmentActivity {
         mPhoneProgressBar.setProgress(0);
 
         final AsyncTask<Void, Integer, String> dbImport =
-                new Imports(mPhoneProgressBar, IMPORT_LOCAL_DB);
+                new Imports(mPhoneProgressBar, 1/*Imports.IMPORT_LOCAL_DB*/,
+                        xml_file_path, mContext);
         mGetLocalDb =(Button) findViewById(R.id.phone_sms_import);
         mGetLocalDb.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
@@ -193,108 +194,5 @@ Methods for importing the XML file
     }
 
 
-/*
-Class for asynchronously importing data
- */
-    public class Imports extends AsyncTask<Void, Integer, String> {
-
-    private UpdateNotification updateNotification;
-    private ProgressBar progressBar;
-    private Updates dbUpdates;
-    private int asyncTask;
-
-    public Imports(ProgressBar bar, int task) {
-        // using the task number as the notification ID
-        updateNotification = new UpdateNotification(mContext, (task+11));
-        progressBar = bar;
-        this.asyncTask = task;
-        dbUpdates = new Updates(mContext, progressBar, updateNotification);
-    }
-
-
-    @Override
-    protected String doInBackground(Void... v1) {
-
-        switch (asyncTask){
-            case IMPORT_XML_FILE:
-                if(xml_file_path != null){
-                    dbUpdates.localXMLRead(xml_file_path);
-                    //TODO: figure out how to return progress from the read method
-                }
-                break;
-            case IMPORT_LOCAL_DB:
-                //TODO: figure out how to return progress from the read method
-                dbUpdates.localSourceRead();
-                break;
-            default:
-                //for testing
-                int i;
-
-                try {
-                    for (i = 0; i < 10; i++) {
-                        Thread.sleep(1000);
-
-                        publishProgress(i * 10);
-                        if (isCancelled()) break;
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-        }
-        return "done";
-    }
-
-    @Override
-    protected void onPreExecute() {
-        // TODO Auto-generated method stub
-        super.onPreExecute();
-        updateNotification.setNotification();
-        progressBar.setVisibility(View.VISIBLE);
-
-    }
-
-    protected void onProgressUpdate(Integer... progress) {
-        // do something
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.setProgress(progress[0]);
-
-        updateNotification.updateNotification(progress[0]);
-    }
-
-
-    @Override
-    protected void onPostExecute(String result) {
-        // TODO Auto-generated method stub
-        super.onPostExecute(result);
-        updateNotification.cancelNotification();
-        progressBar.setVisibility(View.INVISIBLE);
-    }
-
-
-    @Override
-    protected void onCancelled(String result) {
-        // TODO Auto-generated method stub
-        super.onCancelled(result);
-
-        //TODO Fix cancel function - it doesn't appear to work at all
-        switch (asyncTask) {
-            case IMPORT_XML_FILE:
-                dbUpdates.cancelReadXML();
-                break;
-            case IMPORT_LOCAL_DB:
-                dbUpdates.cancelReadDB();
-                break;
-            default:
-                //for testing
-        }
-
-
-
-        updateNotification.cancelNotification();
-        progressBar.setVisibility(View.INVISIBLE);
-    }
-
-
-}
 
 }

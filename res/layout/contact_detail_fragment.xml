@@ -114,7 +114,9 @@
                             android:layout_height="wrap_content"
                             android:id="@+id/chart_spinner"
                             android:gravity="center"
-                            android:ellipsize="marquee"/>
+                            android:ellipsize="marquee"
+                            android:prompt="@string/class_prompt"
+                            android:spinnerMode="dialog" />
                         <LinearLayout
                             android:id="@+id/pchart"
                             android:orientation="vertical"

@@ -38,27 +38,31 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TabHost;
-import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.RadioGroup;
+import android.widget.RadioButton;
+import android.widget.Button;
+import android.widget.NumberPicker;
+import android.text.InputType;
+
+
+
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactDetailFragmentCallback;
@@ -79,6 +83,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -98,8 +103,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class EventEntryFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
-        //, View.OnClickListener
-        {
+{
 
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
@@ -120,6 +124,13 @@ public class EventEntryFragment extends Fragment implements
     private String mVoiceNumber = "";
     private String mSMSNumber = "";
     private String mEmailAddress = "";
+    private String mStreetAddress = "";
+    private int mEventType;
+    private int mEventClass;
+    private EventInfo mNewEventInfo;
+    static Long mEventDate;
+    private Long mDuration = (long)0;
+    private int mWordCount = 0;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -127,11 +138,22 @@ public class EventEntryFragment extends Fragment implements
     // in multiple methods throughout this class.
     private ImageView mImageView;
     private LinearLayout mDetailsLayout;
-    private LinearLayout mActionLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
+    static Button mDateViewButton;
+    static Button mTimeViewButton;
+    private Spinner mDurationView;
+    private Spinner mClassSelectionSpinner;
+    private Button mAddressViewButton;
+    private TextView mEventNotes;
+    private RadioGroup radioGroup;
+    private RadioButton mIncomingButton;
+    private RadioButton mOutgoingButton;
+    private ImageButton mSubmitButton;
+    private ImageButton mCancelButton;
+    private LinearLayout mEventDurationLayout;
+
     private MenuItem mEditContactMenuItem;
-    private GraphicalView mChartView = null;
     private String mContactNameString;
 
     private Context mContext;
@@ -217,7 +239,11 @@ public class EventEntryFragment extends Fragment implements
 
             // Get a bunch of data using the loaderManager
             setBasicContactInfo();
+            getVoiceNumber();
+            getEmailAddress();
+            getStreetAddress();
             //getContactStats();
+
 
 
         } else {
@@ -295,8 +321,29 @@ public class EventEntryFragment extends Fragment implements
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
+        mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
+        mClassSelectionSpinner = (Spinner) detailView.findViewById(R.id.event_class_spinner);
+        mEventNotes = (TextView) detailView.findViewById(R.id.event_notes);
+        radioGroup = (RadioGroup) detailView.findViewById(R.id.raidioGroup_incoming_outgoing);
+        mEventDurationLayout = (LinearLayout) detailView.findViewById(R.id.event_duration_layout);
 
-
+        //bUTTONS
+        mDateViewButton = (Button) detailView.findViewById(R.id.edit_date);
+        mTimeViewButton = (Button) detailView.findViewById((R.id.edit_time));
+        mAddressViewButton = (Button) detailView.findViewById(R.id.address);
+        mIncomingButton = (RadioButton) detailView.findViewById(R.id.radio_incoming_event_type);
+        mOutgoingButton = (RadioButton) detailView.findViewById(R.id.radio_outgoing_event_type);
+        mSubmitButton = (ImageButton) detailView.findViewById(R.id.save_button);
+        mCancelButton = (ImageButton) detailView.findViewById(R.id.cancel_button);
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                //Return to last activity
+                getActivity().finish();  // same as hitting back button
+                //TODO: do other stuff for tablet
+            }
+        });
 
         if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
@@ -325,6 +372,105 @@ public class EventEntryFragment extends Fragment implements
         }
 
 
+        addItemsToClassSpinner();
+        addItemsToDurationSpinner();
+
+
+        //Display the current date
+        Date date = new Date();
+
+        mEventDate = date.getTime();
+
+        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
+        String formattedDate = formatDate.format(date);
+        mDateViewButton.setText(formattedDate);
+
+        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
+        String formattedTime = formatTime.format(date);
+        mTimeViewButton.setText(formattedTime);
+
+
+        mEventNotes.setSelected(false);
+
+        //Take care of the radio button selection of Event Type
+        radioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // checkedId is the RadioButton selected
+
+                switch (checkedId) {
+                    case R.id.radio_incoming_event_type:
+                        mEventType = EventInfo.INCOMING_TYPE;
+                        mOutgoingButton.setChecked(false);
+                        break;
+                    case R.id.radio_outgoing_event_type:
+                        mEventType = EventInfo.OUTGOING_TYPE;
+                        mIncomingButton.setChecked(false);
+                        break;
+
+                }
+            }
+        });
+
+
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+
+                mNewEventInfo = new EventInfo(mContactNameString, mContactLookupKey,
+                        mVoiceNumber,
+                        mEventClass,
+                        mEventType,
+                        mEventDate, "",
+                        mDuration,
+                        mWordCount,
+                        0);
+                //TODO: save everything to an eventInfo and send to the database
+                // TODO: make a preview screen for the data to be saved
+
+
+                //TODO: have some automatic checks for data completeness
+
+                getActivity().finish();  // same as hitting back button
+                //TODO: do other stuff for tablet
+
+            }
+        });
+
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Entry Discarded", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        mAddressViewButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                //action
+            }
+        });
+
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                //action
+            }
+        });
+
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                //action
+            }
+        });
+
     }
 
     private void setBasicContactInfo(){
@@ -335,7 +481,7 @@ public class EventEntryFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
     }
 
-    private void displayAddressLog(){
+    private void getStreetAddress(){
         getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
     }
 
@@ -548,23 +694,15 @@ public class EventEntryFragment extends Fragment implements
                 // layout has addresses from a previous data load still
                 // added as children.
 
-                /*
+
                 // Loops through all the rows in the Cursor
                 if (data.moveToFirst()) {
                     do {
                         // Builds the address layout
-                        final LinearLayout layout = buildAddressLayout(
-                                data.getInt(ContactAddressQuery.TYPE),
-                                data.getString(ContactAddressQuery.LABEL),
-                                data.getString(ContactAddressQuery.ADDRESS));
-                        // Adds the new address layout to the details layout
-                        mDetailsLayout.addView(layout, layoutParams);
+                        mStreetAddress = data.getString(ContactAddressQuery.ADDRESS);
                     } while (data.moveToNext());
-                } else {
-                    // If nothing found, adds an empty address layout
-                    mDetailsLayout.addView(buildEmptyAddressLayout(), layoutParams);
                 }
-                */
+
                 break;
 
 
@@ -582,19 +720,8 @@ public class EventEntryFragment extends Fragment implements
                     //Select the first phone number in the list of phone numbers sorted by super_primary
                     mVoiceNumber = data.getString(data
                             .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    /*
-                    If we're only getting the first number, no reason to make the list
-                    List<String> phoneNumberList = new ArrayList<String>();
-                    String phoneNumber = "";
-                    do{
-                        // phone number comes out formatted with dashes or dots, as 555-555-5555
-                        phoneNumber = data.getString(data
-                                .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        //phoneNumber = convertNumber(phoneNumber); //this utility causes memory problems
 
-                        phoneNumberList.add(phoneNumber);
-                    }while (data.moveToNext());
-                    */
+                    // set the data field in the UI
                 }
                 break;
             case ContactSMSNumberQuery.QUERY_ID:
@@ -609,6 +736,7 @@ public class EventEntryFragment extends Fragment implements
                     //Select the first phone number in the list of phone numbers sorted by super_primary
                     mEmailAddress = data.getString(data
                             .getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
+
                 }
                 break;
         }
@@ -942,6 +1070,149 @@ public class EventEntryFragment extends Fragment implements
                 // converted to Uri format and encoded for special characters.
                 return Uri.parse(GEO_URI_SCHEME_PREFIX + Uri.encode(postalAddress));
             }
+
+
+    private void addItemsToClassSpinner() {
+
+        //set the adapter to the string-array in the strings resource
+        ArrayAdapter<String> feedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item,
+                getResources().getStringArray(R.array.array_of_event_classes));
+
+        //choose the style of the list.
+        feedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+
+
+        mClassSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+
+                //TODO: do stuff
+                mEventClass = pos+1;
+                
+                switch(mEventClass){
+                    case EventInfo.PHONE_CLASS:
+                        mAddressViewButton.setText(mVoiceNumber);
+                        mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
+                        mEventDurationLayout.setVisibility(View.VISIBLE);
+
+                        break;
+                    case EventInfo.EMAIL_CLASS:
+                        mAddressViewButton.setText(mEmailAddress);
+                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+
+                        break;
+                    case EventInfo.SMS_CLASS:
+                        mAddressViewButton.setText(mVoiceNumber);
+                        mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
+                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+                        break;
+                    case EventInfo.MEETING_CLASS:
+                        mAddressViewButton.setText(mStreetAddress);
+                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+                        mEventDurationLayout.setVisibility(View.VISIBLE);
+
+                        break;
+                    case EventInfo.SKYPE:
+                        mEventDurationLayout.setVisibility(View.VISIBLE);
+                        break;
+                    case EventInfo.GOOGLE_HANGOUTS:
+                        mAddressViewButton.setText(mEmailAddress);
+                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                        mEventDurationLayout.setVisibility(View.VISIBLE);
+                        break;
+                    case EventInfo.FACEBOOK:
+                        mAddressViewButton.setText(mEmailAddress);
+                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+                        break;
+
+                    default:
+                }
+                
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        mClassSelectionSpinner.setAdapter(feedSelectionAdapter);
+    }
+
+
+    private void addItemsToDurationSpinner() {
+
+        //set the adapter to the string-array in the strings resource
+        ArrayAdapter<String> feedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item,
+                getResources().getStringArray(R.array.array_of_duration_value_strings));
+
+        //choose the style of the list.
+        feedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+
+        mDurationView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                mDuration = (long) getResources()
+                        .getIntArray(R.array.array_of_duration_value_integers)[pos];
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        mDurationView.setAdapter(feedSelectionAdapter);
+    }
+
+    /*
+    Sets the calendar date of the event, preserving the time that was previously set
+    And displays that date.
+     */
+    static void setDate(int year, int monthOfYear, int dayOfMonth){  //TODO Can this be private?
+        //Display the current date
+
+        final Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(mEventDate);
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.MONTH, monthOfYear);
+        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+        Date date = c.getTime();
+
+        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
+        String formattedDate = formatDate.format(date);
+        mDateViewButton.setText(formattedDate);
+        mEventDate = date.getTime();
+
+    }
+
+    /*
+Sets the time of day of the event, preserving the calendar date that was previously set
+And displays that time.
+ */
+    static void setTime(int hourOfDay, int minute){ //TODO Can this be private?
+
+        final Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(mEventDate);
+        c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        c.set(Calendar.MINUTE, minute);
+
+        Date date = c.getTime();
+
+        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
+        String formattedDate = formatTime.format(date);
+        mTimeViewButton.setText(formattedDate);
+        mEventDate = date.getTime();
+
+    }
+
+
 
 
 }
