@@ -4,6 +4,9 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 
+import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactStats.ContactInfo;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,25 +14,38 @@ import java.util.Map;
 /**
  * Created by Tyson Macdonald on 2/24/14.
  */
-public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
+public class ContactGroupsList extends ArrayList<ContactInfo>{
 
-    private ArrayList<GroupInfo> mGroups;
+    final long ONE_DAY = 86400000;
+
+    public ArrayList<ContactInfo> mGroups;
+
+    //When making the info card for this group use the lookupKey "GROUP" for easy distintion
+
     private ContentResolver mContentResolver;
-    private GroupInfo largestGroup;
-    private GroupInfo shortestTermGroup;
+    private ContactInfo largestGroup;
+    private ContactInfo shortestTermGroup;
 
-    public void ContactGroupsLists(){
-    }
+/*
+    Primary compontents of ContactInfo that are used
+
+    private long rowId; //fot contact_stats
+    private long ContactID; // for android contact list
+    private String ContactName;
+    private String ContactKey;
+    private int primary_behavior = 0;
+    private int member_count = 0;
+ */
 
     public void setGroupsContentResolver(ContentResolver contentResolver){
-        mGroups = new ArrayList<GroupInfo>();
+        mGroups = new ArrayList<ContactInfo>();
         mContentResolver = contentResolver;
     }
 
-    public ArrayList<GroupInfo> getGroupList(){
+    public ArrayList<ContactInfo> getGroupList(){
         return mGroups;
     }
-
+/*
     public class GroupInfo {
         public String id;
         public String title;
@@ -40,11 +56,12 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
             return title + "("+count+")";
         }
 
+        public Long getGroupId(){return Long.parseLong(id); }
         public int getId() {
             return Integer.parseInt(id);
         }
     }
-
+*/
 
     /*
     Method takes a contact ID and returns a group list for the contact.
@@ -54,14 +71,14 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
 
     http://stackoverflow.com/questions/14097582/get-a-contacts-groups
      */
-    public ArrayList<GroupInfo> loadGroupsFromContactID(int contact_id){
-        GroupInfo g = null;
+    public ArrayList<ContactInfo> loadGroupsFromContactID(long contact_id){
+        ContactInfo g = null;
 
         final String where = ContactsContract.Data.MIMETYPE + " = ? AND " +
                 ContactsContract.Data.CONTACT_ID + " = ?";
         final String[] whereArgs = {
                 ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE,
-                Integer.toString(contact_id)};
+                Long.toString(contact_id)};
 
         Cursor cursor = mContentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
@@ -80,7 +97,7 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
                 //Collect the full group info for each group ID and add it to the list
                 g = getGroupInfoByID(cursor.getString(IDX_ID));
                 
-                if((g !=null) && groupTitleIsOnTheApprovedList(g.title)){
+                if((g !=null) && groupTitleIsOnTheApprovedList(g.getName())){
 
                     mGroups.add(g);
                 }
@@ -92,8 +109,8 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
     }
 
 
-    private GroupInfo getGroupInfoByID(String groupID) {
-        GroupInfo g = null;// = new GroupInfo();
+    private ContactInfo getGroupInfoByID(String groupID) {
+        ContactInfo g = null;// = new GroupInfo();
 
         String where = ContactsContract.Groups._ID + " = ? ";
         String[] whereArgs = { groupID };
@@ -114,10 +131,10 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
         final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
         if (c.moveToFirst()) {
-            g = new GroupInfo();
-            g.id = c.getString(IDX_ID);
-            g.title = c.getString(IDX_TITLE);
-            g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
+            //When making the info card for this group use the lookupKey "GROUP" for easy distintion
+            g = new ContactInfo(c.getString(IDX_TITLE), ContactInfo.group_lookup_key,
+                    Long.parseLong(c.getString(IDX_ID)));
+            g.setMemberCount(c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT)));
         }
 
         c.close();
@@ -127,7 +144,7 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
     
     
     
-    public ArrayList<GroupInfo> loadGroups() {
+    public ArrayList<ContactInfo> loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
                 ContactsContract.Groups.TITLE,
@@ -144,35 +161,37 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
         final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
         //TODO: Is this hashmap necessary?
-        Map<String,GroupInfo> m = new HashMap<String, GroupInfo>();
+        Map<String,ContactInfo> m = new HashMap<String, ContactInfo>();
 
         while (c.moveToNext()) {
-            GroupInfo g = new GroupInfo();
-            g.id = c.getString(IDX_ID);
-            g.title = c.getString(IDX_TITLE);
-            //only record groups of interest
-            //mContactGroupData = getResources().getStringArray(R.array.string_array_list_of_contact_groups);
+            ContactInfo g = new ContactInfo(c.getString(IDX_TITLE), ContactInfo.group_lookup_key,
+                    Long.parseLong(c.getString(IDX_ID)));
 
-            if(groupTitleIsOnTheApprovedList(g.title)){
-                g.count = c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
-                //TODO references to m are probably superfluous.
-                if (g.count>0) {
-                    // group with duplicate name?
-                    GroupInfo g2 = m.get(g.title);
-                    if (g2==null) {
-                        m.put(g.title, g);
-                        mGroups.add(g);
-                    } else {
-                        g2.id+=","+g.id;
-                    }
+            //append member count to the core group information
+            g.setMemberCount(c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT)));
 
-                    //The usefullness of this assumes that the largest group contains all contacts
-                    if(largestGroup == null){
-                        largestGroup = g;
-                    }
-                    if(g.count > largestGroup.count){
-                        largestGroup = g;
-                    }
+
+            if((g.getMemberCount() > 0 ) &&(groupTitleIsOnTheApprovedList(g.getName()))){
+
+                g = setGroupBehaviorFromName(g);
+                mGroups.add(g);
+
+/*
+                // group with duplicate name?
+                ContactInfo g2 = m.get(g.getName());
+                if (g2==null) {
+                    m.put(g.getName(), g);
+                    mGroups.add(g);
+                } else {
+                    g2.id+=","+g.id;
+                }*/
+
+                //The usefullness of this assumes that the largest group contains all contacts
+                if(largestGroup == null){
+                    largestGroup = g;
+                }
+                if(g.getMemberCount() > largestGroup.getMemberCount()){
+                    largestGroup = g;
                 }
             }
         }
@@ -198,8 +217,8 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
         return false;
     }
     
-    public GroupInfo getLargestGroup(){
-        if(largestGroup.title != null) {
+    public ContactInfo getLargestGroup(){
+        if(largestGroup.getName() != null) {
             return largestGroup;
         }else{
             return null;
@@ -208,5 +227,39 @@ public class ContactGroupsList extends ArrayList<ContactGroupsList.GroupInfo>{
 
 
 
+    public ContactInfo setGroupBehaviorFromName(ContactInfo group){
 
+        //TODO get the delims working from the strings resource
+        String delims = "[ .,?!\\-]+";
+        String[] tokens = group.getName().split(delims);
+        Long duration = (long) 0;
+        int behavior = 0;
+
+        //TODO set up other cases for other group title formats
+        if(tokens.length == 2) {
+            // getting the string resource to work here is difficult. There is no context
+            if ((tokens[1].equals("Week"))
+                    || (tokens[1].equals("Weeks"))) {
+
+                group.setEventIntervalLimit(Integer.parseInt(tokens[0]) * 7);
+                group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
+
+            } else if ((tokens[1].equals("Day"))
+                    || (tokens[1].equals("Days"))) {
+
+                // set number of days
+                group.setEventIntervalLimit(Integer.parseInt(tokens[0]));
+                group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
+
+
+            } else {
+                group.setEventIntervalLimit(365);
+                group.setBehavior(ContactInfo.RANDOM_BEHAVIOR);
+            }
+        }else {
+            group.setEventIntervalLimit(365);
+            group.setBehavior(ContactInfo.RANDOM_BEHAVIOR);
+        }
+        return group;
+    }
 }

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.android.contactslist.contactGroups.GroupStatsHelper;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
 import com.example.android.contactslist.notification.UpdateNotification;
@@ -45,7 +46,7 @@ public class Updates {
     private Context mContext;
     private String mXMLFilePath;
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
-    private ContactGroupsList.GroupInfo largestGroup;
+    private ContactInfo largestGroup;
     private List<EventInfo> mSMSEventLog = new ArrayList<EventInfo>();
     private List<EventInfo> mXMLEventLog = new ArrayList<EventInfo>();
     private ProgressBar activity_progress_bar;
@@ -74,6 +75,15 @@ public class Updates {
 
 
     public void localSourceRead(){
+
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        contactGroupsList.loadGroups();
+        // the list of groups is now available in contactGroupsList;
+
+        //compare this fresh list of groups to those already in the database and cross-update
+        updateGroupsInStatsDatabase();
+
 
         if(getLargestGroup()){
             List<ContactInfo> masterContactList = getGroupContactList();
@@ -104,6 +114,8 @@ public class Updates {
                         // there is a chance that the contact is completely new to the db
                         // Contact groups are read fro/m google and may be updated on the website
                         addContactToDbIfNew(contact);
+
+                        updateGroupAffiliation(contact);
 
                         // feed the all events for contact to the local databases
                         insertEventLogIntoDatabases(getAllEventLogsForContact(contact));
@@ -225,9 +237,6 @@ public class Updates {
 
 // TODO enable switching to a smaller group for testing
     private boolean getLargestGroup(){
-        // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
-        contactGroupsList.loadGroups();
         largestGroup = contactGroupsList.getLargestGroup();
 
         //do we have a group?
@@ -247,11 +256,11 @@ public class Updates {
         Uri contentUri;
         List<ContactInfo> masterContactList = new ArrayList<ContactInfo>();
 
-        if(largestGroup.getId() != -1){
+        if(largestGroup.getIDLong() != -1){
 
             contentUri = localContactsGroupQuery.CONTENT_URI;
 
-            final String parameters[] = {String.valueOf(largestGroup.getId())};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
+            final String parameters[] = {String.valueOf(largestGroup.getIDLong())};
 
             Cursor cursor =  mContext.getContentResolver().query(
                     contentUri,
@@ -482,6 +491,16 @@ public class Updates {
 
     }
 
+
+
+    private void updateGroupAffiliation(ContactInfo contact){
+        // collect list of applicable gmail contact groups
+        //contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        contactGroupsList.loadGroupsFromContactID(contact.getIDLong());
+        largestGroup = contactGroupsList.getLargestGroup();
+    }
+
+
     /**
      * Taken from ContactsListFragment.java
      * This interface defines constants for the Cursor and CursorLoader, based on constants defined
@@ -518,7 +537,8 @@ public class Updates {
                 // some other useful identifier such as an email address. This column isn't
                 // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
                 // instead.
-                Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
+                Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
+                        ContactsContract.Contacts.DISPLAY_NAME,
 
         };
 
@@ -527,6 +547,52 @@ public class Updates {
         final static int ID = 1;
         final static int LOOKUP_KEY = 2;
         final static int DISPLAY_NAME = 3;
+    }
+
+
+
+    private void updateGroupsInStatsDatabase(){
+        ContactStatsContract statsDb = new ContactStatsContract(mContext);
+        GroupStatsHelper groupStatsHelper = new GroupStatsHelper(mContext);
+        ContactInfo tempGroup;
+        int i = 0;
+        Long groupRowID;
+
+        for (ContactInfo group: contactGroupsList.mGroups){
+
+            //add any new groups (based on ID) to the database.
+
+            groupRowID = statsDb.addIfNewContact(group);
+            if( groupRowID == -1 ){  //-1 for existing group
+                // if the group ID already exists, make sure the new base info is copied into the old group
+                // however the name and behavior for the group can change
+
+                // get the stats for the existing group
+                tempGroup = groupStatsHelper.getGroupInfoFromGroupID(group.getIDLong(), statsDb);
+
+                if(!group.getName().equals(tempGroup.getName())){
+                    //if the name is different, then the behavior is different
+
+                    //copy over the potentially altered info
+                    tempGroup.setName(group.getName());
+                    tempGroup.setBehavior(group.getBehavior());
+                    tempGroup.setEventIntervalLimit(group.getEventIntervalLimit());
+
+                    // if the name and behavior has changed, the database entry needs to be updated.
+                    groupStatsHelper.updateGroupInfo(tempGroup, statsDb);
+                }
+
+                //replace the current element in the list with the modified existing group stats
+                contactGroupsList.mGroups.set(i, tempGroup);
+
+            }else {
+                //if the group is new, just set the rowID for the current position in the list
+                group.setRowId(groupRowID);
+            }
+
+            i++;
+        }
+        statsDb.close();
     }
 
 }

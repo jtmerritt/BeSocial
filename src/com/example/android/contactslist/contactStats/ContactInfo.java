@@ -37,10 +37,23 @@ public class ContactInfo {
 
     private float decay_rate = 0;
 
-    private String preferredContactMethod; //?
+    private long primary_group_membership = 0;  //by ID
+    private int primary_behavior = 0;
+
+    private int member_count = 0;
+
+    private String preferredContactMethod; // not fully connected in the database
 
     //Has the value been Updated
     private boolean Updated = false;
+
+
+    final public static int UNDEFINED = 0;
+    final public static int RANDOM_BEHAVIOR = 1;
+    final public static int COUNTDOWN_BEHAVIOR = 2;
+    final public static int AUTOMATIC_BEHAVIOR = 3;
+    static public String group_lookup_key = "_group_";
+
 
 
     //constructor
@@ -143,6 +156,29 @@ public class ContactInfo {
         return decay_rate;
     }
 
+    public long getPrimaryGroupMembership(){
+        return primary_group_membership;
+    }
+
+    public int getPrimaryGroupBehavior(){
+        return primary_behavior;
+    }
+    public int getBehavior(){
+        return primary_behavior;
+    }
+
+    public int getMemberCount(){
+        return member_count;
+    }
+
+    public String getGroupSummary(){
+
+        return ContactName + ": " + member_count;
+
+    }
+
+
+
 
     public boolean getUpdatedFlag(){
         return Updated;
@@ -160,7 +196,7 @@ public class ContactInfo {
         Updated = true;
     }
     public void setIDString(String id){
-        ContactID = Long.getLong(id, -1);  //second arguement is the default value
+        ContactID = Long.parseLong(id);
         Updated = true;
     }
     public void setName(String name){
@@ -267,6 +303,25 @@ public class ContactInfo {
         Updated = true;
     }
 
+    public void setPrimaryGroupMembership(long id){
+        primary_group_membership = id;
+        Updated = true;
+    }
+
+    public void setPrimaryGroupBehavior(int id){
+        primary_behavior = id;
+        Updated = true;
+    }
+
+    public void setBehavior(int id){
+        primary_behavior = id;
+        Updated = true;
+    }
+
+    public void setMemberCount(int count){
+        member_count = count;
+        Updated = true;
+    }
 
     public void resetUpdateFlag(){
         Updated = false;

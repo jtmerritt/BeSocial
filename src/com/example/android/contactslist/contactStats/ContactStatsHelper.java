@@ -2,6 +2,7 @@ package com.example.android.contactslist.contactStats;
 
 import android.content.Context;
 import android.util.Log;
+import java.util.Random;
 
 import com.example.android.contactslist.eventLogs.EventInfo;
 
@@ -18,6 +19,7 @@ public class ContactStatsHelper {
     public ContactInfo basicEventIntoStat(EventInfo event, ContactInfo stats){
         int count;
         long date_millis;
+        final long ONE_DAY = 86400000;
 
         if(event.getContactKey().equals(stats.getKeyString())){
             // add into the data set
@@ -130,6 +132,29 @@ public class ContactStatsHelper {
                     // This should never happen
             }
 
+
+
+            // after the last event dates have been set, set the due date
+            Long newInterval = ONE_DAY*365;
+
+            switch (stats.getBehavior()){
+                case ContactInfo.COUNTDOWN_BEHAVIOR:
+                    //pull the set interval out of the stats
+                    newInterval = (long) stats.getEventIntervalLimit()*ONE_DAY;
+                    break;
+                case ContactInfo.AUTOMATIC_BEHAVIOR:
+                    //calculate the time to decay from current score
+                    break;
+                case ContactInfo.RANDOM_BEHAVIOR:
+                    //pick a random number in the range [1:365]
+                    Random r = new Random();
+                    newInterval = ONE_DAY * (long)r.nextInt(366);	// nextInt returns random int >= 0 and < n
+                    break;
+                default:
+            }
+            // take the new time interval and add it to the last event out and set it as the due date
+            stats.setDateContactDue(stats.getDateLastEventOut() + newInterval);
+
             return stats;
 
         }else{
@@ -139,7 +164,7 @@ public class ContactStatsHelper {
     }
 
 
-    public ContactInfo getContactStatsFromEvent(EventInfo event,ContactStatsContract statsDb) {
+    public ContactInfo getContactStatsFromEvent(EventInfo event, ContactStatsContract statsDb) {
 
         // Select All Query
         String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";

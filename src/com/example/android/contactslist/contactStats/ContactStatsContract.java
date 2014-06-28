@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import android.text.format.Time;
 
 import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.SocialEventsContract;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +19,14 @@ import java.util.List;
  */
 
 public class ContactStatsContract {
+
     Context mContext;
     // To access your database, instantiate your subclass of SQLiteOpenHelper:
     ContactStatsDbHelper mDbHelper;
 
-    final long ONE_DAY = 86400000;
 
+    public ContactStatsContract() {
+    }
 
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
@@ -72,6 +75,8 @@ public class ContactStatsContract {
 | event count               | Int                           |  2345
 | Standing value            | REAL                          |  34.5
 | Decay rate                | REAL                          |  2.45
+| PRIMARY GROUP MEMBERSHIP  | lONG
+| PRIMARY BEHAVIOR          | iNT
 +-----------------------+------------+------------------------------+---+--------+--+
 */
 
@@ -107,6 +112,10 @@ public class ContactStatsContract {
 
         public static final String KEY_STANDING = "standing";
         public static final String KEY_DECAY_RATE = "decay_rate";
+        public static final String KEY_PRIMARY_GROUP_MEMBERSHIP = "primary_group_membership";
+        public static final String KEY_PRIMARY_BEHAVIOR = "primary_behavior";
+        //public static final String KEY_PREFERRED_CONTACT_METHOD = "preferred_contact_method";
+
         //...
 
         public final static int ROW_ID = 0;
@@ -141,6 +150,10 @@ public class ContactStatsContract {
 
         public final static int STANDING = 24;
         public final static int DECAY_RATE = 25;
+        public final static int PRIMARY_GROUP_MEMBERSHIP = 26;
+        public final static int PRIMARY_BEHAVIOR = 27;
+
+        //public final static int PREFERRED_CONTACT_METHOD = 28;
 
         // provide the name of a column in which the framework can insert NULL 
         // in the event that the ContentValues is empty
@@ -156,7 +169,7 @@ public class ContactStatsContract {
     public class ContactStatsDbHelper extends SQLiteOpenHelper {
 
         // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 2;
         public static final String DATABASE_NAME = "Contacts.db";
         private static final String TEXT_TYPE = " TEXT";
         private static final String LONG_TYPE = " LONG";
@@ -199,7 +212,9 @@ public class ContactStatsContract {
                         TableEntry.KEY_EVENT_COUNT + INT_TYPE + COMMA_SEP +
 
                         TableEntry.KEY_STANDING + REAL_TYPE + COMMA_SEP +
-                        TableEntry.KEY_DECAY_RATE + REAL_TYPE + //COMMA_SEP +
+                        TableEntry.KEY_DECAY_RATE + REAL_TYPE + COMMA_SEP +
+                        TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP + LONG_TYPE + COMMA_SEP +
+                        TableEntry.KEY_PRIMARY_BEHAVIOR + INT_TYPE + //COMMA_SEP +
                         //... // Any other options for the CREATE command
                         " )";
 
@@ -258,9 +273,21 @@ public class ContactStatsContract {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Long id;
 
-        // Select Query
+        // Select Query for standard contacts - only use contact lookup key
         String selection = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
         String selection_arg = contact.getKeyString();
+
+        // If the contactInfo happens to be a group, perform a special search on the ID,
+        // while filtering for the "GROUP" lookup key
+        if(contact.getKeyString().equals(ContactInfo.group_lookup_key)){
+            // Select Query
+            selection = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                    + " = " + ContactInfo.group_lookup_key + " AND " +
+                    //where the group ID is stored
+                    ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
+            selection_arg = Long.toString(contact.getIDLong());
+        }
+
 
         //format selection and search
         String[] selectionArgs = {selection_arg};
@@ -287,18 +314,15 @@ public class ContactStatsContract {
         );
 
 
-        // organize the contact info and pass it back
+        // if there is any result, then the contact already exists
         if (cursor.moveToFirst()) {
-            if(
-                    //(contact.getKeyString().equals(cursor.getString(TableEntry.CONTACT_KEY))) ||
-                (contact.getName().equals(cursor.getString(1))) //reference to the cursor column with the name
-                ){
+
                 id = cursor.getLong(cursor.getColumnIndex(TableEntry._ID));
                 db.close();
                 cursor.close();
                 return id;
                 // TODO This check needs to be more sophisticated to deal with changed names or multiple contact entries
-            }
+
         }
         db.close();
         cursor.close();
@@ -311,7 +335,7 @@ public class ContactStatsContract {
         if(checkContactExists(contact) == -1) { // if event is likely new
             id = addContact(contact);
         }
-        return id;  //return -1 for events
+        return id;  //return -1 for existing contact
     }
 
     public ContactInfo getContactStats(String selection,   String selection_arg ){
@@ -452,7 +476,7 @@ public class ContactStatsContract {
         values.put(TableEntry.KEY_DATE_LAST_EVENT_IN, contact.getDateLastEventIn());
         values.put(TableEntry.KEY_DATE_LAST_EVENT_OUT, contact.getDateLastEventOut());
         values.put(TableEntry.KEY_DATE_LAST_EVENT, last_event.format3339(true)); // ignore daylight savings
-        values.put(TableEntry.KEY_DATE_CONTACT_DUE, (last_event.toMillis(true)) + 14*ONE_DAY);
+        values.put(TableEntry.KEY_DATE_CONTACT_DUE, (contact.getDateEventDue()));
 
         values.put(TableEntry.KEY_DATE_RECORD_LAST_UPDATED, now.toMillis(true) );  //time in millis, ignore daylight savings time
         values.put(TableEntry.KEY_EVENT_INTERVAL_LIMIT, contact.getEventIntervalLimit());
@@ -477,6 +501,8 @@ public class ContactStatsContract {
         values.put(TableEntry.KEY_STANDING, contact.getStandingValue());
 
         values.put(TableEntry.KEY_DECAY_RATE, contact.getDecay_rate());
+        values.put(TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP, contact.getPrimaryGroupMembership());
+        values.put(TableEntry.KEY_PRIMARY_BEHAVIOR, contact.getBehavior());
 
         return values;
     }
@@ -519,6 +545,8 @@ public class ContactStatsContract {
         contact.setStanding(cursor.getFloat(TableEntry.STANDING));
 
         contact.setDecay_rate(cursor.getFloat(TableEntry.DECAY_RATE));
+        contact.setPrimaryGroupMembership(cursor.getLong(TableEntry.PRIMARY_GROUP_MEMBERSHIP));
+        contact.setBehavior(cursor.getInt(TableEntry.PRIMARY_BEHAVIOR));
 
         return contact;
     }
@@ -558,7 +586,9 @@ public class ContactStatsContract {
                 TableEntry.KEY_EVENT_COUNT,
 
                 TableEntry.KEY_STANDING,
-                TableEntry.KEY_DECAY_RATE
+                TableEntry.KEY_DECAY_RATE,
+                TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP,
+                TableEntry.KEY_PRIMARY_BEHAVIOR
                 //...
         };
     }

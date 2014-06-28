@@ -41,8 +41,8 @@ import android.widget.Toast;
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.util.Utils;
-import com.example.android.contactslist.contactGroups.ContactGroupsList.GroupInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +75,7 @@ public class ContactsListActivity extends FragmentActivity implements
     private CharSequence mTitle;
 
     ContactGroupsList contactGroupsList = new ContactGroupsList();
-    List<ContactGroupsList.GroupInfo> mGroups;// = new ArrayList<GroupInfo>();
+    List<ContactInfo> mGroups;// = new ArrayList<GroupInfo>();
 
 
 
@@ -175,8 +175,8 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_9,
                 GravityCompat.START);
 
-        for (ContactGroupsList.GroupInfo groupInfo:mGroups) {
-            list.add(groupInfo.toString());
+        for (ContactInfo groupInfo:mGroups) {
+            list.add(groupInfo.getGroupSummary());
         }
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
@@ -286,7 +286,8 @@ Send intent for opening the XML file import activity
             ContactsListFragment mContactsListFragment = (ContactsListFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-            mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
+            //passing the integer ID
+            mContactsListFragment.setGroupQuery((int) mGroups.get(pos).getIDLong());
         }
 
         @Override
@@ -367,7 +368,8 @@ Send intent for opening the XML file import activity
         ContactsListFragment mContactsListFragment = (ContactsListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-        mContactsListFragment.setGroupQuery(mGroups.get(pos).getId()); //passing the integer ID
+        //passing the integer ID
+        mContactsListFragment.setGroupQuery((int) mGroups.get(pos).getIDLong());
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(pos, true);
@@ -404,13 +406,14 @@ Send intent for opening the XML file import activity
         ContactsListFragment mContactsListFragment = (ContactsListFragment)
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
-       for(GroupInfo group:mGroups){
-           if(preferredDefaultGroupName.equals(group.title)){
-               mContactsListFragment.setGroupQuery(group.getId()); //passing the integer ID
+       for(ContactInfo group:mGroups){
+           if(preferredDefaultGroupName.equals(group.getName())){
+               mContactsListFragment.setGroupQuery((int)group.getIDLong()); //passing the integer ID
 
                // update selected item and title
                mDrawerList.setItemChecked(i, true);
-               setTitle(mGroups.get(i).toString());
+               setTitle(group.getName() + ": " + Integer.toString(group.getMemberCount())
+                       + " Members");
 
                return;
            }

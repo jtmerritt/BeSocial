@@ -181,6 +181,15 @@
     <string name="class_prompt">Select Event Class</string>
 
 
+    <!-- Naming for groups -->
+    <string name="Week">Week</string>
+    <string name="Weeks">Weeks</string>
+    <string name="Day">Day</string>
+    <string name="Days">Days</string>
+    <string name="Starred">Starred in Android</string>
+    <string name="delims">[ .,?!\-]+</string>
+
+
 
 
 </resources>

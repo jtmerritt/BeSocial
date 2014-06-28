@@ -7,6 +7,7 @@ import android.preference.PreferenceFragment;
 
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
+import com.example.android.contactslist.contactStats.ContactInfo;
 
 import java.util.List;
 
@@ -34,12 +35,14 @@ public class UserPreferencesActivity extends Activity {
             setListResourceForListPreference();
 
         }
+
         private void setListResourceForListPreference(){
 
+            //TODO This method may no longer be necessary
             ListPreference list = (ListPreference) this.findPreference("source_group_list_preference_key");
 
             ContactGroupsList contactGroupsList = new ContactGroupsList();
-            List<ContactGroupsList.GroupInfo> groupList;
+            List<ContactInfo> groupList;
 
             // collect list of applicable gmail contact groups
             contactGroupsList.setGroupsContentResolver(getContentResolver());
@@ -49,9 +52,11 @@ public class UserPreferencesActivity extends Activity {
             String[] entryValues = new String[groupList.size()];
 
             int i = 0;
-            for(ContactGroupsList.GroupInfo group:groupList){
-                entries[i] = group.toString(); //combined title and population
-                entryValues[i] = group.title;
+            for(ContactInfo group:groupList){
+
+                //combined title and population
+                entries[i] = group.getName() + "(" + group.getMemberCount() + ")";
+                entryValues[i] = group.getName();
                 i++;
             }
 
