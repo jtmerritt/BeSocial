@@ -2,10 +2,7 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- Collect stats for the group by creating new contacts with ContactKey "Group"
-  - group stats must be collected just like contact stats
-  - perhaps there needs to be a contactStats data field for dominating group
--- pretty major bug where the auto_update ran repeatedly in quick successsion
+- group stats must be collected just like contact stats
 -- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine
 - restrict to portrait mode
@@ -58,6 +55,9 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+-- pretty major bug where the auto_update ran repeatedly in quick successsion
+- Collect stats for the group by creating new contacts with ContactKey "Group"
+  - perhaps there needs to be a contactStats data field for dominating group
 - Default group bug fix AND the list of groups to choose from is automatically updated
 - The various contact initiation buttons now reference correct contact information, so pressing them initiates the correct address
 - Have a nightly database update routine

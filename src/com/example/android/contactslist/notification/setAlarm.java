@@ -30,10 +30,14 @@ public class SetAlarm {
         //PendingIntent pi = PendingIntent.getService(context, 0 , new Intent(context, Your_Class.class),PendingIntent.FLAG_UPDATE_CURRENT);
 
         Calendar calendar = Calendar.getInstance();
-        // 3.00 (8 AM)
+        // 3.00 AM the next day
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
         calendar.set(Calendar.HOUR_OF_DAY, 3);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+
+        //Keep only one copy of the alarm going by first removing anything with a matching intent
+        alarmManager.cancel(pintent);
 
         // set the alarm to repeat every day at the appointed time
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),

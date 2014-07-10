@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import java.util.Random;
 
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.eventLogs.EventInfo;
 
 /**
@@ -135,7 +136,7 @@ public class ContactStatsHelper {
 
 
             // after the last event dates have been set, set the due date
-            Long newInterval = ONE_DAY*365;
+            Long newInterval = ONE_DAY;
 
             switch (stats.getBehavior()){
                 case ContactInfo.COUNTDOWN_BEHAVIOR:
@@ -184,20 +185,52 @@ public class ContactStatsHelper {
     }
 
 
-    public boolean updateContactStatsFromEvent(EventInfo event){
+    private ContactInfo setStrictestGroupAffiliation(ContactInfo contact){
+        // collect list of applicable gmail contact groups
+        ContactGroupsList contactList = new ContactGroupsList();
+        contactList.setGroupsContentResolver(mContext.getContentResolver());
+
+        contactList.loadGroupsFromContactID(contact.getKeyString());
+
+        if(contactList.mGroups != null){
+            contactList.getShortestTermGroup();
+
+            contact.setPrimaryGroupMembership(contactList.shortestTermGroup.getIDLong());
+            contact.setPrimaryGroupBehavior(contactList.shortestTermGroup.getBehavior());
+            contact.setEventIntervalLimit(contactList.shortestTermGroup.getEventIntervalLimit());
+
+            return contact;
+        }
+
+        return null;
+    }
+
+
+
+    /*
+    contact can be null, this method will pull the contact info from the database
+     */
+    public boolean updateContactStatsFromEvent(EventInfo event, ContactInfo contact){
+
         ContactStatsContract statsDb = new ContactStatsContract(mContext);
 
 
-        ContactInfo stats = getContactStatsFromEvent(event, statsDb);
-        //this function returns null if the event holds a contact not in the database
+        // if we're passed in a contact, use it, otherwise get the contact from the database
+        if(contact == null){
 
+            contact = getContactStatsFromEvent(event, statsDb);
+            //this function returns null if the event holds a contact not in the database
 
+        }
 
         //stats could be null, which could mean the contact does not exist in the local db
-        if(stats != null){
+        if(contact != null){
+
+            //Let's make sure that this contact's primary group affiliation is up to date
+            contact = setStrictestGroupAffiliation(contact);
 
             // call function which parses the entire event into the correct stats
-            statsDb.updateContact(basicEventIntoStat(event, stats));
+            statsDb.updateContact(basicEventIntoStat(event, contact));
 
             statsDb.close();
             return true;
@@ -206,6 +239,5 @@ public class ContactStatsHelper {
         statsDb.close();
         return false;
     }
-
 
 }

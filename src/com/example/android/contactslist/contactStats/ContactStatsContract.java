@@ -282,7 +282,7 @@ public class ContactStatsContract {
         if(contact.getKeyString().equals(ContactInfo.group_lookup_key)){
             // Select Query
             selection = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
-                    + " = " + ContactInfo.group_lookup_key + " AND " +
+                    + " = '" + ContactInfo.group_lookup_key + "' AND " +
                     //where the group ID is stored
                     ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
             selection_arg = Long.toString(contact.getIDLong());
@@ -332,7 +332,8 @@ public class ContactStatsContract {
 
     public long addIfNewContact(ContactInfo contact){
         long id = -1;
-        if(checkContactExists(contact) == -1) { // if event is likely new
+        // if contact/group does not yet have an entry in the database, add it
+        if(checkContactExists(contact) == -1) {
             id = addContact(contact);
         }
         return id;  //return -1 for existing contact

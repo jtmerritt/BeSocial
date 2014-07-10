@@ -76,14 +76,6 @@ public class Updates {
 
     public void localSourceRead(){
 
-        // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
-        contactGroupsList.loadGroups();
-        // the list of groups is now available in contactGroupsList;
-
-        //compare this fresh list of groups to those already in the database and cross-update
-        updateGroupsInStatsDatabase();
-
 
         if(getLargestGroup()){
             List<ContactInfo> masterContactList = getGroupContactList();
@@ -115,10 +107,8 @@ public class Updates {
                         // Contact groups are read fro/m google and may be updated on the website
                         addContactToDbIfNew(contact);
 
-                        updateGroupAffiliation(contact);
-
                         // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(getAllEventLogsForContact(contact));
+                        insertEventLogIntoDatabases(getAllEventLogsForContact(contact), contact);
 
 
                     }else {
@@ -150,6 +140,7 @@ public class Updates {
         if(mXMLFilePath == null){
             return;
         }
+
 
         if(getLargestGroup()){
             List<ContactInfo> masterContactList = getGroupContactList();
@@ -198,7 +189,7 @@ public class Updates {
                         addContactToDbIfNew(contact);
 
                         // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(getAllXMLLogsForContact(contact));
+                        insertEventLogIntoDatabases(getAllXMLLogsForContact(contact), contact);
                     }else{
                         getAllXMLLogsForContact(contact);
 
@@ -237,6 +228,15 @@ public class Updates {
 
 // TODO enable switching to a smaller group for testing
     private boolean getLargestGroup(){
+
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        contactGroupsList.loadGroups();
+        // the list of groups is now available in contactGroupsList;
+
+        //compare this fresh list of groups to those already in the database and cross-update
+        updateGroupsInStatsDatabase();
+
         largestGroup = contactGroupsList.getLargestGroup();
 
         //do we have a group?
@@ -434,7 +434,7 @@ public class Updates {
 
     All events need to be for valid contacts of the group defined for the application.
      */
-    public void insertEventLogIntoDatabases(List<EventInfo> eventLog){
+    public void insertEventLogIntoDatabases(List<EventInfo> eventLog, ContactInfo contact){
         SocialEventsContract eventDb = new SocialEventsContract(mContext);
         ContactStatsHelper csh = new ContactStatsHelper(mContext);
 
@@ -445,7 +445,7 @@ public class Updates {
                 // if event is new...
                 // Process its data into the contact_stats for the contact
                 // assuming the contact is not new
-                csh.updateContactStatsFromEvent(event);
+                csh.updateContactStatsFromEvent(event, null);
                 // method returns false if the event does not have a corresponding contact in the db
             }
         }
@@ -491,14 +491,6 @@ public class Updates {
 
     }
 
-
-
-    private void updateGroupAffiliation(ContactInfo contact){
-        // collect list of applicable gmail contact groups
-        //contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
-        contactGroupsList.loadGroupsFromContactID(contact.getIDLong());
-        largestGroup = contactGroupsList.getLargestGroup();
-    }
 
 
     /**

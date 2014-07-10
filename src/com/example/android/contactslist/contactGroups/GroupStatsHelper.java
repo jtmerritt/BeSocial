@@ -30,7 +30,7 @@ public class GroupStatsHelper {
 
         // query contacts database for the group stats
         String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
-                + " = " + ContactInfo.group_lookup_key + " AND " +
+                + " = '" + ContactInfo.group_lookup_key + "' AND " +
                 //where the group ID is stored
                 ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
         String whereArg = Long.toString(group_id);

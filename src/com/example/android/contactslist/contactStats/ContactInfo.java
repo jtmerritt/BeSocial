@@ -52,7 +52,7 @@ public class ContactInfo {
     final public static int RANDOM_BEHAVIOR = 1;
     final public static int COUNTDOWN_BEHAVIOR = 2;
     final public static int AUTOMATIC_BEHAVIOR = 3;
-    static public String group_lookup_key = "_group_";
+    static public String group_lookup_key = "GROUP";
 
 
 

@@ -20,11 +20,12 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
     public ArrayList<ContactInfo> mGroups;
 
+
     //When making the info card for this group use the lookupKey "GROUP" for easy distintion
 
     private ContentResolver mContentResolver;
     private ContactInfo largestGroup;
-    private ContactInfo shortestTermGroup;
+    public ContactInfo shortestTermGroup = null;
 
 /*
     Primary compontents of ContactInfo that are used
@@ -71,19 +72,21 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
     http://stackoverflow.com/questions/14097582/get-a-contacts-groups
      */
-    public ArrayList<ContactInfo> loadGroupsFromContactID(long contact_id){
+    public ArrayList<ContactInfo> loadGroupsFromContactID(String contact_key){
         ContactInfo g = null;
 
         final String where = ContactsContract.Data.MIMETYPE + " = ? AND " +
-                ContactsContract.Data.CONTACT_ID + " = ?";
+                ContactsContract.Contacts.LOOKUP_KEY  + " = ?";
+                //ContactsContract.Data.CONTACT_ID + " = ?";
         final String[] whereArgs = {
                 ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE,
-                Long.toString(contact_id)};
+                contact_key};
+                //Long.toString(contact_id)};
 
         Cursor cursor = mContentResolver.query(
                 ContactsContract.Data.CONTENT_URI,
                 // this projection will just have the groupID
-                new String[]{ ContactsContract.Data.DATA1 },
+                new String[]{ ContactsContract.Data.DATA1, ContactsContract.Data.CONTACT_ID },
                 where,
                 whereArgs,
                 null
@@ -99,6 +102,8 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
                 
                 if((g !=null) && groupTitleIsOnTheApprovedList(g.getName())){
 
+                    // read the group behavior
+                    g = setGroupBehaviorFromName(g);
                     mGroups.add(g);
                 }
             }while (cursor.moveToNext());
@@ -261,5 +266,40 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
             group.setBehavior(ContactInfo.RANDOM_BEHAVIOR);
         }
         return group;
+    }
+
+    public void getShortestTermGroup(){
+
+        for(ContactInfo group:mGroups){
+            if(shortestTermGroup == null){
+                shortestTermGroup = group;
+                continue;
+            }
+
+            switch (group.getBehavior()){
+                case ContactInfo.COUNTDOWN_BEHAVIOR:
+
+                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (shortestTermGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
+                        shortestTermGroup = group;
+                    }
+                    if((shortestTermGroup.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR) &&
+                            (group.getEventIntervalLimit() < shortestTermGroup.getEventIntervalLimit() )){
+                        shortestTermGroup = group;
+                    }
+                    break;
+                case ContactInfo.AUTOMATIC_BEHAVIOR:
+                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR)) {
+                        shortestTermGroup = group;
+                    }
+                    break;
+                case ContactInfo.RANDOM_BEHAVIOR:
+                    break;
+                default:
+            }
+
+        }
+
+
     }
 }
