@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import com.example.android.contactslist.ChartMakerCallback;
-import com.example.android.contactslist.ContactDetailFragmentCallback;
+import com.example.android.contactslist.ContactDetailChartFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.LoadEventLogTask;
@@ -45,7 +45,7 @@ public class chartMaker implements ChartMakerCallback {
     private Long contactID;
     private String mContactLookupKey;
     private ContentResolver mContentResolver;
-    private ContactDetailFragmentCallback mContactDetailFragmentCallback;
+    private ContactDetailChartFragmentCallback mContactDetailFragmentCallback;
     private double mChartMin; //Time ms
     private double mChartMax;
     private double mDateMin; //Time ms
@@ -73,7 +73,7 @@ public class chartMaker implements ChartMakerCallback {
             ContentResolver contentResolver, 
             //List<EventInfo> eventLog,
             Context context,
-            ContactDetailFragmentCallback contactDetailFragmentCallback)
+            ContactDetailChartFragmentCallback contactDetailFragmentCallback)
     {
         //contactID = cID;
         mContactLookupKey = contactLookupKey;

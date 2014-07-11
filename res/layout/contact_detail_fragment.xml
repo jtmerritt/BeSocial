@@ -27,12 +27,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="100">
+        android:weightSum="100"
+        android:id="@+id/c">
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/b">
 
             <ImageView
                 android:id="@+id/contact_image"
@@ -47,7 +49,8 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:weightSum="1">
+                android:weightSum="1"
+                android:id="@+id/a">
 
                 <com.example.android.contactslist.ui.FractionView
                     android:layout_width="match_parent"
@@ -74,6 +77,64 @@
             style="@style/contactNameTitle"
             android:layout_weight="0.05" />
 
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView" >
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:showDividers="beginning|middle"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:id="@+id/d">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/action_layout_container"
+                    android:focusableInTouchMode="true"></LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/chart_layout_container">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="History"
+                        android:id="@+id/chart_title"
+                        android:textAlignment="center"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:gravity="center" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:id="@+id/open_full_screen_chart_button"
+                        android:layout_weight="0.04"
+                        android:src="@drawable/ic_action_full_screen"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true" />
+
+                    <LinearLayout
+                        android:id="@+id/tiny_chart"
+                        android:orientation="vertical"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:focusableInTouchMode="false"></LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
 
         <TabHost
             android:layout_width="fill_parent"
@@ -109,19 +170,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:orientation="vertical">
-                        <Spinner
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/chart_spinner"
-                            android:gravity="center"
-                            android:ellipsize="marquee"
-                            android:prompt="@string/class_prompt"
-                            android:spinnerMode="dialog" />
-                        <LinearLayout
-                            android:id="@+id/pchart"
-                            android:orientation="vertical"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"></LinearLayout>
+
                     </LinearLayout>
 
                     <LinearLayout

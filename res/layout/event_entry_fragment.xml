@@ -291,8 +291,7 @@
                         android:textAlignment="textEnd"
                         android:minLines="3"
                         android:gravity="start"
-                        android:autoText="false"
-                        android:focusableInTouchMode="false" />
+                        />
                 </LinearLayout>
 
                 <LinearLayout
@@ -350,7 +349,7 @@
          layout mode and no contact is currently selected and therefore the this fragment will
          simply show a text message instead of contact details. -->
 
-    <TextView android:id="@id/android:empty"
+    <TextView android:id="@+id/android:empty"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

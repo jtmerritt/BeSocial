@@ -22,7 +22,6 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -30,7 +29,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
 import android.provider.ContactsContract.Data;
@@ -44,32 +42,27 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.RadioGroup.OnCheckedChangeListener;
-import android.widget.RadioGroup;
-import android.widget.RadioButton;
-import android.widget.Button;
-import android.widget.NumberPicker;
-import android.text.InputType;
-
-
-
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.ContactDetailChartFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
-import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
@@ -81,11 +74,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -94,21 +85,23 @@ import java.util.concurrent.TimeUnit;
  *
  * This fragment appears full-screen in an activity on devices with small screen sizes, and as
  * part of a two-pane layout on devices with larger screens, alongside the
- * {@link com.example.android.contactslist.ui.ContactsListFragment}.
+ * {@link ContactsListFragment}.
  *
  * To create an instance of this fragment, use the factory method
- * {@link com.example.android.contactslist.ui.EventEntryFragment#newInstance(android.net.Uri)}, passing as an argument the contact
+ * {@link com.example.android.contactslist.ui.ContactDetailChartFragment#newInstance(android.net.Uri)}, passing as an argument the contact
  * Uri for the contact you want to display.
  */
-public class EventEntryFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>
+public class ContactDetailChartFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor>,
+        ContactDetailChartFragmentCallback
+
 {
 
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
 
     // Defines a tag for identifying log entries
-    private static final String TAG = "EventEntryFragment";
+    private static final String TAG = "ContactDetailChartActivity";
 
     // The geo Uri scheme prefix, used with Intent.ACTION_VIEW to form a geographical address
     // intent that will trigger available apps to handle viewing a location (such as Maps)
@@ -120,40 +113,21 @@ public class EventEntryFragment extends Fragment implements
     private Uri mContactUri; // Stores the contact Uri for this fragment instance
     private ContactInfo mContactStats = null;
     private String mContactLookupKey;
-    private String mVoiceNumber = "";
-    private String mSMSNumber = "";
-    private String mEmailAddress = "";
-    private String mStreetAddress = "";
-    private int mEventType;
-    private int mEventClass;
-    private EventInfo mNewEventInfo;
-    static Long mEventDate;
-    private Long mDuration = (long)0;
-    private int mWordCount = 0;
-
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
     private ImageView mImageView;
-    private LinearLayout mDetailsLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
-    static Button mDateViewButton;
-    static Button mTimeViewButton;
-    private Spinner mDurationView;
     private Spinner mClassSelectionSpinner;
-    private Button mAddressViewButton;
-    private TextView mEventNotes;
-    private RadioGroup radioGroup;
-    private RadioButton mIncomingButton;
-    private RadioButton mOutgoingButton;
-    private ImageButton mSubmitButton;
-    private ImageButton mCancelButton;
-    private LinearLayout mEventDurationLayout;
-
+    private CheckBox mAutoScale;
     private MenuItem mEditContactMenuItem;
     private String mContactNameString;
+    private GraphicalView mChartView = null;
+    private chartMaker mChartMaker;
+    private LinearLayout mChartLayout;
+
 
     private Context mContext;
 
@@ -165,11 +139,11 @@ public class EventEntryFragment extends Fragment implements
      * setting the bundle as an argument.
      *
      * @param contactUri The contact Uri to load
-     * @return A new instance of {@link com.example.android.contactslist.ui.EventEntryFragment}
+     * @return A new instance of {@link com.example.android.contactslist.ui.ContactDetailChartFragment}
      */
-    public static EventEntryFragment newInstance(Uri contactUri) {
+    public static ContactDetailChartFragment newInstance(Uri contactUri) {
         // Create new instance of this fragment
-        final EventEntryFragment fragment = new EventEntryFragment();
+        final ContactDetailChartFragment fragment = new ContactDetailChartFragment();
 
         // Create and populate the args bundle
         final Bundle args = new Bundle();
@@ -185,7 +159,7 @@ public class EventEntryFragment extends Fragment implements
     /**
      * Fragments require an empty constructor.
      */
-    public EventEntryFragment() {}
+    public ContactDetailChartFragment() {}
 
 
     /**
@@ -238,9 +212,6 @@ public class EventEntryFragment extends Fragment implements
 
             // Get a bunch of data using the loaderManager
             setBasicContactInfo();
-            getVoiceNumber();
-            getEmailAddress();
-            getStreetAddress();
             //getContactStats();
 
 
@@ -254,7 +225,6 @@ public class EventEntryFragment extends Fragment implements
             // items that are visible.
             mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
-            mDetailsLayout.removeAllViews();
 
             if (mContactNameView != null) {
                 mContactNameView.setText("");
@@ -313,38 +283,28 @@ public class EventEntryFragment extends Fragment implements
             Bundle savedInstanceState) {
 
         // Inflates the main layout to be used by this fragment
-        final View detailView =
-                inflater.inflate(R.layout.event_entry_fragment, container, false);
+        final View chartFragmentView =
+                inflater.inflate(R.layout.chart_fragment, container, false);
 
         // Gets handles to view objects in the layout
-        mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
-        mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
-        mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
-        mClassSelectionSpinner = (Spinner) detailView.findViewById(R.id.event_class_spinner);
-        mEventNotes = (TextView) detailView.findViewById(R.id.event_notes);
-        radioGroup = (RadioGroup) detailView.findViewById(R.id.raidioGroup_incoming_outgoing);
-        mEventDurationLayout = (LinearLayout) detailView.findViewById(R.id.event_duration_layout);
+        mImageView = (ImageView) chartFragmentView.findViewById(R.id.contact_image);
+        mEmptyView = (TextView) chartFragmentView.findViewById(android.R.id.empty);
+        mClassSelectionSpinner = (Spinner) chartFragmentView.findViewById(R.id.event_class_spinner);
+        mChartLayout = (LinearLayout) chartFragmentView.findViewById(R.id.chart);
+        mAutoScale = (CheckBox) chartFragmentView.findViewById(R.id.autoScale);
 
-        //bUTTONS
-        mDateViewButton = (Button) detailView.findViewById(R.id.edit_date);
-        mTimeViewButton = (Button) detailView.findViewById((R.id.edit_time));
-        mAddressViewButton = (Button) detailView.findViewById(R.id.address);
-        mIncomingButton = (RadioButton) detailView.findViewById(R.id.radio_incoming_event_type);
-        mOutgoingButton = (RadioButton) detailView.findViewById(R.id.radio_outgoing_event_type);
-        mSubmitButton = (ImageButton) detailView.findViewById(R.id.save_button);
-        mCancelButton = (ImageButton) detailView.findViewById(R.id.cancel_button);
+
 
 
         if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
             // name in details. For a one-pane view, the contact name is displayed as a title.
-            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
+            mContactNameView = (TextView) chartFragmentView.findViewById(R.id.contact_name);
             mContactNameView.setVisibility(View.VISIBLE);
         }
 
 
-        return detailView;
+        return chartFragmentView;
     }
 
 
@@ -362,93 +322,7 @@ public class EventEntryFragment extends Fragment implements
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
         }
 
-
-        addItemsToClassSpinner();
-        addItemsToDurationSpinner();
-
-
-        //Display the current date
-        Date date = new Date();
-
-        mEventDate = date.getTime();
-
-        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
-        String formattedDate = formatDate.format(date);
-        mDateViewButton.setText(formattedDate);
-
-        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
-        String formattedTime = formatTime.format(date);
-        mTimeViewButton.setText(formattedTime);
-
-
-        mEventNotes.setSelected(false);
-
-        //Take care of the radio button selection of Event Type
-        radioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // checkedId is the RadioButton selected
-
-                switch (checkedId) {
-                    case R.id.radio_incoming_event_type:
-                        mEventType = EventInfo.INCOMING_TYPE;
-                        mOutgoingButton.setChecked(false);
-                        break;
-                    case R.id.radio_outgoing_event_type:
-                        mEventType = EventInfo.OUTGOING_TYPE;
-                        mIncomingButton.setChecked(false);
-                        break;
-
-                }
-            }
-        });
-
-
-        mSubmitButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-
-                mNewEventInfo = new EventInfo(mContactNameString, mContactLookupKey,
-                        mVoiceNumber,
-                        mEventClass,
-                        mEventType,
-                        mEventDate, "",
-                        mDuration,
-                        mWordCount,
-                        0);
-                //TODO: save everything to an eventInfo and send to the database
-                // TODO: make a preview screen for the data to be saved
-
-
-                //TODO: have some automatic checks for data completeness
-
-                getActivity().finish();  // same as hitting back button
-                //TODO: do other stuff for tablet
-
-            }
-        });
-
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Entry Discarded", Toast.LENGTH_SHORT).show();
-
-                //Return to last activity
-                getActivity().finish();  // same as hitting back button
-                //TODO: do other stuff for tablet
-            }
-        });
-
-
-        mAddressViewButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                //action
-            }
-        });
+        buildChartLayout();
 
     }
 
@@ -460,23 +334,11 @@ public class EventEntryFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactDetailQuery.QUERY_ID, null, this);
     }
 
-    private void getStreetAddress(){
-        getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
-    }
-
     private void getContactStats(){
         getLoaderManager().restartLoader(ContactStatsQuery.QUERY_ID, null, this);
     }
 
-    private void getVoiceNumber(){
-        getLoaderManager().restartLoader(ContactVoiceNumberQuery.QUERY_ID, null, this);
-    }
-    private void getSMSNumber(){
-        getLoaderManager().restartLoader(ContactSMSNumberQuery.QUERY_ID, null, this);
-    }
-    private void getEmailAddress(){
-        getLoaderManager().restartLoader(ContactEmailAddressQuery.QUERY_ID, null, this);
-    }
+
 
 
     /**
@@ -488,6 +350,8 @@ public class EventEntryFragment extends Fragment implements
         super.onSaveInstanceState(outState);
         // Saves the contact Uri
         outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
+
+        // TODO: need to somehow save the chart instance for when the screen turns.
     }
 
     @Override
@@ -550,26 +414,7 @@ public class EventEntryFragment extends Fragment implements
                         null,//ContactDetailQuery.SELECTION,
                         null,//ContactDetailQuery.ARGS,
                         null);
-            case ContactAddressQuery.QUERY_ID:
-                // This query loads contact address details, see
-                // ContactAddressQuery for more information.
-                final Uri uri = Uri.withAppendedPath(mContactUri, Contacts.Data.CONTENT_DIRECTORY);
-                return new CursorLoader(getActivity(), uri,
-                        ContactAddressQuery.PROJECTION,
-                        ContactAddressQuery.SELECTION,
-                        null, null);
-/*
-            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
-            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
-                */
+
             case ContactStatsQuery.QUERY_ID:
                 // This query loads data from ContactStatsContentProvider.
 
@@ -583,45 +428,7 @@ public class EventEntryFragment extends Fragment implements
                         where, whereArgs, null);
 
 
-            case ContactVoiceNumberQuery.QUERY_ID:
-                // get all the phone numbers for this contact, sorted by whether it is super primary
-                // https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
-                return new CursorLoader(getActivity(),
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?",
-                        new String[] { mContactLookupKey },
-                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
-            /*
-            https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
-                return new CursorLoader(getActivity(),
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER },
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + contactId,
-                        null,
-                    ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
-                    */
-            case ContactSMSNumberQuery.QUERY_ID:
-                // get all the phone numbers for this contact, sorted by whether it is super primary
-
-                return new CursorLoader(getActivity(),
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
-                        + ContactsContract.CommonDataKinds.Phone.TYPE + " = ?",
-                        new String[] { mContactLookupKey, Integer.toString(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) },
-                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
-
-            case ContactEmailAddressQuery.QUERY_ID:
-                // get all the phone numbers for this contact, sorted by whether it is super primary
-
-                return new CursorLoader(getActivity(),
-                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                        new String[] { ContactsContract.CommonDataKinds.Email.ADDRESS }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? ",
-                        new String[] { mContactLookupKey },
-                        ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
         }
         return null;
     }
@@ -655,34 +462,11 @@ public class EventEntryFragment extends Fragment implements
                         // the ActionBar title text.
                         getActivity().setTitle(mContactNameString);
                     }
+
+                    loadChartView();
                 }
                 break;
-            case ContactAddressQuery.QUERY_ID:
-                // This query loads the contact address details. More than
-                // one contact address is possible, so move each one to a
-                // LinearLayout in a Scrollview so multiple addresses can
-                // be scrolled by the user.
 
-                // Each LinearLayout has the same LayoutParams so this can
-                // be created once and used for each address.
-                final LinearLayout.LayoutParams layoutParams =
-                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                // Clears out the details layout first in case the details
-                // layout has addresses from a previous data load still
-                // added as children.
-
-
-                // Loops through all the rows in the Cursor
-                if (data.moveToFirst()) {
-                    do {
-                        // Builds the address layout
-                        mStreetAddress = data.getString(ContactAddressQuery.ADDRESS);
-                    } while (data.moveToNext());
-                }
-
-                break;
 
 
             case ContactStatsQuery.QUERY_ID:
@@ -694,30 +478,6 @@ public class EventEntryFragment extends Fragment implements
 
                 }
                     break;
-            case ContactVoiceNumberQuery.QUERY_ID:
-                if(data.moveToFirst()){
-                    //Select the first phone number in the list of phone numbers sorted by super_primary
-                    mVoiceNumber = data.getString(data
-                            .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                    // set the data field in the UI
-                }
-                break;
-            case ContactSMSNumberQuery.QUERY_ID:
-                if(data.moveToFirst()) {
-                    //Select the first phone number in the list of phone numbers sorted by super_primary
-                    mSMSNumber = data.getString(data
-                            .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                }
-                break;
-            case ContactEmailAddressQuery.QUERY_ID:
-                if(data.moveToFirst()) {
-                    //Select the first phone number in the list of phone numbers sorted by super_primary
-                    mEmailAddress = data.getString(data
-                            .getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
-
-                }
-                break;
         }
     }
 
@@ -974,37 +734,6 @@ public class EventEntryFragment extends Fragment implements
     }
 
 
-
-    /**
-     * This interface defines constants used by address retrieval queries.
-     */
-    public interface ContactAddressQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 2;
-
-        // The query projection (columns to fetch from the provider)
-        final static String[] PROJECTION = {
-                StructuredPostal._ID,
-                StructuredPostal.FORMATTED_ADDRESS,
-                StructuredPostal.TYPE,
-                StructuredPostal.LABEL,
-
-        };
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        final static String SELECTION =
-                Data.MIMETYPE + "='" + StructuredPostal.CONTENT_ITEM_TYPE + "'";
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int ADDRESS = 1;
-        final static int TYPE = 2;
-        final static int LABEL = 3;
-    }
-
-
     /**
       * This interface defines the ID used to call the ContactStatsContentProvider.
     */
@@ -1016,100 +745,35 @@ public class EventEntryFragment extends Fragment implements
         // no projection as we just grab all the data and place it in a ContactInfo
     }
 
-    // for getting the super primary voic number
-    public interface ContactVoiceNumberQuery{
-        final static int QUERY_ID = 6;
-    }
-
-    // for getting the super primary SMS number
-    public interface ContactSMSNumberQuery{
-        final static int QUERY_ID = 7;
-    }
-
-            // for getting the super primary voic number
-    public interface ContactEmailAddressQuery{
-        final static int QUERY_ID = 8;
-    }
 
 
+    /*
+    Chart Interface methods
+     */
+
+    private void buildChartLayout() {
 
 
+        mAutoScale.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
 
-
-
-
-            /**
-             * Constructs a geo scheme Uri from a postal address.
-             *
-             * @param postalAddress A postal address.
-             * @return the geo:// Uri for the postal address.
-             */
-            private Uri constructGeoUri(String postalAddress) {
-                // Concatenates the geo:// prefix to the postal address. The postal address must be
-                // converted to Uri format and encoded for special characters.
-                return Uri.parse(GEO_URI_SCHEME_PREFIX + Uri.encode(postalAddress));
             }
+        });
 
+        //setup spinner which is just above the chart
 
-    private void addItemsToClassSpinner() {
-
-        //set the adapter to the string-array in the strings resource
-        ArrayAdapter<String> feedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_item,
-                getResources().getStringArray(R.array.array_of_event_classes));
-
-        //choose the style of the list.
-        feedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+        addItemsToChartSpinner();
 
 
         mClassSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
-                //TODO: do stuff
-                mEventClass = pos+1;
-                
-                switch(mEventClass){
-                    case EventInfo.PHONE_CLASS:
-                        mAddressViewButton.setText(mVoiceNumber);
-                        mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
-                        mEventDurationLayout.setVisibility(View.VISIBLE);
-
-                        break;
-                    case EventInfo.EMAIL_CLASS:
-                        mAddressViewButton.setText(mEmailAddress);
-                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
-
-                        break;
-                    case EventInfo.SMS_CLASS:
-                        mAddressViewButton.setText(mVoiceNumber);
-                        mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
-                        break;
-                    case EventInfo.MEETING_CLASS:
-                        mAddressViewButton.setText(mStreetAddress);
-                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.VISIBLE);
-
-                        break;
-                    case EventInfo.SKYPE:
-                        mEventDurationLayout.setVisibility(View.VISIBLE);
-                        break;
-                    case EventInfo.GOOGLE_HANGOUTS:
-                        mAddressViewButton.setText(mEmailAddress);
-                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.VISIBLE);
-                        break;
-                    case EventInfo.FACEBOOK:
-                        mAddressViewButton.setText(mEmailAddress);
-                        mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
-                        break;
-
-                    default:
-                }
-                
+                //add +1 because the spinner list doesn't account for "All_Class" option
+                mChartMaker.selectDataFeed(pos+1);
+                //repaint of the chartView is handeled in the callback
             }
 
             @Override
@@ -1118,82 +782,108 @@ public class EventEntryFragment extends Fragment implements
             }
         });
 
-        mClassSelectionSpinner.setAdapter(feedSelectionAdapter);
+
     }
 
-
-    private void addItemsToDurationSpinner() {
+    private void addItemsToChartSpinner() {
 
         //set the adapter to the string-array in the strings resource
-        ArrayAdapter<String> feedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
+        ArrayAdapter<String> chartFeedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_spinner_item,
-                getResources().getStringArray(R.array.array_of_duration_value_strings));
+                getResources().getStringArray(R.array.array_of_event_classes));
 
         //choose the style of the list.
-        feedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
+        chartFeedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
 
-        mDurationView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mClassSelectionSpinner.setAdapter(chartFeedSelectionAdapter);
+    }
+
+
+    public void loadChartView() {
+        //Build the chart view
+        mChartMaker = new chartMaker(
+                mContactLookupKey, //contact lookup key
+                getActivity().getContentResolver(),
+                getActivity(),
+                this);
+        mChartView = mChartMaker.getBarChartView();
+
+        try {
+            //add the chart view to the fragment.
+            mChartLayout.addView(mChartView);
+        } catch (Exception e) {
+        }
+
+
+        mChartView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                mDuration = (long) getResources()
-                        .getIntArray(R.array.array_of_duration_value_integers)[pos];
+            public boolean onTouch(View view, MotionEvent event) {
+                int xDiff;
 
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
+                final int action = event.getAction();
+                switch (action & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        mChartMaker.xTouchPast = (int) event.getX();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        //TODO why is seriesSelection always null in the touch listener
+                        SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
+                        mChartMaker.xTouchPosition = (int) event.getX();
+                        xDiff = mChartMaker.xTouchPosition - mChartMaker.xTouchPast;
+                        if (Math.abs(xDiff) > 75) {
+                            if (xDiff > 0) { //choosing the direction of the swipe
+                                mChartMaker.adjustChartRange(true); //going left or back
+                            } else {
+                                mChartMaker.adjustChartRange(false); //going right or forward
+                            }
+                            //repaint of the chartView is handeled in the callback
+                        }
+                        if (Math.abs(xDiff) < 20) {
+                            if (seriesSelection != null) {
+                                Toast.makeText(mContext, "Chart element in series index "
+                                                + seriesSelection.getSeriesIndex() + " data point index "
+                                                + seriesSelection.getPointIndex() + " was long pressed",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                        break;
+                    default:
+                }
+                return true;
             }
         });
 
-        mDurationView.setAdapter(feedSelectionAdapter);
+
+        mChartView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
+
+                if (seriesSelection == null) {
+                    Toast.makeText(mContext, "No chart element was long pressed",
+                            Toast.LENGTH_SHORT).show();
+                    return false; // no chart element was long pressed, so let
+                    // something
+                    // else handle the event
+                } else {
+                    Toast.makeText(mContext, "Chart element in series index "
+                                    + seriesSelection.getSeriesIndex() + " data point index "
+                                    + seriesSelection.getPointIndex() + " was long pressed",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    return true;
+                }
+            }
+        });
     }
 
     /*
-    Sets the calendar date of the event, preserving the time that was previously set
-    And displays that date.
-     */
-    static void setDate(int year, int monthOfYear, int dayOfMonth){  //TODO Can this be private?
-        //Display the current date
-
-        final Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(mEventDate);
-        c.set(Calendar.YEAR, year);
-        c.set(Calendar.MONTH, monthOfYear);
-        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-        Date date = c.getTime();
-
-        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
-        String formattedDate = formatDate.format(date);
-        mDateViewButton.setText(formattedDate);
-        mEventDate = date.getTime();
-
-    }
-
-    /*
-Sets the time of day of the event, preserving the calendar date that was previously set
-And displays that time.
+Callback from chartMaker to repaint the chart after refreshing the data
  */
-    static void setTime(int hourOfDay, int minute){ //TODO Can this be private?
-
-        final Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(mEventDate);
-        c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        c.set(Calendar.MINUTE, minute);
-
-        Date date = c.getTime();
-
-        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
-        String formattedDate = formatTime.format(date);
-        mTimeViewButton.setText(formattedDate);
-        mEventDate = date.getTime();
-
+    public void finishedLoading() {
+        mChartView.repaint();
     }
-
-
-
-
 }
 
 

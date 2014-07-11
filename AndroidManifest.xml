@@ -100,6 +100,13 @@
                 android:value=".ui.ContactDetailActivity" />
 
         </activity>
+        <activity android:name=".ui.ContactDetailChartActivity"
+            android:label="@string/contact_detail_chart_activity_label"
+            android:parentActivityName=".ui.ContactDetailChartActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ContactDetailActivity" />
+
+        </activity>
         <receiver
             android:name=".notification.timedUpdate"
             android:enabled="true">

@@ -51,23 +51,17 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 
 import com.example.android.contactslist.BuildConfig;
-import com.example.android.contactslist.ContactDetailFragmentCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
@@ -79,8 +73,7 @@ import com.example.android.contactslist.contactStats.ContactInfo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.achartengine.GraphicalView;
-import org.achartengine.model.SeriesSelection;
+
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -96,8 +89,7 @@ import org.achartengine.model.SeriesSelection;
  * Uri for the contact you want to display.
  */
 public class ContactDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>,
-        ContactDetailFragmentCallback
+        LoaderManager.LoaderCallbacks<Cursor>
         //, View.OnClickListener
 {
 
@@ -130,22 +122,20 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mDetailsCallLogLayout;
     private LinearLayout mDetailsSMSLogLayout;
     private LinearLayout mActionTab;
-    private LinearLayout mChartLayout;
-    private LinearLayout mPChartView;
     private LinearLayout mActionLayout;
+    private LinearLayout mActionLayoutContainer;
     private TextView mEmptyView;
     private TextView mContactNameView;
     private MenuItem mEditContactMenuItem;
-    private GraphicalView mChartView = null;
     private String mContactNameString;
     private FractionView fractionView = null;
-    private Spinner chartSpinner = null;
-    private chartMaker mChartMaker;
     private Context mContext;
+    private ImageButton mOpenFullScreenChartButton;
 
 
 
-            /**
+
+    /**
      * Factory method to generate a new instance of the fragment given a contact Uri. A factory
      * method is preferable to simply using the constructor as it handles creating the bundle and
      * setting the bundle as an argument.
@@ -309,14 +299,28 @@ public class ContactDetailFragment extends Fragment implements
         mActionTab = (LinearLayout) detailView.findViewById(R.id.tab_action);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+        mOpenFullScreenChartButton = (ImageButton) detailView.findViewById(R.id.open_full_screen_chart_button);
+        mOpenFullScreenChartButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                //start ContactDetailChartActivity
+                startContactDetailChartActivity();
+            }
+        });
+
+
+
+
+        //************ action view
+
+        // get the layout container resource
+        mActionLayoutContainer = (LinearLayout) detailView.findViewById(R.id.action_layout_container);
+
 
         // Inflates the tab_action view with the new fragment.
         mActionLayout = (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_action_fragment, mActionTab, false);
-
-
-        //***********9********** chart
-        mPChartView = (LinearLayout) detailView.findViewById(R.id.pchart);
+                        R.layout.contact_detail_action_fragment, mActionLayoutContainer, false);
 
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
@@ -346,6 +350,8 @@ public class ContactDetailFragment extends Fragment implements
             // savedInstanceState Bundle
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
         }
+
+
 
         //TODO redo all the tab stuff to be more like a photo viewer where swiing left/right changes the contact
         TabHost tabHost=(TabHost)getActivity().findViewById(R.id.tabHost);
@@ -380,9 +386,8 @@ public class ContactDetailFragment extends Fragment implements
         tabHost.setCurrentTab(0);
 
 
-        // Inflates the tab_action view with the new fragment.
-        mActionTab.addView(buildActionLayout());
-        mPChartView.addView(buildChartLayout());
+        // Inflates the view containers with the new fragment.
+        mActionLayoutContainer.addView(buildActionLayout());
     }
 
     private void setBasicContactInfo(){
@@ -597,11 +602,8 @@ public class ContactDetailFragment extends Fragment implements
                         getActivity().setTitle(mContactNameString);
                     }
 
-                    //  using the contact name build the log of events
-                    //loadContactLogs(mContactNameString, data.getLong(ContactDetailQuery.ID));
-
-                    loadChartView();
-
+                    //  display other info relating to contact identity
+                    // such as the chart and stats
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -1125,7 +1127,6 @@ public class ContactDetailFragment extends Fragment implements
 
     private void startNewEntry() {
 
-        // Otherwise single pane layout, start a new ContactDetailActivity with
         // the contact Uri
         Intent intent = new Intent(mContext, EventEntryActivity.class);
         intent.setData(mContactUri);
@@ -1134,154 +1135,17 @@ public class ContactDetailFragment extends Fragment implements
         startActivity(intent);
     }
 
-    private LinearLayout buildChartLayout() {
+    private void startContactDetailChartActivity(){
 
-        // Inflates the tab_action view with the new fragment.
-        final LinearLayout chartLayout =
-                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.chart_fragment, mPChartView, false);
+        // the contact Uri
+        Intent intent = new Intent(mContext, ContactDetailChartActivity.class);
+        intent.setData(mContactUri);
 
-        mChartLayout = (LinearLayout) chartLayout.findViewById(R.id.chart);
-        chartSpinner = (Spinner) getActivity().findViewById(R.id.chart_spinner);
-
-
-        final CheckBox autoScale =
-                (CheckBox) chartLayout.findViewById(R.id.autoScale);
-        autoScale.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
-
-        final ImageButton full_screenButton =
-                (ImageButton) chartLayout.findViewById(R.id.imageButton_switch_to_full_screen);
-        full_screenButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                //startEmail();
-            }
-        });
-
-        //setup spinner which is just above the chart
-
-        addItemsToChartSpinner();
-
-
-        chartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-
-                //add +1 because the spinner list doesn't account for "All_Class" option
-                mChartMaker.selectDataFeed(pos+1);
-                //repaint of the chartView is handeled in the callback
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-
-        return chartLayout;
-    }
-
-    private void addItemsToChartSpinner() {
-
-        //set the adapter to the string-array in the strings resource
-        ArrayAdapter<String> chartFeedSelectionAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_item,
-                getResources().getStringArray(R.array.array_of_event_classes));
-
-        //choose the style of the list.
-        chartFeedSelectionAdapter.setDropDownViewResource(android.R.layout.simple_list_item_activated_1);
-
-        chartSpinner.setAdapter(chartFeedSelectionAdapter);
+        //Notification.simpleNotification(this);
+        startActivity(intent);
     }
 
 
-    public void loadChartView() {
-        //Build the chart view
-        mChartMaker = new chartMaker(
-                mContactLookupKey, //contact lookup key
-                getActivity().getContentResolver(),
-                getActivity(),
-                this);
-        mChartView = mChartMaker.getBarChartView();
-
-        try {
-            //add the chart view to the fragment.
-            mChartLayout.addView(mChartView);
-        } catch (Exception e) {
-        }
-
-
-        mChartView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                int xDiff;
-
-                final int action = event.getAction();
-                switch (action & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                        mChartMaker.xTouchPast = (int) event.getX();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        //TODO why is seriesSelection always null in the touch listener
-                        SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
-                        mChartMaker.xTouchPosition = (int) event.getX();
-                        xDiff = mChartMaker.xTouchPosition - mChartMaker.xTouchPast;
-                        if (Math.abs(xDiff) > 75) {
-                            if (xDiff > 0) { //choosing the direction of the swipe
-                                mChartMaker.adjustChartRange(true); //going left or back
-                            } else {
-                                mChartMaker.adjustChartRange(false); //going right or forward
-                            }
-                            //repaint of the chartView is handeled in the callback
-                        }
-                        if (Math.abs(xDiff) < 20) {
-                            if (seriesSelection != null) {
-                                Toast.makeText(mContext, "Chart element in series index "
-                                                + seriesSelection.getSeriesIndex() + " data point index "
-                                                + seriesSelection.getPointIndex() + " was long pressed",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                        }
-                        break;
-                    default:
-                }
-                return true;
-            }
-        });
-
-
-        mChartView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                SeriesSelection seriesSelection = mChartView.getCurrentSeriesAndPoint();
-
-                if (seriesSelection == null) {
-                    Toast.makeText(mContext, "No chart element was long pressed",
-                            Toast.LENGTH_SHORT).show();
-                    return false; // no chart element was long pressed, so let
-                    // something
-                    // else handle the event
-                } else {
-                    Toast.makeText(mContext, "Chart element in series index "
-                                    + seriesSelection.getSeriesIndex() + " data point index "
-                                    + seriesSelection.getPointIndex() + " was long pressed",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                    return true;
-                }
-            }
-        });
-    }
 
     /*
 Set the FractionView with appropriate time data
@@ -1301,14 +1165,6 @@ Set the FractionView with appropriate time data
         int days_in_span = (int) ((mContactStats.getDateEventDue() - last_event) / ONE_DAY);
 
         fractionView.setFraction(days_left, days_in_span);
-    }
-
-
-    /*
-    Callback from chartMaker to repaint the chart after refreshing the data
-     */
-    public void finishedLoading() {
-        mChartView.repaint();
     }
 
 

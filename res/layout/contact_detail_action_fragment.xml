@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/contact_action_fragment_title"
-        android:id="@+id/textView"
+        android:id="@+id/action_title"
         android:layout_weight="0.03"
         android:textAlignment="center"
         android:layout_gravity="center_horizontal"
@@ -52,36 +52,13 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageButton"
-            android:layout_weight="0.04"
-            android:src="@drawable/ic_action_group" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageButton"
-            android:layout_weight="0.04"
-            android:src="@drawable/ic_action_map" />
-
-        </LinearLayout>
-
-
-
-
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="253dp"
-        android:layout_weight="0.45"
-        android:paddingStart="60dp">
+        android:layout_height="wrap_content"
+        android:paddingStart="60dp"
+        android:id="@+id/stats_view"
+        android:paddingBottom="20dp">
 
 <!-- This view is for editing the notes in the google contact field -->
         <TextView

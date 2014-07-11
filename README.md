@@ -2,6 +2,7 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
+- make new event activity text field not auto focus
 - group stats must be collected just like contact stats
 -- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine

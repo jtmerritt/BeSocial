@@ -190,6 +190,9 @@
     <string name="delims">[ .,?!\-]+</string>
 
 
+    <!-- contact detail chart activity -->
+    <string name="contact_detail_chart_activity_label">Chart Activity</string>
+
 
 
 </resources>

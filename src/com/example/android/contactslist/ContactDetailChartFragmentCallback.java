@@ -1,7 +1,7 @@
 package com.example.android.contactslist;
 
 
-public interface ContactDetailFragmentCallback {
+public interface ContactDetailChartFragmentCallback {
 
     public abstract void finishedLoading();
 }
