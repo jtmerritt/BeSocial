@@ -29,69 +29,6 @@
         android:orientation="vertical"
         android:weightSum="100">
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/contact_layout">
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="300dp"
-                android:layout_height="119dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="10dp"
-                android:id="@+id/time_layout">
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Jan 1, 1970"
-                    android:id="@+id/edit_date"
-                    android:onClick="showDatePickerDialog"
-                    android:layout_marginTop="10dp"
-                    android:layout_gravity="center_horizontal"
-                    android:textAlignment="center"
-                    android:singleLine="false"
-                    android:background="@android:drawable/alert_light_frame"
-                    android:shadowColor="#fff5f5f5"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:paddingRight="20dp"
-                    android:paddingLeft="20dp" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="12:00 AM"
-                    android:id="@+id/edit_time"
-                    android:onClick="showTimePickerDialog"
-                    android:layout_marginTop="10dp"
-                    android:layout_gravity="center_horizontal"
-                    android:singleLine="false"
-                    android:background="@android:drawable/alert_light_frame"
-                    android:shadowColor="#fff5f5f5"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:paddingRight="20dp"
-                    android:paddingLeft="20dp" />
-
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/contact_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_contact_picture_180_holo_light"
-                android:contentDescription="@string/imageview_description"
-                android:minWidth="197dp"
-                android:minHeight="197dp"
-                android:layout_weight="1"
-                android:layout_marginLeft="10dp" />
-
-        </LinearLayout>
-
         <TextView android:id="@+id/contact_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -116,6 +53,48 @@
                 android:layout_height="wrap_content"
                 android:divider="@android:drawable/divider_horizontal_textfield"
                 android:showDividers="beginning|middle">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/linearLayout2" >
+
+                    <Button
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Jan 1, 1970"
+                        android:id="@+id/edit_date"
+                        android:onClick="showDatePickerDialog"
+                        android:layout_gravity="center"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:background="@android:drawable/alert_light_frame"
+                        android:shadowColor="#fff5f5f5"
+                        android:layout_weight=".5"
+                        android:importantForAccessibility="yes"
+                        android:layout_marginLeft="@dimen/padding"
+                        android:layout_marginRight="@dimen/padding"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp" />
+
+                    <Button
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="12:00 AM"
+                        android:id="@+id/edit_time"
+                        android:onClick="showTimePickerDialog"
+                        android:layout_gravity="center"
+                        android:singleLine="false"
+                        android:background="@android:drawable/alert_light_frame"
+                        android:shadowColor="#fff5f5f5"
+                        android:layout_weight=".5"
+                        android:importantForAccessibility="yes"
+                        android:layout_marginLeft="@dimen/padding"
+                        android:layout_marginRight="@dimen/padding"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:orientation="horizontal"
@@ -277,21 +256,21 @@
                         android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-                        android:text="Event Notes"
+                        android:text="@string/event_notes"
                         android:id="@+id/evetn_notes_title" />
 
-                    <EditText
+
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="wrap_content"
                         android:inputType="textMultiLine"
-                        android:ems="10"
                         android:id="@+id/event_notes"
                         android:layout_gravity="center_horizontal"
                         android:hint="..."
-                        android:textAlignment="textEnd"
                         android:minLines="3"
                         android:gravity="start"
-                        />
+                        android:textIsSelectable="false"
+                        android:layout_marginLeft="@dimen/padding" />
                 </LinearLayout>
 
                 <LinearLayout

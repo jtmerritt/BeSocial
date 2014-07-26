@@ -2,35 +2,26 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- make new event activity text field not auto focus
 - group stats must be collected just like contact stats
 -- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine
 - restrict to portrait mode
-- move the interactive chart to it's own full screen activity
 - fix the fact that tapping on the update notification initiates a new file import activity
 
 ***Medium Tasks***
-- place header graphics for in/out in Details Table
-- push contact photo into actionbar
-- place reach-out buttons at the top, just under the actionbar
 - generate real history plot
 - fill out new statistics
 - Make event browser
 - open Event Note editor by clicking on the button with the current text
-- which group is viewed by default should be indicated in the menu drawer
 - Create routine for producing the long duration statistics:
     - average time
     - score over time
 - Create class to estimate contact due date
-- Create interface for manually adding events
 - Create interface for adding contacts to group
-- Low Priority: Try placing user photo and pie chart in action bar, then implement swipable tabs.
 
 
 ***Large Tasks***
-- add contacts to a group
-- add a group
+- FEATURE TO add contacts to a group
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
 - Change UI to infinite tab interface (like photo viewing) for switcing between contacts
@@ -62,6 +53,13 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- make new event activity text field not auto focus
+
+- move the interactive chart to it's own full screen activity
+- push contact photo into actionbar
+- place reach-out buttons in the actionbar
+- place header graphics for in/out in Details Table
+- Create interface for manually adding events
 -- pretty major bug where the auto_update ran repeatedly in quick successsion
 - Collect stats for the group by creating new contacts with ContactKey "Group"
   - perhaps there needs to be a contactStats data field for dominating group

@@ -47,7 +47,7 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="400dp" />
+                    android:layout_height="1dp" />
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -107,6 +107,62 @@
                     android:showDividers="end"
                     android:divider="@android:drawable/divider_horizontal_textfield">
 
+                    <LinearLayout
+                        style="@android:style/TextAppearance.Holo.Small"
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:baselineAligned="false"
+                        android:paddingLeft="@dimen/padding"
+                        android:paddingRight="@dimen/padding"
+                        android:paddingTop="5dp"
+                        android:focusableInTouchMode="true"
+                        android:divider="@android:drawable/divider_horizontal_textfield"
+                        android:dividerPadding="10dp"
+                        android:id="@+id/linearLayout2">
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content" >
+
+                            <TextView
+                                style="@style/AppTheme"
+                                android:id="@+id/textView"
+                                android:layout_height="wrap_content"
+                                android:layout_width="0dp"
+                                android:layout_weight=".7"
+                                android:autoText="false"
+                                android:layout_gravity="center_vertical" />
+
+                            <ImageView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/image_out"
+                                android:layout_weight=".15"
+                                android:src="@drawable/outgoingsmall"
+                                android:background="#00000000"
+                                android:baselineAlignBottom="false"
+                                android:layout_gravity="left"
+                                android:layout_marginRight="10dp"
+                                android:adjustViewBounds="false" />
+
+                            <ImageView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/image_in"
+                                android:layout_weight=".15"
+                                android:src="@drawable/incomingsmall"
+                                android:layout_gravity="left"
+                                android:focusableInTouchMode="false"
+                                style="@style/AppTheme"
+                                android:adjustViewBounds="false"
+                                android:layout_marginRight="10dp" />
+
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout

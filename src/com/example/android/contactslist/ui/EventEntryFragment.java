@@ -48,6 +48,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -59,6 +60,8 @@ import android.widget.RadioGroup;
 import android.widget.RadioButton;
 import android.widget.Button;
 import android.widget.NumberPicker;
+import android.widget.EditText;
+import android.content.DialogInterface;
 import android.text.InputType;
 
 
@@ -73,6 +76,7 @@ import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
+import android.app.AlertDialog;
 
 import org.achartengine.GraphicalView;
 import org.achartengine.model.SeriesSelection;
@@ -135,7 +139,8 @@ public class EventEntryFragment extends Fragment implements
 
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
-    private ImageView mImageView;
+    //private ImageView mImageView;
+    private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
@@ -219,10 +224,10 @@ public class EventEntryFragment extends Fragment implements
         if (contactLookupUri != null) {
 
             // Asynchronously loads the contact image
-            mImageLoader.loadImage(mContactUri, mImageView);
+            mImageLoader.loadImage(mContactUri, mActionBarIcon /*mImageView*/);
 
             // Shows the contact photo ImageView and hides the empty view
-            mImageView.setVisibility(View.VISIBLE);
+            //mImageView.setVisibility(View.VISIBLE);
 
             mEmptyView.setVisibility(View.GONE);
 
@@ -252,7 +257,7 @@ public class EventEntryFragment extends Fragment implements
             // account for the view's space in the layout. Turn on the TextView that appears when
             // the layout is empty, and set the contact name to the empty string. Turn off any menu
             // items that are visible.
-            mImageView.setVisibility(View.GONE);
+            //mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
 
@@ -306,6 +311,17 @@ public class EventEntryFragment extends Fragment implements
 
         mContext = getActivity().getApplicationContext();
 
+
+        // reference to the actionBar ImageView
+        mActionBarIcon = (ImageView) getActivity().findViewById(android.R.id.home);
+
+        // set the margins for the actionbar imageView  http://stackoverflow.com/questions/18671231/how-to-add-padding-margin-between-icon-and-up-button-of-the-actionbar
+        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) mActionBarIcon.getLayoutParams();
+        iconLp.topMargin = iconLp.bottomMargin = 0;
+        iconLp.leftMargin = 10;
+        iconLp.rightMargin = 10;
+        mActionBarIcon.setLayoutParams(iconLp);
+
     }
 
     @Override
@@ -318,7 +334,7 @@ public class EventEntryFragment extends Fragment implements
 
         // Gets handles to view objects in the layout
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+        //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
         mClassSelectionSpinner = (Spinner) detailView.findViewById(R.id.event_class_spinner);
@@ -379,9 +395,6 @@ public class EventEntryFragment extends Fragment implements
         DateFormat formatTime = new SimpleDateFormat("HH:mm a");
         String formattedTime = formatTime.format(date);
         mTimeViewButton.setText(formattedTime);
-
-
-        mEventNotes.setSelected(false);
 
         //Take care of the radio button selection of Event Type
         radioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -450,7 +463,48 @@ public class EventEntryFragment extends Fragment implements
             }
         });
 
+
+        mEventNotes.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                editTextDialog();
+            }
+        });
+
     }
+
+
+    private void editTextDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.event_notes);
+
+// Set up the input
+        final EditText input = new EditText(getActivity());
+
+        input.setText(mEventNotes.getText());
+
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mEventNotes.setText(input.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
 
     private void setBasicContactInfo(){
         // Starts two queries to to retrieve contact information from the Contacts Provider.
@@ -524,7 +578,7 @@ public class EventEntryFragment extends Fragment implements
         super.onCreateOptionsMenu(menu, inflater);
 
         // Inflates the options menu for this fragment
-        inflater.inflate(R.menu.contact_detail_menu, menu);
+        inflater.inflate(R.menu.event_entry_menu, menu);
 
         // Gets a handle to the "find" menu item
         mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);

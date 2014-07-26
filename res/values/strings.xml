@@ -185,6 +185,8 @@
 
     <string name="duration_prompt">Choose best event duration</string>
     <string name="class_prompt">Select Event Class</string>
+    <string name="event_notes">Event Notes</string>
+
 
 
     <!-- Naming for groups -->
