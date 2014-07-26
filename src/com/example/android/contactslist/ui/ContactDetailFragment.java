@@ -40,6 +40,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+
+import android.support.v4.view.GravityCompat;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -60,6 +62,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
+import android.widget.FrameLayout;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
@@ -117,13 +120,14 @@ public class ContactDetailFragment extends Fragment implements
 
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
-    private ImageView mImageView;
+   // private ImageView mImageView;
+    private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
+    //private LinearLayout mActionLayout;
+    //private LinearLayout mActionLayoutContainer;
+    private LinearLayout mStatsLayoutContainer;
     private LinearLayout mDetailsCallLogLayout;
     private LinearLayout mDetailsSMSLogLayout;
-    private LinearLayout mActionTab;
-    private LinearLayout mActionLayout;
-    private LinearLayout mActionLayoutContainer;
     private TextView mEmptyView;
     private TextView mContactNameView;
     private MenuItem mEditContactMenuItem;
@@ -196,10 +200,11 @@ public class ContactDetailFragment extends Fragment implements
 
 
             // Asynchronously loads the contact image
-            mImageLoader.loadImage(mContactUri, mImageView);
+            mImageLoader.loadImage(mContactUri, mActionBarIcon /*mImageView*/);
 
-            // Shows the contact photo ImageView and hides the empty view
-            mImageView.setVisibility(View.VISIBLE);
+            // Shows the contact photo ImageView and hides the empty view !!! Usually View.Visible
+            //mImageView.setVisibility(View.VISIBLE);
+
 
             mEmptyView.setVisibility(View.GONE);
 
@@ -227,7 +232,7 @@ public class ContactDetailFragment extends Fragment implements
             // account for the view's space in the layout. Turn on the TextView that appears when
             // the layout is empty, and set the contact name to the empty string. Turn off any menu
             // items that are visible.
-            mImageView.setVisibility(View.GONE);
+            //mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
             mDetailsCallLogLayout.removeAllViews();
@@ -272,7 +277,6 @@ public class ContactDetailFragment extends Fragment implements
             }
         };
 
-
         // Set a placeholder loading image for the image loader
         mImageLoader.setLoadingImage(R.drawable.ic_contact_picture_180_holo_light);
 
@@ -282,6 +286,15 @@ public class ContactDetailFragment extends Fragment implements
 
         mContext = getActivity().getApplicationContext();
 
+        // reference to the actionBar ImageView
+        mActionBarIcon = (ImageView) getActivity().findViewById(android.R.id.home);
+
+        // set the margins for the actionbar imageView  http://stackoverflow.com/questions/18671231/how-to-add-padding-margin-between-icon-and-up-button-of-the-actionbar
+        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) mActionBarIcon.getLayoutParams();
+        iconLp.topMargin = iconLp.bottomMargin = 0;
+        iconLp.leftMargin = 10;
+        iconLp.rightMargin = 10;
+        mActionBarIcon.setLayoutParams(iconLp);
     }
 
     @Override
@@ -294,11 +307,8 @@ public class ContactDetailFragment extends Fragment implements
 
         // Gets handles to view objects in the layout
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mDetailsCallLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_call_details_layout);
-        mDetailsSMSLogLayout = (LinearLayout) detailView.findViewById(R.id.contact_sms_details_layout);
-        mActionTab = (LinearLayout) detailView.findViewById(R.id.tab_action);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
-        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+        //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mOpenFullScreenChartButton = (ImageButton) detailView.findViewById(R.id.open_full_screen_chart_button);
         mOpenFullScreenChartButton.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
@@ -315,23 +325,25 @@ public class ContactDetailFragment extends Fragment implements
         //************ action view
 
         // get the layout container resource
-        mActionLayoutContainer = (LinearLayout) detailView.findViewById(R.id.action_layout_container);
+       // mActionLayoutContainer = (LinearLayout) detailView.findViewById(R.id.action_layout_container);
+        mStatsLayoutContainer = (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
+
 
 
         // Inflates the tab_action view with the new fragment.
-        mActionLayout = (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_action_fragment, mActionLayoutContainer, false);
+        //mActionLayout = (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                       // R.layout.contact_detail_action_fragment, mActionLayoutContainer, false);
 
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
 
 
-        if (mIsTwoPaneLayout) {
+       if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
             // name in details. For a one-pane view, the contact name is displayed as a title.
             mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
             mContactNameView.setVisibility(View.VISIBLE);
-        }
+       }
 
         return detailView;
     }
@@ -353,41 +365,8 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
-        //TODO redo all the tab stuff to be more like a photo viewer where swiing left/right changes the contact
-        TabHost tabHost=(TabHost)getActivity().findViewById(R.id.tabHost);
-        tabHost.setup();
-
-        TabSpec spec1=tabHost.newTabSpec("Tab Chart");
-        spec1.setIndicator("", getResources().getDrawable(R.drawable.ic_action_statistics));
-        spec1.setContent(R.id.tab_chart);
-
-        TabSpec spec2=tabHost.newTabSpec("Tab Call");
-        spec2.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
-        spec2.setContent(R.id.tab_call);
-
-        TabSpec spec3=tabHost.newTabSpec("Tab SMS");
-        spec3.setIndicator("", getResources().getDrawable(R.drawable.ic_action_view_as_list));
-        spec3.setContent(R.id.tab_sms);
-
-        TabSpec spec4=tabHost.newTabSpec("Tab Statistics");
-        spec4.setIndicator("", getResources().getDrawable(R.drawable.ic_action_settings));
-        spec4.setContent(R.id.tab_stats);
-
-        TabSpec spec5=tabHost.newTabSpec("Tab Action");
-        spec5.setIndicator("", getResources().getDrawable(R.drawable.ic_action_send_now));
-        spec5.setContent(R.id.tab_action);
-
-        tabHost.addTab(spec5);
-        tabHost.addTab(spec1);
-        tabHost.addTab(spec2);
-        tabHost.addTab(spec3);
-        tabHost.addTab(spec4);
-
-        tabHost.setCurrentTab(0);
-
-
         // Inflates the view containers with the new fragment.
-        mActionLayoutContainer.addView(buildActionLayout());
+        //mActionLayoutContainer.addView(buildActionLayout());
     }
 
     private void setBasicContactInfo(){
@@ -456,6 +435,22 @@ public class ContactDetailFragment extends Fragment implements
                 // Start the edit activity
                 startActivity(intent);
                 return true;
+
+            case R.id.menu_imageButton_call:
+                startPhoneCall();
+                break;
+
+            case R.id.menu_imageButton_chat:
+                startSMS();
+                break;
+
+            case R.id.menu_imageButton_email:
+                startEmail();
+                break;
+
+            case R.id.menu_imageButton_new_event:
+                startNewEntry();
+                break;
             default:
                 // Display the fragment as the main content.
                 Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
@@ -591,7 +586,10 @@ public class ContactDetailFragment extends Fragment implements
                     // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
                     // name field based on OS version.
                     mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
-                    if (mIsTwoPaneLayout && mContactNameView != null) {
+
+
+
+                    if (mContactNameView != null) {
                         // In the two pane layout, there is a dedicated TextView
                         // that holds the contact name.
                         mContactNameView.setText(mContactNameString);
@@ -1040,6 +1038,7 @@ public class ContactDetailFragment extends Fragment implements
     }
 
     /* INTERFACE ELEMENTS*/
+    /*
     private LinearLayout buildActionLayout() {
 
         // Gets handles to the view objects in the layout
@@ -1087,7 +1086,7 @@ public class ContactDetailFragment extends Fragment implements
         });
 
         return mActionLayout;
-    }
+    }*/
 
     private void startPhoneCall() {
         Intent implicitIntent = new Intent();
@@ -1311,29 +1310,55 @@ Set the FractionView with appropriate time data
 
     private void displayContactStatsInfo() {
 
+        View view;
         if (mContactStats != null) {
-            final TextView statsTextView1 =
-                    (TextView) mActionLayout.findViewById(R.id.statsTextView1);
-            final TextView statsTextView2 =
-                    (TextView) mActionLayout.findViewById(R.id.statsTextView2);
-            final TextView statsTextView3 =
-                    (TextView) mActionLayout.findViewById(R.id.statsTextView3);
-            final TextView statsTextView4 =
-                    (TextView) mActionLayout.findViewById(R.id.statsTextView4);
 
             //TODO: Get all text into Strings File
-            statsTextView1.setText("Calls In: " + mContactStats.getCallCountIn() +
-                    "\t\tCalls Out: " + mContactStats.getCallCountOut());
+            view = buildContactStatsItemLayout("Call Count",
+                    mContactStats.getCallCountOut(), mContactStats.getCallCountOut());
+            mStatsLayoutContainer.addView(view);
 
-            statsTextView2.setText("Average Call Duration: " + mContactStats.getCallDurationAvg());
+            view = buildContactStatsItemLayout("Messages",
+                    mContactStats.getMessagesCountOut(), mContactStats.getMessagesCountIn());
+            mStatsLayoutContainer.addView(view);
 
-            statsTextView3.setText("Messages In: " + mContactStats.getMessagesCountIn() +
-                    "\t\tMessages Out: " + mContactStats.getMessagesCountOut());
+            view = buildContactStatsItemLayout("Word Count",
+                    mContactStats.getWordCountOut(), mContactStats.getWordCountIn());
+            mStatsLayoutContainer.addView(view);
 
-            statsTextView4.setText("Word Count In: " + mContactStats.getWordCountIn() +
-                    "\t\tWord Count Out: " + mContactStats.getWordCountOut());
+            view = buildContactStatsItemLayout("Question Marks",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Smileys",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Kisses/Hearts",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Question Marks",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Average Reply Time",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Conversations Started",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Conversations Ended",
+                    0, 0);
+            mStatsLayoutContainer.addView(view);
+
+
+            view = buildContactStatsItemLayout("Average Call Duration",
+                    mContactStats.getCallDurationAvg(), mContactStats.getCallDurationTotal());
+            mStatsLayoutContainer.addView(view);
         }
-
 
     }
 
@@ -1520,6 +1545,31 @@ Set the FractionView with appropriate time data
         return Uri.parse(GEO_URI_SCHEME_PREFIX + Uri.encode(postalAddress));
     }
 
+
+
+    private LinearLayout buildContactStatsItemLayout(String description, int out_value, int in_value) {
+
+        // Inflates the address layout
+        final LinearLayout statsLayout =
+                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                        R.layout.contact_stats_item, mStatsLayoutContainer, false);
+
+        // Gets handles to the view objects in the layout
+        final TextView contactStatsItem =
+                (TextView) statsLayout.findViewById(R.id.contact_stats_item);
+        final TextView contactStatsItmeOutValue =
+                (TextView) statsLayout.findViewById(R.id.contact_stats_item_out_value);
+        final TextView contactStatsItmeInValue =
+                (TextView) statsLayout.findViewById(R.id.contact_stats_item_in_value);
+
+
+            // Sets TextView objects in the layout
+        contactStatsItem.setText(description);
+        contactStatsItmeOutValue.setText(Integer.toString(out_value));
+        contactStatsItmeInValue.setText(Integer.toString(in_value));
+
+        return statsLayout;
+    }
 
 }
 

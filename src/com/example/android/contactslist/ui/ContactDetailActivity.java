@@ -25,6 +25,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.util.Utils;
@@ -50,8 +51,16 @@ public class ContactDetailActivity extends FragmentActivity {
 
             // For OS versions honeycomb and higher use action bar
             if (Utils.hasHoneycomb()) {
+                // set the actionbar to overlay the activity
+                // this needs to be set before calls to getactionbar
+                //getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+
                 // Enables action bar "up" navigation
                 getActionBar().setDisplayHomeAsUpEnabled(true);
+                //getActionBar().setDisplayShowHomeEnabled(false);
+                //getActionBar().setDisplayUseLogoEnabled(false);
+                //getActionBar().setDisplayShowTitleEnabled(false);
+
             }
 
             // Fetch the data Uri from the intent provided to this activity

@@ -11,8 +11,14 @@ ___________________________________________________________________
 - fix the fact that tapping on the update notification initiates a new file import activity
 
 ***Medium Tasks***
+- place header graphics for in/out in Details Table
+- push contact photo into actionbar
+- place reach-out buttons at the top, just under the actionbar
+- generate real history plot
+- fill out new statistics
 - Make event browser
-- which group is viewed by defautl should be indicated in the menu drawer
+- open Event Note editor by clicking on the button with the current text
+- which group is viewed by default should be indicated in the menu drawer
 - Create routine for producing the long duration statistics:
     - average time
     - score over time

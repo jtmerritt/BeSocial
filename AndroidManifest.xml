@@ -68,6 +68,9 @@
             android:name=".ui.ContactDetailActivity"
             android:label="@string/activity_contact_detail"
             android:parentActivityName=".ui.ContactsListActivity">
+            <!--android:theme="@style/CustomActionBarTheme"-->
+
+
             <!-- Define hierarchical parent of this activity, both via the system
                  parentActivityName attribute (added in API Level 16) and via meta-data annotation.
                  This allows use of the support library NavUtils class in a way that works over

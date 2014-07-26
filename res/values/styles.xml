@@ -65,11 +65,31 @@
     </style>
 
     <style name="contactNameTitle" parent="@android:style/TextAppearance.Large">
-        <item name="android:textSize">38sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="addressButton"/>
+
+    <!-- the theme applied to the application or activity -->
+    <style name="CustomActionBarTheme"
+        parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="MyActionBar"
+        parent="@android:style/Widget.Holo.ActionBar">
+        <!--<item name="android:windowActionBarOverlay">true</item>-->
+        <item name="android:background">#01000000</item>
+        <item name="android:titleTextStyle">@style/ActionBarTitle</item>
+
+    </style>
+
+    <style name="ActionBarTitle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textSize">18sp</item>
+        <item name="android:paddingLeft">5dp</item>   <!-- Can't get this padding to work :( -->
+    </style>
 
 </resources>

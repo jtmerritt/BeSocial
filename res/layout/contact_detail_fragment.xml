@@ -30,53 +30,6 @@
         android:weightSum="100"
         android:id="@+id/c">
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/b">
-
-            <ImageView
-                android:id="@+id/contact_image"
-                android:layout_width="197dp"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_contact_picture_180_holo_light"
-                android:contentDescription="@string/imageview_description"
-                />
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="1"
-                android:id="@+id/a">
-
-                <com.example.android.contactslist.ui.FractionView
-                    android:layout_width="match_parent"
-                    android:layout_height="119dp"
-                    android:id="@+id/fraction"
-                    android:paddingBottom="5dp"
-                    android:orientation="vertical"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentTop="true" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <TextView android:id="@+id/contact_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/padding"
-            android:paddingRight="@dimen/padding"
-            android:paddingTop="@dimen/padding"
-            android:visibility="gone"
-            style="@style/contactNameTitle"
-            android:layout_weight="0.05" />
-
 
         <ScrollView
             android:layout_width="match_parent"
@@ -92,12 +45,69 @@
                 android:paddingRight="5dp"
                 android:id="@+id/d">
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/basic_stats_layout_container">
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:weightSum="1"
+                        android:id="@+id/a"
+                        android:layout_weight="1">
+
+                        <com.example.android.contactslist.ui.FractionView
+                            android:layout_width="122dp"
+                            android:layout_height="101dp"
+                            android:id="@+id/fraction"
+                            android:paddingBottom="5dp"
+                            android:orientation="vertical"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentTop="true" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/action_layout_container"
-                    android:focusableInTouchMode="true"></LinearLayout>
+                    android:focusableInTouchMode="true">
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Details"
+                    android:id="@+id/textNotesTitle"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="29dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/stats_layout_container"
+                    android:showDividers="end"
+                    android:divider="@android:drawable/divider_horizontal_textfield">
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -117,11 +127,10 @@
                         android:gravity="center" />
 
                     <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="60dp"
+                        android:layout_width="118dp"
+                        android:layout_height="match_parent"
                         android:id="@+id/open_full_screen_chart_button"
-                        android:layout_weight="0.04"
-                        android:src="@drawable/ic_action_full_screen"
+                        android:src="@drawable/ic_action_statistics"
                         android:layout_alignParentTop="true"
                         android:layout_alignParentRight="true"
                         android:layout_alignParentEnd="true" />
@@ -135,114 +144,6 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
-
-        <TabHost
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/tabHost">
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:orientation="vertical">
-
-                <TabWidget
-                    android:id="@android:id/tabs"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"></TabWidget>
-
-                <FrameLayout
-                    android:id="@android:id/tabcontent"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent">
-
-
-                    <LinearLayout
-                        android:id="@+id/tab_action"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:orientation="vertical">
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/tab_chart"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:orientation="vertical">
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/tab_call"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
-
-                        <ScrollView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <LinearLayout
-                                android:id="@+id/contact_call_details_layout"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:paddingBottom="5dp"
-                                android:orientation="vertical">
-
-
-                            </LinearLayout>
-
-                        </ScrollView>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/tab_sms"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
-
-                        <ScrollView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <LinearLayout
-                                android:id="@+id/contact_sms_details_layout"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:paddingBottom="5dp"
-                                android:orientation="vertical">
-
-
-                            </LinearLayout>
-
-                        </ScrollView>
-
-                        </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/tab_stats"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
-
-                        <ScrollView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <LinearLayout
-                                android:id="@+id/contact_details_layout"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:paddingBottom="5dp"
-                                android:orientation="vertical">
-
-
-                            </LinearLayout>
-
-                        </ScrollView>
-                    </LinearLayout>
-
-                </FrameLayout>
-            </LinearLayout>
-        </TabHost>
 
 
     </LinearLayout>
