@@ -1,19 +1,31 @@
 package com.example.android.contactslist.notification;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
+import android.support.v4.content.CursorLoader;
+
 import java.util.Calendar;
+import java.util.List;
 
 
+import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.dataImport.Updates;
 import com.example.android.contactslist.util.PowerMonitor;
+import com.example.android.contactslist.util.Utils;
 
 /**
  * Created by Tyson Macdonald on 1/27/14.
@@ -75,61 +87,54 @@ public class SetAlarm {
 
         //TODO: setup a listener for the preferences menu to turn off the alarm.
         //alarmManager.cancel(pintent);
-
-
     }
 
-
-
-    public void set_Alarm(Context c)
+    public void setContactStatusCheck(Context context)
     {
-        Context appContext = c.getApplicationContext();
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
-        Boolean update_db = sharedPref.getBoolean("update_db_checkbox_preference_key", false);
+        Context appContext = context.getApplicationContext();
+        String intent_key = "com.example.android.contactslist.notification.contact_status_alert";
 
-        if(update_db){
+        AlarmManager alarmManager = (AlarmManager)(appContext.getSystemService( Context.ALARM_SERVICE ));
+        PendingIntent pintent = PendingIntent.getBroadcast( appContext, 0, new Intent(intent_key), 0 );
+        //PendingIntent pi = PendingIntent.getService(context, 0 , new Intent(context, Your_Class.class),PendingIntent.FLAG_UPDATE_CURRENT);
 
-            BroadcastReceiver receiver = new BroadcastReceiver() {
-                @Override public void onReceive( Context context, Intent _ )
-                {
+        Calendar calendar = Calendar.getInstance();
+        // 12 PM today
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 3);
+        calendar.set(Calendar.SECOND, 0);
 
-                    // setup an async task to read local and web data sources into the database
-                    // user preferences governing updates are handeled in Updates
+        //TODO create a preference for setting this notification time
 
-                    //AsyncTask<Void, Void, String> updates = new Updates(context, null);
-                    //updates.execute();
+        //Keep only one copy of the alarm going by first removing anything with a matching intent
+        alarmManager.cancel(pintent);
 
-                    //Log.d("Alarm Receiver", "onReceive called");
-                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-                    Boolean enable_notification = sharedPref.getBoolean("notification_checkbox_preference_key", false);
+        // set the alarm to repeat every day at the appointed time
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES, pintent);
 
-                    if(enable_notification){  //Things to do when notifying user of updates
-                        Notification.simpleNotification(context);
-                    }
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive( Context context, Intent _ )
+            {
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                Boolean contact_status_alert_enable = sharedPref.getBoolean("contact_status_alert_key", true);
+
+                if(contact_status_alert_enable){
+
+                    // setup an async task to run the notification class
+                    final AsyncTask<Void, Integer, String> contactStatusNotification
+                            = new ContactStatusNotification(context);
+                    contactStatusNotification.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
                 }
-            };
+            }
+        };
 
-            appContext.registerReceiver( receiver, new IntentFilter("com.blah.blah.somemessage") );
-
-            PendingIntent pintent = PendingIntent.getBroadcast( appContext, 0, new Intent("com.blah.blah.somemessage"), 0 );
-            AlarmManager manager = (AlarmManager)(appContext.getSystemService( Context.ALARM_SERVICE ));
-
-            // set alarm to fire 5 sec (1000*5) from now (SystemClock.elapsedRealtime())
-            /*
-        manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-               SystemClock.elapsedRealtime() + (long) AlarmManager.INTERVAL_FIFTEEN_MINUTES/15,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                pintent);
-                */
-
-            //manager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 15000, pintent);
-            manager.set(AlarmManager.ELAPSED_REALTIME, 10000,pintent);
+        appContext.registerReceiver( receiver, new IntentFilter(intent_key) );
 
 
-
-            //TODO: setup a listener for the preferences menu to turn off the alarm.
-            //manager.cancel(pintent);
-        }
+        //TODO: setup a listener for the preferences menu to turn off the alarm.
+        //alarmManager.cancel(pintent);
     }
 
 
@@ -205,6 +210,82 @@ Class for asynchronously importing data
             dbUpdates.cancelReadDB();
 
             updateNotification.cancelNotification();
+        }
+    }
+
+
+    /*
+Class for asynchronously importing data
+ */
+    public class ContactStatusNotification extends AsyncTask<Void, Integer, String> {
+        private Notification notification;
+        private Context mContext;
+
+
+
+        public ContactStatusNotification(Context context) {
+            mContext = context;
+            notification = new Notification(context);
+        }
+
+
+        @Override
+        protected String doInBackground(Void... v1) {
+            // run the notification
+            notification.simpleNotification();
+            return "done";
+        }
+    }
+
+
+    public void set_Alarm(Context c)
+    {
+        Context appContext = c.getApplicationContext();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
+        Boolean update_db = sharedPref.getBoolean("update_db_checkbox_preference_key", false);
+
+        if(update_db){
+
+            BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override public void onReceive( Context context, Intent _ )
+                {
+
+                    // setup an async task to read local and web data sources into the database
+                    // user preferences governing updates are handeled in Updates
+
+                    //AsyncTask<Void, Void, String> updates = new Updates(context, null);
+                    //updates.execute();
+
+                    //Log.d("Alarm Receiver", "onReceive called");
+                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                    Boolean enable_notification = sharedPref.getBoolean("notification_checkbox_preference_key", false);
+
+                    if(enable_notification){  //Things to do when notifying user of updates
+                        //Notification.simpleNotification(context);
+                    }
+                }
+            };
+
+            appContext.registerReceiver( receiver, new IntentFilter("com.blah.blah.somemessage") );
+
+            PendingIntent pintent = PendingIntent.getBroadcast( appContext, 0, new Intent("com.blah.blah.somemessage"), 0 );
+            AlarmManager manager = (AlarmManager)(appContext.getSystemService( Context.ALARM_SERVICE ));
+
+            // set alarm to fire 5 sec (1000*5) from now (SystemClock.elapsedRealtime())
+            /*
+        manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+               SystemClock.elapsedRealtime() + (long) AlarmManager.INTERVAL_FIFTEEN_MINUTES/15,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                pintent);
+                */
+
+            //manager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 15000, pintent);
+            manager.set(AlarmManager.ELAPSED_REALTIME, 10000,pintent);
+
+
+
+            //TODO: setup a listener for the preferences menu to turn off the alarm.
+            //manager.cancel(pintent);
         }
     }
 

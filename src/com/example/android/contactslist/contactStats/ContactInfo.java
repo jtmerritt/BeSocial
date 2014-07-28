@@ -42,6 +42,15 @@ public class ContactInfo {
 
     private int member_count = 0;
 
+    private int textSmileyCountIn = 0;
+    private int textSmileyCountOut = 0;
+
+    private int textHeartCountIn = 0;
+    private int textHeartCountOut = 0;
+
+    private int textQuestionCountIn = 0;
+    private int textQuestionCountOut = 0;
+
     private String preferredContactMethod; // not fully connected in the database
 
     //Has the value been Updated
@@ -177,8 +186,36 @@ public class ContactInfo {
 
     }
 
+    public int getSmileyCountIn(){
 
+        return textSmileyCountIn;
 
+    }
+    public int getSmileyCountOut(){
+
+        return textSmileyCountOut;
+
+    }
+    public int getHeartCountIn(){
+
+        return textHeartCountIn;
+
+    }
+    public int getHeartCountOut(){
+
+        return textHeartCountOut;
+
+    }
+    public int getQuestionCountIn(){
+
+        return textQuestionCountIn;
+
+    }
+    public int getQuestionCountOut(){
+
+        return textQuestionCountOut;
+
+    }
 
     public boolean getUpdatedFlag(){
         return Updated;
@@ -323,6 +360,31 @@ public class ContactInfo {
         Updated = true;
     }
 
+
+    public void setTextSmileyCountIn(int id){
+        textSmileyCountIn = id;
+        Updated = true;
+    }
+    public void setTextSmileyCountOut(int id){
+        textSmileyCountOut = id;
+        Updated = true;
+    }
+    public void setTextHeartCountIn(int id){
+        textHeartCountIn = id;
+        Updated = true;
+    }
+    public void setTextHeartCountOut(int id){
+        textHeartCountOut = id;
+        Updated = true;
+    }
+    public void setTextQuestionCountIn(int id){
+        textQuestionCountIn = id;
+        Updated = true;
+    }
+    public void setTextQuestionCountOut(int id){
+        textQuestionCountOut = id;
+        Updated = true;
+    }
     public void resetUpdateFlag(){
         Updated = false;
     }

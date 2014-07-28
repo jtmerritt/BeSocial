@@ -570,6 +570,7 @@ public class ContactsListFragment extends ListFragment implements
                 //TODO: find a better place to stick the alarm setting
                 SetAlarm alarm = new SetAlarm();
                 alarm.setAutoUpdate(getActivity());
+                alarm.setContactStatusCheck(getActivity());
 
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected

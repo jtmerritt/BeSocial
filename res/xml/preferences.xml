@@ -2,6 +2,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <CheckBoxPreference
+        android:key="contact_status_alert_key"
+        android:title="@string/contact_status_alert_preference_title"
+        android:summary="@string/contact_status_alert_preference_summary"
+        android:defaultValue="true" />
 
     <CheckBoxPreference
         android:key="update_db_checkbox_preference_key"
@@ -16,6 +21,7 @@
         android:title="@string/sync_only_with_power_preference_title"
         android:summary="@string/sync_only_with_power_preference_summary"
         android:defaultValue="false" />
+
 
     <!--
     <CheckBoxPreference

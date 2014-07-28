@@ -115,6 +115,7 @@ public class ContactDetailFragment extends Fragment implements
     private String mVoiceNumber = "";
     private String mSMSNumber = "";
     private String mEmailAddress = "";
+    private String mContactNotes;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -130,11 +131,13 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mDetailsSMSLogLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
+    private TextView mNotesView;
     private MenuItem mEditContactMenuItem;
     private String mContactNameString;
     private FractionView fractionView = null;
     private Context mContext;
     private ImageButton mOpenFullScreenChartButton;
+    private LinearLayout mDetailFillerSpace;
 
 
 
@@ -224,6 +227,7 @@ public class ContactDetailFragment extends Fragment implements
             getVoiceNumber();
             getSMSNumber();
             getEmailAddress();
+            getContactNote();
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -320,7 +324,9 @@ public class ContactDetailFragment extends Fragment implements
         });
 
 
-
+        //Expand the filler space
+        mDetailFillerSpace = (LinearLayout)detailView.findViewById(R.id.filler_layout_container);
+        mDetailFillerSpace.setMinimumHeight(800);
 
         //************ action view
 
@@ -344,6 +350,15 @@ public class ContactDetailFragment extends Fragment implements
             mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
             mContactNameView.setVisibility(View.VISIBLE);
        }
+
+        mNotesView = (TextView) detailView.findViewById(R.id.notes_view);
+        mNotesView.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Maybe next version", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return detailView;
     }
@@ -401,6 +416,9 @@ public class ContactDetailFragment extends Fragment implements
     }
     private void getEmailAddress(){
         getLoaderManager().restartLoader(ContactEmailAddressQuery.QUERY_ID, null, this);
+    }
+    private void getContactNote(){
+        getLoaderManager().restartLoader(ContactNotesQuery.QUERY_ID, null, this);
     }
 
 
@@ -563,8 +581,27 @@ public class ContactDetailFragment extends Fragment implements
                         ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? ",
                         new String[] { mContactLookupKey },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
+
+            case ContactNotesQuery.QUERY_ID:
+                // get all the phone numbers for this contact, sorted by whether it is super primary
+                // http://stackoverflow.com/questions/12524621/how-to-get-note-value-from-contact-book-in-android
+
+                String noteWhere = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
+                        + ContactsContract.Data.MIMETYPE + " = ?";
+                String[] noteWhereParams = new String[]{mContactLookupKey,
+                        ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
+
+                return new CursorLoader(getActivity(),
+                        ContactsContract.Data.CONTENT_URI,
+                        new String[] { ContactsContract.CommonDataKinds.Note.NOTE }, //null
+
+                        noteWhere,
+                        noteWhereParams,
+                        null);
         }
         return null;
+
+
     }
 
 
@@ -736,6 +773,14 @@ public class ContactDetailFragment extends Fragment implements
                             .getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
                 }
                 break;
+
+            case ContactNotesQuery.QUERY_ID:
+                if(data.moveToFirst()) {
+                    //Select the first phone number in the list of phone numbers sorted by super_primary
+                    mContactNotes = data.getString(data.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
+                    mNotesView.setText(mContactNotes);
+                }
+                break;
         }
     }
 
@@ -810,6 +855,23 @@ public class ContactDetailFragment extends Fragment implements
 
             mContactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
+
+
+            mContactStats.setTextSmileyCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_SMILEY_COUNT_IN)));
+            mContactStats.setTextSmileyCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_SMILEY_COUNT_OUT)));
+
+            mContactStats.setTextHeartCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_HEART_COUNT_IN)));
+            mContactStats.setTextHeartCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_HEART_COUNT_OUT)));
+
+            mContactStats.setTextQuestionCountIn(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_QUESTION_COUNT_IN)));
+            mContactStats.setTextQuestionCountOut(cursor.getInt(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_TEXT_QUESTION_COUNT_OUT)));
+
 
             mContactStats.resetUpdateFlag(); //because this is just reporting on the database content
         }
@@ -1035,6 +1097,11 @@ public class ContactDetailFragment extends Fragment implements
             // for getting the super primary voic number
     public interface ContactEmailAddressQuery{
         final static int QUERY_ID = 8;
+    }
+
+    // for getting the contact notes
+    public interface ContactNotesQuery{
+        final static int QUERY_ID = 9;
     }
 
     /* INTERFACE ELEMENTS*/
@@ -1326,20 +1393,16 @@ Set the FractionView with appropriate time data
                     mContactStats.getWordCountOut(), mContactStats.getWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Question Marks",
-                    0, 0);
-            mStatsLayoutContainer.addView(view);
-
             view = buildContactStatsItemLayout("Smileys",
-                    0, 0);
+                    mContactStats.getSmileyCountOut(), mContactStats.getSmileyCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Kisses/Hearts",
-                    0, 0);
+            view = buildContactStatsItemLayout("Hearts/Kisses/Hugs",
+                    mContactStats.getHeartCountOut(), mContactStats.getHeartCountIn());
             mStatsLayoutContainer.addView(view);
 
             view = buildContactStatsItemLayout("Question Marks",
-                    0, 0);
+                    mContactStats.getQuestionCountOut(), mContactStats.getQuestionCountIn());
             mStatsLayoutContainer.addView(view);
 
             view = buildContactStatsItemLayout("Average Reply Time",
@@ -1355,8 +1418,9 @@ Set the FractionView with appropriate time data
             mStatsLayoutContainer.addView(view);
 
 
-            view = buildContactStatsItemLayout("Average Call Duration",
-                    mContactStats.getCallDurationAvg(), mContactStats.getCallDurationTotal());
+            view = buildContactStatsItemLayout("Average Call Duration (min)",
+                    // convert from seconds to minues
+                    mContactStats.getCallDurationAvg()/60, mContactStats.getCallDurationTotal()/60);
             mStatsLayoutContainer.addView(view);
         }
 
@@ -1476,7 +1540,7 @@ Set the FractionView with appropriate time data
         // Inflates the address layout
         final LinearLayout addressLayout =
                 (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_item, mDetailsLayout, false);
+                       R.layout.contact_detail_item, mDetailsLayout, false);
 
         // Gets handles to the view objects in the layout
         final TextView headerTextView =

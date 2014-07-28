@@ -141,7 +141,7 @@ public class EventEntryFragment extends Fragment implements
     // in multiple methods throughout this class.
     //private ImageView mImageView;
     private ImageView mActionBarIcon;
-    private LinearLayout mDetailsLayout;
+    //private LinearLayout mDetailsLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
     static Button mDateViewButton;
@@ -259,7 +259,7 @@ public class EventEntryFragment extends Fragment implements
             // items that are visible.
             //mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
-            mDetailsLayout.removeAllViews();
+            //mDetailsLayout.removeAllViews();
 
             if (mContactNameView != null) {
                 mContactNameView.setText("");
@@ -333,7 +333,7 @@ public class EventEntryFragment extends Fragment implements
                 inflater.inflate(R.layout.event_entry_fragment, container, false);
 
         // Gets handles to view objects in the layout
-        mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
+        //mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
@@ -1133,13 +1133,13 @@ public class EventEntryFragment extends Fragment implements
                     case EventInfo.EMAIL_CLASS:
                         mAddressViewButton.setText(mEmailAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+                        mEventDurationLayout.setVisibility(View.GONE);
 
                         break;
                     case EventInfo.SMS_CLASS:
                         mAddressViewButton.setText(mVoiceNumber);
                         mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+                        mEventDurationLayout.setVisibility(View.GONE);
                         break;
                     case EventInfo.MEETING_CLASS:
                         mAddressViewButton.setText(mStreetAddress);
@@ -1158,7 +1158,7 @@ public class EventEntryFragment extends Fragment implements
                     case EventInfo.FACEBOOK:
                         mAddressViewButton.setText(mEmailAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        mEventDurationLayout.setVisibility(View.INVISIBLE);
+                        mEventDurationLayout.setVisibility(View.GONE);
                         break;
 
                     default:

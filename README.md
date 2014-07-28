@@ -2,17 +2,17 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
+- bug with phone call count, both parties get same number on readout
+- Make static plot for recent history of contact
+- Make values persist with screen rotation in the event entry activity
 - group stats must be collected just like contact stats
--- performing db updatees based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
+-- performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine
-- restrict to portrait mode
 - fix the fact that tapping on the update notification initiates a new file import activity
 
 ***Medium Tasks***
-- generate real history plot
-- fill out new statistics
-- Make event browser
-- open Event Note editor by clicking on the button with the current text
+- Figure out how to cluster events into a conversation
+- Figure out how to calculate average reply time
 - Create routine for producing the long duration statistics:
     - average time
     - score over time
@@ -53,8 +53,9 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+_ editing dialog for new event notes
 - make new event activity text field not auto focus
-
+- fixed screen rotation
 - move the interactive chart to it's own full screen activity
 - push contact photo into actionbar
 - place reach-out buttons in the actionbar

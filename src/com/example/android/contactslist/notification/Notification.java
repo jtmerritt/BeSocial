@@ -1,5 +1,8 @@
 package com.example.android.contactslist.notification;
 
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.app.NotificationManager;
@@ -13,8 +16,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.ui.ContactDetailActivity;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -31,20 +36,74 @@ import java.util.List;
 public class Notification {
     private static List<ContactInfo> ContactList = new ArrayList<ContactInfo>();
     private static Uri mContactUri;
-    private static String mContactName = "Janet";
+    private static String mContactName;
+
+    ContactGroupsList contactGroupsList;
+    List<ContactInfo> mGroups;// = new ArrayList<GroupInfo>();
+    private Context mContext;
+    private Long groupID;
+    private int groupSize;
+    private ContentResolver mContentResolver;
+    private Cursor cursor;
 
 
-    public static void simpleNotification(Context context){
-        int mId = 1;
-        setNotificationContact(context);
+    public Notification(Context context) {
+        mContext = context;
+        mContentResolver = context.getContentResolver();
+        contactGroupsList = new ContactGroupsList();
+    }
+
+    private void getNotificationList() {
+
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        mGroups = contactGroupsList.loadGroups();
+
+        for (ContactInfo groupInfo:mGroups) {
+            if(groupInfo.getName().equals(mContext.getString(R.string.misses_you))){
+                groupID = groupInfo.getIDLong();
+                groupSize = groupInfo.getMemberCount();
+
+                final String parameters[] = {String.valueOf(groupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
+
+
+                cursor = mContentResolver.query(
+                        ContactsGroupQuery.CONTENT_URI,
+                        ContactsGroupQuery.PROJECTION,
+                        // The result is a very rough interface
+                        ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
+                        parameters,
+                        ContactsGroupQuery.SORT_ORDER);
+
+
+            }
+        }
+    }
+
+
+
+
+
+    public void simpleNotification(){
+        int mId = 10001;
+
+        getNotificationList();
+        if(cursor.moveToFirst()){
+            mContactName = cursor.getString(ContactsGroupQuery.DISPLAY_NAME);
+            mContactUri = ContactsContract.Contacts.getLookupUri(
+                    cursor.getLong(ContactsGroupQuery.ID),
+                    cursor.getString(ContactsGroupQuery.LOOKUP_KEY));
+        }else {
+            return;
+        }
 
         //int[] pattern = context.getResources().getIntArray(R.array.alert_vibrate_pattern_int);
         long[] pattern = {500, 100, 100, 100};
 
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(mContext)
                         .setSmallIcon(R.drawable.ic_action_statistics)
-                        .setContentTitle(context.getString( R.string.app_name))
+                        .setContentTitle(mContext.getString( R.string.app_name))
                         .setVibrate(pattern)
                         .setLights(Color.CYAN, 500, 500)
                         .setContentText(mContactName + " misses you.");
@@ -65,7 +124,7 @@ public class Notification {
 
 
 // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(context, ContactDetailActivity.class);
+        Intent resultIntent = new Intent(mContext, ContactDetailActivity.class);
         resultIntent.setData(mContactUri);
 
 
@@ -74,7 +133,7 @@ public class Notification {
 // started Activity.
 // This ensures that navigating backward from the Activity leads out of
 // your application to the Home screen.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
 // Adds the back stack for the Intent (but not the Intent itself)
         stackBuilder.addParentStack(ContactDetailActivity.class);
 
@@ -89,18 +148,82 @@ public class Notification {
 
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
         mNotificationManager.notify(mId, mBuilder.build());
 
-        Toast.makeText(context, mContactName + " misses you.", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mContext, mContactName + " misses you.", Toast.LENGTH_SHORT).show();
     }
+
+
+
+
+    /**
+     * This interface defines constants for the Cursor and CursorLoader, based on constants defined
+     * in the {@link android.provider.ContactsContract.Contacts} class.
+     */
+    public interface ContactsGroupQuery {
+
+        // An identifier for the loader
+        final static int QUERY_ID = 2;
+
+        // A content URI for the Contacts table
+        final static Uri CONTENT_URI = ContactsContract.Data.CONTENT_URI;
+
+        // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
+        // sort key allows for localization. In earlier versions. use the display name as the sort
+        // key.
+        @SuppressLint("InlinedApi")
+        final static String SORT_ORDER =
+                Utils.hasHoneycomb() ? ContactsContract.Contacts.SORT_KEY_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME;
+
+        // The projection for the CursorLoader query. This is a list of columns that the Contacts
+        // Provider should return in the Cursor.
+        @SuppressLint("InlinedApi")
+        final static String[] PROJECTION = {
+
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
+
+                // The contact's row id
+                ContactsContract.Contacts._ID,
+
+                // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
+                // a contact's current _ID value and LOOKUP_KEY, the Contacts Provider can generate
+                // a "permanent" contact URI.
+                ContactsContract.Contacts.LOOKUP_KEY,
+
+                // In platform version 3.0 and later, the Contacts table contains
+                // DISPLAY_NAME_PRIMARY, which either contains the contact's displayable name or
+                // some other useful identifier such as an email address. This column isn't
+                // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
+                // instead.
+                Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
+
+                // In Android 3.0 and later, the thumbnail image is pointed to by
+                // PHOTO_THUMBNAIL_URI. In earlier versions, there is no direct pointer; instead,
+                // you generate the pointer from the contact's ID value and constants defined in
+                // android.provider.ContactsContract.Contacts.
+                Utils.hasHoneycomb() ? ContactsContract.Contacts.PHOTO_THUMBNAIL_URI : ContactsContract.Contacts._ID,
+
+                // The sort order column for the returned Cursor, used by the AlphabetIndexer
+                SORT_ORDER,
+        };
+
+        // The query column numbers which map to each value in the projection
+        final static int GROUP_ID = 0;
+        final static int ID = 1;
+        final static int LOOKUP_KEY = 2;
+        final static int DISPLAY_NAME = 3;
+        final static int PHOTO_THUMBNAIL_DATA = 4;
+        final static int SORT_KEY = 5;
+    }
+
+
+
 
     private static void setNotificationContact(Context context) {
 
         int j = 3;
-        Log.d("Set Notification", "Contact Added");
-
         readBeSocialList(context);
 
         // Generates the contact lookup Uri

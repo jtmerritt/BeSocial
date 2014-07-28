@@ -424,7 +424,8 @@ public class Updates {
         PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(), mContext);
 
         // gather up event data from call logs for the specific contact
-        return phoneLogAccess.getAllCallLogs(contact.getIDLong(), contact.getName(), contact.getKeyString());
+        return phoneLogAccess.getAllCallLogs(contact.getIDLong(),
+                contact.getName(), contact.getKeyString());
     }
 
 

@@ -209,6 +209,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         if(title.equals("Starred in Android") ||
                 title.equals("BeSocial") ||
                 title.equals("Socia") ||
+                title.equals("Misses you") ||
                 title.contains("Weeks") ||
                 title.contains("Week") ||
                 title.contains("Days") ||

@@ -27,7 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="100"
         android:id="@+id/c">
 
 
@@ -38,16 +37,18 @@
 
             <LinearLayout
                 android:orientation="vertical"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:showDividers="beginning|middle"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
                 android:id="@+id/d">
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/filler_layout_container"></LinearLayout>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -126,7 +127,7 @@
                         <LinearLayout
                             android:orientation="horizontal"
                             android:layout_width="fill_parent"
-                            android:layout_height="wrap_content" >
+                            android:layout_height="18dp" >
 
                             <TextView
                                 style="@style/AppTheme"
@@ -147,7 +148,8 @@
                                 android:baselineAlignBottom="false"
                                 android:layout_gravity="left"
                                 android:layout_marginRight="10dp"
-                                android:adjustViewBounds="false" />
+                                android:adjustViewBounds="false"
+                                android:scaleType="fitCenter" />
 
                             <ImageView
                                 android:layout_width="0dp"
@@ -159,7 +161,8 @@
                                 android:focusableInTouchMode="false"
                                 style="@style/AppTheme"
                                 android:adjustViewBounds="false"
-                                android:layout_marginRight="10dp" />
+                                android:layout_marginRight="10dp"
+                                android:scaleType="fitCenter" />
 
                         </LinearLayout>
                     </LinearLayout>
@@ -169,7 +172,8 @@
                     android:orientation="vertical"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/chart_layout_container">
+                    android:id="@+id/chart_layout_container"
+                    android:layout_margin="@dimen/padding">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -198,6 +202,47 @@
                         android:layout_height="wrap_content"
                         android:focusableInTouchMode="false"></LinearLayout>
                 </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/notes_layout_container"
+                    android:layout_margin="@dimen/padding" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Notes"
+                        android:id="@+id/textView2"
+                        android:textAlignment="center"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine"
+                        android:id="@+id/notes_view"
+                        android:layout_gravity="center_horizontal"
+                        android:hint="  ..."
+                        android:minLines="6"
+                        android:gravity="start"
+                        android:textIsSelectable="false"
+                        android:background="@android:drawable/alert_light_frame"
+                        android:textColorLink="@color/holo_blue"
+                        android:padding="15dp"
+                        style="@style/AppTheme" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/contact_details_layout"></LinearLayout>
             </LinearLayout>
         </ScrollView>
 

@@ -77,6 +77,12 @@ public class ContactStatsContract {
 | Decay rate                | REAL                          |  2.45
 | PRIMARY GROUP MEMBERSHIP  | lONG
 | PRIMARY BEHAVIOR          | iNT
+| SMILELY COUNT In             | INT                            |200
+| SMILELY COUNT Out           | INT                            |200
+| HEART COUNT In             | INT                            |200
+| HEART COUNT Out           | INT                            |200
+| HEART Question In             | INT                            |200
+| HEART Question Out           | INT                            |200
 +-----------------------+------------+------------------------------+---+--------+--+
 */
 
@@ -114,6 +120,14 @@ public class ContactStatsContract {
         public static final String KEY_DECAY_RATE = "decay_rate";
         public static final String KEY_PRIMARY_GROUP_MEMBERSHIP = "primary_group_membership";
         public static final String KEY_PRIMARY_BEHAVIOR = "primary_behavior";
+
+        public static final String KEY_TEXT_SMILEY_COUNT_IN = "text_smiley_count_in";
+        public static final String KEY_TEXT_SMILEY_COUNT_OUT = "text_smiley_count_out";
+        public static final String KEY_TEXT_HEART_COUNT_IN = "text_heart_count_in";
+        public static final String KEY_TEXT_HEART_COUNT_OUT = "text_heart_count_out";
+        public static final String KEY_TEXT_QUESTION_COUNT_IN = "text_question_count_in";
+        public static final String KEY_TEXT_QUESTION_COUNT_OUT = "text_question_count_out";
+
         //public static final String KEY_PREFERRED_CONTACT_METHOD = "preferred_contact_method";
 
         //...
@@ -153,6 +167,14 @@ public class ContactStatsContract {
         public final static int PRIMARY_GROUP_MEMBERSHIP = 26;
         public final static int PRIMARY_BEHAVIOR = 27;
 
+        public final static int TEXT_SMILEY_COUNT_IN = 28;
+        public final static int TEXT_SMILEY_COUNT_OUT = 29;
+        public final static int TEXT_HEART_COUNT_IN = 30;
+        public final static int TEXT_HEART_COUNT_OUT = 31;
+        public final static int TEXT_QUESTION_COUNT_IN = 32;
+        public final static int TEXT_QUESTION_COUNT_OUT = 33;
+
+
         //public final static int PREFERRED_CONTACT_METHOD = 28;
 
         // provide the name of a column in which the framework can insert NULL 
@@ -169,7 +191,7 @@ public class ContactStatsContract {
     public class ContactStatsDbHelper extends SQLiteOpenHelper {
 
         // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 2;
+        public static final int DATABASE_VERSION = 3;
         public static final String DATABASE_NAME = "Contacts.db";
         private static final String TEXT_TYPE = " TEXT";
         private static final String LONG_TYPE = " LONG";
@@ -214,7 +236,16 @@ public class ContactStatsContract {
                         TableEntry.KEY_STANDING + REAL_TYPE + COMMA_SEP +
                         TableEntry.KEY_DECAY_RATE + REAL_TYPE + COMMA_SEP +
                         TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP + LONG_TYPE + COMMA_SEP +
-                        TableEntry.KEY_PRIMARY_BEHAVIOR + INT_TYPE + //COMMA_SEP +
+                        TableEntry.KEY_PRIMARY_BEHAVIOR + INT_TYPE + COMMA_SEP +
+
+                        TableEntry.KEY_TEXT_SMILEY_COUNT_IN + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_SMILEY_COUNT_OUT + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_HEART_COUNT_IN + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_HEART_COUNT_OUT + INT_TYPE + COMMA_SEP +
+
+                        TableEntry.KEY_TEXT_QUESTION_COUNT_IN + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_QUESTION_COUNT_OUT + INT_TYPE + //COMMA_SEP +
+
                         //... // Any other options for the CREATE command
                         " )";
 
@@ -505,6 +536,15 @@ public class ContactStatsContract {
         values.put(TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP, contact.getPrimaryGroupMembership());
         values.put(TableEntry.KEY_PRIMARY_BEHAVIOR, contact.getBehavior());
 
+        values.put(TableEntry.KEY_TEXT_SMILEY_COUNT_IN, contact.getSmileyCountIn());
+        values.put(TableEntry.KEY_TEXT_SMILEY_COUNT_OUT, contact.getSmileyCountOut());
+        values.put(TableEntry.KEY_TEXT_HEART_COUNT_IN, contact.getHeartCountIn());
+        values.put(TableEntry.KEY_TEXT_HEART_COUNT_OUT, contact.getHeartCountOut());
+
+        values.put(TableEntry.KEY_TEXT_QUESTION_COUNT_IN, contact.getQuestionCountIn());
+        values.put(TableEntry.KEY_TEXT_QUESTION_COUNT_OUT, contact.getQuestionCountOut());
+
+
         return values;
     }
 
@@ -549,6 +589,16 @@ public class ContactStatsContract {
         contact.setPrimaryGroupMembership(cursor.getLong(TableEntry.PRIMARY_GROUP_MEMBERSHIP));
         contact.setBehavior(cursor.getInt(TableEntry.PRIMARY_BEHAVIOR));
 
+        contact.setTextSmileyCountIn(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT_IN));
+        contact.setTextSmileyCountOut(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT_OUT));
+        contact.setTextHeartCountIn(cursor.getInt(TableEntry.TEXT_HEART_COUNT_IN));
+        contact.setTextHeartCountOut(cursor.getInt(TableEntry.TEXT_HEART_COUNT_OUT));
+
+        contact.setTextQuestionCountIn(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT_IN));
+        contact.setTextQuestionCountOut(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT_OUT));
+
+
+
         return contact;
     }
 
@@ -589,7 +639,17 @@ public class ContactStatsContract {
                 TableEntry.KEY_STANDING,
                 TableEntry.KEY_DECAY_RATE,
                 TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP,
-                TableEntry.KEY_PRIMARY_BEHAVIOR
+                TableEntry.KEY_PRIMARY_BEHAVIOR,
+
+                TableEntry.KEY_TEXT_SMILEY_COUNT_IN,
+                TableEntry.KEY_TEXT_SMILEY_COUNT_OUT,
+                TableEntry.KEY_TEXT_HEART_COUNT_IN,
+                TableEntry.KEY_TEXT_HEART_COUNT_OUT,
+                TableEntry.KEY_TEXT_QUESTION_COUNT_IN,
+                TableEntry.KEY_TEXT_QUESTION_COUNT_OUT
+
+
+
                 //...
         };
     }

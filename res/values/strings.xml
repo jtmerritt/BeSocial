@@ -16,7 +16,7 @@
 -->
 <resources>
 
-    <string name="app_name">Socia</string>
+    <string name="app_name">Tend</string>
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>
@@ -71,6 +71,12 @@
 
     <string name="preferences_fragment">Preferences</string>
 
+    <string name="contact_status_alert_preference_title"
+            >Contact Alert Notifications</string>
+    <string name="contact_status_alert_preference_summary"
+        >Enable notifications to remind you when you\'ve neglected your friends.</string>
+
+
     <string name="update_db_preference_title"
             >Enabel Automatic Updates</string>
     <string name="update_db_preference_summary"
@@ -85,6 +91,7 @@
             >Require Power for Database Update</string>
     <string name="sync_only_with_power_preference_summary"
         >Only update the database when device is plugged in with power.</string>
+
 
     <string name="sync_with_web_sources_preference_title"
         >Sync with Web</string>
@@ -195,6 +202,9 @@
     <string name="Day">Day</string>
     <string name="Days">Days</string>
     <string name="Starred">Starred in Android</string>
+    <string name="misses_you">Misses you</string>
+
+
     <string name="delims">[ .,?!\-]+</string>
 
 

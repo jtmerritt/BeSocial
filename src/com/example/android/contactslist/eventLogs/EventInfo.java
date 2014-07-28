@@ -18,6 +18,10 @@ public class EventInfo {
     public long eventContactID;  /*ID of SMSer, if available. Person who sends it*/
     public long eventWordCount;  /*number of tokens broken by spaces*/
     public long eventCharCount; /*number of characters in message*/
+    public int eventSmileyCount;
+    public int eventHeartCount;
+    public int eventQuestionCount;
+
     public String eventNotes;
 
     public int eventClass;
@@ -41,6 +45,9 @@ public class EventInfo {
         eventContactID = -1;
         eventWordCount = 0;
         eventCharCount = 0;
+        eventSmileyCount = 0;
+        eventHeartCount = 0;
+
     }
 
     public int eventType;    /*Type of event
@@ -108,6 +115,16 @@ public class EventInfo {
     public String getContactKey() {
         return eventContactKey;
     }
+    public int getEventSmileyCount() {
+        return eventSmileyCount;
+    }
+    public int getEventHeartCount() {
+        return eventHeartCount;
+    }
+    public int getEventQuestionCount() {
+        return eventQuestionCount;
+    }
+
 
 
 
@@ -177,5 +194,16 @@ public class EventInfo {
     public void setContactKey(String key) {
         eventContactKey = key;
     }
+    public void setEventSmileyCount(int count) {
+        eventSmileyCount = count;
+    }
+    public void setEventHeartCount(int count) {
+        eventHeartCount = count;
+    }
+    public void setEventQuestionCount(int count) {
+        eventQuestionCount = count;
+    }
+
+
 
 }

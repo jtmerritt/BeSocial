@@ -199,12 +199,20 @@ Method to update the notification window and the activity progress bar, if avail
                     // then add that event to the eventLog
                     if(reverseLookupContact != null){
 
+
+
                         EventInfo eventInfo = new EventInfo(
                                 reverseLookupContact.getName(),// use the name of the first contact
                                 reverseLookupContact.getKeyString(), //use the lookup key of the first contact
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
                                 new StringTokenizer(smsBody).countTokens(), smsBody.length());
+
+                        //count the number of smiley faces in the string
+                        eventInfo.setEventSmileyCount(countSmileysInString(smsBody));
+                        eventInfo.setEventHeartCount(countHeartsInString(smsBody));
+                        eventInfo.setEventQuestionCount(countQuestionsInString(smsBody));
+
 
                         eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
                         eventInfo.setEventID(eventID);
@@ -225,6 +233,12 @@ Method to update the notification window and the activity progress bar, if avail
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
                                 new StringTokenizer(smsBody).countTokens(), smsBody.length());
 
+                        //count the number of smiley faces in the string
+                        eventInfo.setEventSmileyCount(countSmileysInString(smsBody));
+                        eventInfo.setEventHeartCount(countHeartsInString(smsBody));
+                        eventInfo.setEventQuestionCount(countQuestionsInString(smsBody));
+
+
                         eventInfo.setContactID(reverseLookupContacts.get(0).getIDLong());  //use the ID of the first contact
                         eventInfo.setEventID(eventID);
 
@@ -243,6 +257,61 @@ Method to update the notification window and the activity progress bar, if avail
     /*Close the cursor  for this iteration of the loop*/
         SMSLogCursor.close();
     }
+
+    /*
+    Method ot count the number of smileys in a string
+     */
+    private int countSmileysInString(String str){
+        String[] smileys = {":)",":D",":-)",":-D",";)",";-)"
+                ,"(:","(-:","^_^","(^_-)","(-_^)"};
+
+        int count = 0;
+
+        for(String sub: smileys){
+            count += countSubstring(sub, str);
+        }
+
+        return count;
+    }
+
+    /*
+Method ot count the number of smileys in a string
+ */
+    private int countHeartsInString(String str){
+        String[] hearts = {"<3","<kiss>","<muah>","love you","hugs","Hugs",":-*",":*","Kiss", "kiss"};
+
+        int count = 0;
+
+        for(String sub: hearts){
+            count += countSubstring(sub, str);
+        }
+
+        return count;
+    }
+
+    /*
+Method ot count the number of smileys in a string
+*/
+    private int countQuestionsInString(String str){
+        String[] hearts = {"?"};
+
+        int count = 0;
+
+        for(String sub: hearts){
+            count += countSubstring(sub, str);
+        }
+
+        return count;
+    }
+
+    /*
+    Method to count the number of unique substrings in a string
+    http://rosettacode.org/wiki/Count_occurrences_of_a_substring#Java
+     */
+    private int countSubstring(String subStr, String str){
+        return (int)((float)(str.length() - str.replace(subStr, "").length()) / (float)subStr.length());
+    }
+
 
 
     /*
