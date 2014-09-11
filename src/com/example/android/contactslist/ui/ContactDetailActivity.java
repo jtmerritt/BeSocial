@@ -55,6 +55,7 @@ public class ContactDetailActivity extends FragmentActivity {
                 // this needs to be set before calls to getactionbar
                 //getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 
+
                 // Enables action bar "up" navigation
                 getActionBar().setDisplayHomeAsUpEnabled(true);
                 //getActionBar().setDisplayShowHomeEnabled(false);

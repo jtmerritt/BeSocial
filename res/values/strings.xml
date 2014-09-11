@@ -16,7 +16,7 @@
 -->
 <resources>
 
-    <string name="app_name">Tend</string>
+    <string name="app_name">Good Friend</string>
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>
@@ -30,6 +30,12 @@
     <string name="menu_new_sms">SMS</string>
     <string name="menu_new_email">Email</string>
     <string name="menu_new_event">New Event</string>
+    <string name="menu_remove_contact">Remove Contact</string>
+    <string name="menu_accept">Accept</string>
+    <string name="menu_back">Back</string>
+
+
+
 
 
     <string name="no_contacts">No Contacts Found</string>

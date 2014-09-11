@@ -2,6 +2,10 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
+- app should remove contact from Misses You group automatically at the appropriate times
+- Use ActionMode.callback to manually select contacts to remove from a group
+    - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
+- make animation for welcome screen
 - bug with phone call count, both parties get same number on readout
 - Make static plot for recent history of contact
 - Make values persist with screen rotation in the event entry activity
@@ -53,6 +57,8 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- from the group list, pressing the + button should allow the user to add an existing contact to the group
+  - can use standard contacts app to perform selection
 _ editing dialog for new event notes
 - make new event activity text field not auto focus
 - fixed screen rotation

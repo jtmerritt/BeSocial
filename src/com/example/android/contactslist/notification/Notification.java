@@ -19,6 +19,7 @@ import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.ui.ContactDetailActivity;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.ui.ContactsListActivity;
 import com.example.android.contactslist.util.Utils;
 
 import java.io.BufferedReader;
@@ -42,6 +43,7 @@ public class Notification {
     List<ContactInfo> mGroups;// = new ArrayList<GroupInfo>();
     private Context mContext;
     private Long groupID;
+    private String groupName;
     private int groupSize;
     private ContentResolver mContentResolver;
     private Cursor cursor;
@@ -63,6 +65,7 @@ public class Notification {
             if(groupInfo.getName().equals(mContext.getString(R.string.misses_you))){
                 groupID = groupInfo.getIDLong();
                 groupSize = groupInfo.getMemberCount();
+                groupName = mContext.getString(R.string.misses_you);
 
                 final String parameters[] = {String.valueOf(groupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
 
@@ -85,47 +88,71 @@ public class Notification {
 
 
     public void simpleNotification(){
-        int mId = 10001;
+        int mId = 10001;  //for the contact
+        int mIdList = 10002;  //for the contact list
+        Intent resultIntent;
+
+
+        //int[] pattern = context.getResources().getIntArray(R.array.alert_vibrate_pattern_int);
+        long[] pattern = {500, 100, 100, 100};
+        NotificationCompat.Builder mBuilder;
+
+        NotificationCompat.InboxStyle inboxStyle =
+                new NotificationCompat.InboxStyle();
+
+        // Sets a title for the Inbox style big view
+        inboxStyle.setBigContentTitle("We miss you.");
 
         getNotificationList();
+
         if(cursor.moveToFirst()){
             mContactName = cursor.getString(ContactsGroupQuery.DISPLAY_NAME);
             mContactUri = ContactsContract.Contacts.getLookupUri(
                     cursor.getLong(ContactsGroupQuery.ID),
                     cursor.getString(ContactsGroupQuery.LOOKUP_KEY));
+
+            mBuilder = new NotificationCompat.Builder(mContext)
+                    .setSmallIcon(R.drawable.ic_action_statistics)
+                    .setContentTitle(mContext.getString( R.string.app_name))
+                    .setVibrate(pattern)
+                    .setLights(Color.CYAN, 500, 500)
+                    .setContentText(mContactName + " misses you.");
+
+
+            while(cursor.moveToNext()) {
+                inboxStyle.addLine(cursor.getString(ContactsGroupQuery.DISPLAY_NAME));
+            }
+
         }else {
+            cursor.close();
             return;
         }
 
-        //int[] pattern = context.getResources().getIntArray(R.array.alert_vibrate_pattern_int);
-        long[] pattern = {500, 100, 100, 100};
+/*
+if there's only one contact in the list, tapping the notification should take the user there
+But if there are multiple contacts in the list, take the user to the Misses You list
+ */
+        // Creates an explicit intent for an Activity in your app
+        resultIntent = new Intent(mContext, ContactDetailActivity.class);
+        resultIntent.setData(mContactUri);
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(mContext)
-                        .setSmallIcon(R.drawable.ic_action_statistics)
-                        .setContentTitle(mContext.getString( R.string.app_name))
-                        .setVibrate(pattern)
-                        .setLights(Color.CYAN, 500, 500)
-                        .setContentText(mContactName + " misses you.");
-
-        NotificationCompat.InboxStyle inboxStyle =
-                new NotificationCompat.InboxStyle();
-        String string = "Item ";
-// Sets a title for the Inbox style big view
-        inboxStyle.setBigContentTitle(mContactName + " misses you.");
-
-        // Moves events into the big view
-        for (int i=0; i < 6; i++) {
-
-            inboxStyle.addLine(string + Integer.toString(i));
+        if(cursor.getCount() > 1){
+            resultIntent = new Intent(mContext, ContactsListActivity.class);
+            resultIntent.putExtra("group_name", groupName);
+            mId = mIdList;
         }
+
+    if(cursor != null){
+        cursor.close();
+    }
+
+    resultIntent.putExtra("notification_id", mId);
+
+
 // Moves the big view style object into the notification object.
         mBuilder.setStyle(inboxStyle);
 
 
-// Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(mContext, ContactDetailActivity.class);
-        resultIntent.setData(mContactUri);
 
 
 

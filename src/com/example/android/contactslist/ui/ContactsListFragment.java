@@ -52,6 +52,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ActionMode;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AlphabetIndexer;
@@ -63,10 +64,13 @@ import android.widget.TextView;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.GroupMembership;
 import com.example.android.contactslist.notification.SetAlarm;
 import com.example.android.contactslist.notification.FileIO;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
+import android.widget.Toast;
+
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -74,8 +78,11 @@ import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import android.os.Bundle;
+
 
 /**
  * This fragment displays a list of contacts stored in the Contacts Provider. Each item in the list
@@ -96,10 +103,14 @@ import java.util.Random;
  * displays the filtered list and disables the search feature to prevent furthering searching.
  */
 public class ContactsListFragment extends ListFragment implements
-        AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+        AdapterView.OnItemClickListener,
+        //AdapterView.OnItemLongClickListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     // Defines a  for identifying log entries
     private static final String TAG = "ContactsListFragment";
+
+    private final int PICK_CONTACT_REQUEST = 212;
 
     // Bundle key for saving previously selected search result item
     private static final String STATE_PREVIOUSLY_SELECTED_KEY =
@@ -108,6 +119,11 @@ public class ContactsListFragment extends ListFragment implements
     private ContactsAdapter mAdapter; // The main query adapter
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
     private String mSearchTerm; // Stores the current search query term
+
+    //Implemented ActionMode for the Action Bar
+    protected Object mActionMode;
+    private ActionMode.Callback mActionModeCallback;
+    private String removeContactLookupKeyFromGroup;
 
     // Contact selected listener that allows the activity holding this fragment to be notified of
     // a contact being selected
@@ -132,10 +148,12 @@ public class ContactsListFragment extends ListFragment implements
 
     private FractionView mFractionView;
 
+
     /**
      * Fragments require an empty constructor.
      */
-    public ContactsListFragment() {}
+    public ContactsListFragment() {
+    }
 
     /**
      * In platform versions prior to Android 3.0, the ActionBar and SearchView are not supported,
@@ -210,10 +228,95 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         // Inflate the list fragment layout
         return inflater.inflate(R.layout.contact_list_fragment, container, false);
     }
+
+
+    /*
+        In order to set up the Action Mode for the ActionBar...
+        Modified from http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
+     */
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
+        mActionModeCallback = new ActionMode.Callback() {
+
+            // Called when the action mode is created; startActionMode() was called
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate a menu resource providing context menu items
+                //MenuInflater inflater = mode.getMenuInflater();
+                //inflater.inflate(R.menu.contextual_actionbar, menu);
+                mode.getMenuInflater().inflate(R.menu.contextual_actionbar, menu);
+                return true;
+            }
+
+            // Called each time the action mode is shown. Always called after onCreateActionMode, but
+            // may be called multiple times if the mode is invalidated.
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+               return false; // Return false if nothing is done
+            }
+
+            // Called when the user selects a contextual menu item
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+
+                    case R.id.menu_remove_contact:
+                        GroupMembership groupMembership = new GroupMembership(getActivity());
+                        groupMembership.removeContactFromGroup(mGroupID,
+                                removeContactLookupKeyFromGroup );
+
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+                    case R.id.menu_back:
+                    default:
+                        mode.finish(); // Action picked, so close the CAB
+                        Toast.makeText(getActivity(), "End Action Mode",
+                                Toast.LENGTH_SHORT).show();
+                        return false;
+                }
+            }
+
+            // Called when the user exits the action mode
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                mActionMode = null;
+            }
+        };
+
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View view,
+                                           int position, long id) {
+                if (mActionMode != null) {
+                    return false;
+                }
+
+                // Gets the Cursor object currently bound to the ListView
+                final Cursor cursor = mAdapter.getCursor();
+
+                // Moves to the Cursor row corresponding to the ListView item that was clicked
+                cursor.moveToPosition(position);
+
+
+                // Using the lookupKey because the wrong ID was being returned
+                removeContactLookupKeyFromGroup = cursor.getString(ContactsQuery.LOOKUP_KEY);
+                // Start the CAB using the ActionMode.Callback defined above
+                mActionMode = getActivity().startActionMode(mActionModeCallback);
+                view.setSelected(true);
+                return true;
+            }
+        });
+
+    }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -235,7 +338,8 @@ public class ContactsListFragment extends ListFragment implements
             }
 
             @Override
-            public void onScroll(AbsListView absListView, int i, int i1, int i2) {}
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+            }
         });
 
         if (mIsTwoPaneLayout) {
@@ -295,6 +399,8 @@ public class ContactsListFragment extends ListFragment implements
                 cursor.getLong(ContactsQuery.ID),
                 cursor.getString(ContactsQuery.LOOKUP_KEY));
 
+        //TODO: Fix: for some reason the contactID is getting changed from a 3 digit number to 5 digits
+        // This is making some methods not work right.
 
 
         // Notifies the parent activity that the user selected a contact. In a two-pane layout, the
@@ -309,6 +415,7 @@ public class ContactsListFragment extends ListFragment implements
             getListView().setItemChecked(position, true);
         }
     }
+
 
     /**
      * Called when ListView selection is cleared, for example
@@ -442,7 +549,6 @@ public class ContactsListFragment extends ListFragment implements
     }
 
 
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -461,8 +567,7 @@ public class ContactsListFragment extends ListFragment implements
         switch (item.getItemId()) {
             // Sends a request to the People app to display the create contact screen
             case R.id.menu_add_contact:
-                final Intent intent = new Intent(Intent.ACTION_INSERT, Contacts.CONTENT_URI);
-                startActivity(intent);
+                addContactToGroup();
                 break;
             // For platforms earlier than Android 3.0, triggers the search activity
             case R.id.menu_search:
@@ -477,14 +582,12 @@ public class ContactsListFragment extends ListFragment implements
                 startActivity(launchPreferencesIntent);
 
 
-
-
         }
         return super.onOptionsItemSelected(item);
     }
 
     public void setGroupQuery(int groupID) {
-        if (groupID == -1 ) {
+        if (groupID == -1) {
             mGroupID = groupID; ///um...
         } else {
             mGroupID = groupID;
@@ -500,7 +603,7 @@ public class ContactsListFragment extends ListFragment implements
 
 
         // switch between search query and a group query
-        switch (id){
+        switch (id) {
             case ContactsQuery.QUERY_ID:
                 // If this is the loader for finding contacts in the Contacts Provider
 
@@ -517,7 +620,7 @@ public class ContactsListFragment extends ListFragment implements
                     // Since there's a search string, use the special content Uri that searches the
                     // Contacts table. The URI consists of a base Uri and the search string.
                     contentUri =
-                        Uri.withAppendedPath(ContactsQuery.FILTER_URI, Uri.encode(mSearchTerm));
+                            Uri.withAppendedPath(ContactsQuery.FILTER_URI, Uri.encode(mSearchTerm));
                 }
 
                 // Returns a new CursorLoader for querying the Contacts table. No arguments are used
@@ -525,52 +628,50 @@ public class ContactsListFragment extends ListFragment implements
                 // or no contacts search string is used. The other search criteria are constants. See
                 // the ContactsQuery interface.
                 return new CursorLoader(getActivity(),
-                    contentUri,
-                    ContactsQuery.PROJECTION,
-                    ContactsQuery.SELECTION,
-                    null,
+                        contentUri,
+                        ContactsQuery.PROJECTION,
+                        ContactsQuery.SELECTION,
+                        null,
 
-                    ContactsQuery.SORT_ORDER);
+                        ContactsQuery.SORT_ORDER);
 
             case ContactsGroupQuery.QUERY_ID:
-                if(mGroupID != -1){
+                if (mGroupID != -1) {
                     contentUri = ContactsGroupQuery.CONTENT_URI;
 
                     final String parameters[] = {String.valueOf(mGroupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
 
 
                     return new CursorLoader(getActivity(),
-                        contentUri,
-                        ContactsGroupQuery.PROJECTION,
+                            contentUri,
+                            ContactsGroupQuery.PROJECTION,
                             //TODO: It would be nice if the due date could also be captured here, instead of having to make another call
                             // The result is a very rough interface
-                        ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
-                                //+ " AND " + ContactsContract.Data.MIMETYPE + "= ? "
-                               // + " AND " + Event.LABEL + "= ? ",
+                            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
+                            //+ " AND " + ContactsContract.Data.MIMETYPE + "= ? "
+                            // + " AND " + Event.LABEL + "= ? ",
                             parameters,
 
-                        ContactsGroupQuery.SORT_ORDER);
+                            ContactsGroupQuery.SORT_ORDER);
                 }
 
-        default:
+            default:
 
-            Log.e(TAG, "onCreateLoader - incorrect ID provided (" + id + ")");
-            return null;
+                Log.e(TAG, "onCreateLoader - incorrect ID provided (" + id + ")");
+                return null;
         }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // This swaps the new cursor into the adapter.
-        switch (loader.getId()){
+        switch (loader.getId()) {
             case ContactsQuery.QUERY_ID:
             case ContactsGroupQuery.QUERY_ID:
                 mAdapter.swapCursor(data);
 
-                //TODO: find a better place to stick the alarm setting
-                SetAlarm alarm = new SetAlarm();
-                alarm.setAutoUpdate(getActivity());
-                alarm.setContactStatusCheck(getActivity());
+
+
 
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected
@@ -583,7 +684,7 @@ public class ContactsListFragment extends ListFragment implements
                         // Creates the content Uri for the previously selected contact by appending the
                         // contact's ID to the Contacts table content Uri
                         final Uri uri = Uri.withAppendedPath(
-                            Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsGroupQuery.ID)));
+                                Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsGroupQuery.ID)));
 
                         mOnContactSelectedListener.onContactSelected(uri);
                         getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
@@ -608,7 +709,7 @@ public class ContactsListFragment extends ListFragment implements
     public void onLoaderReset(Loader<Cursor> loader) {
         //TODO: maybe need to save the group ID as part of the state
         if ((loader.getId() == ContactsQuery.QUERY_ID) ||
-                (loader.getId() == ContactsGroupQuery.QUERY_ID)){
+                (loader.getId() == ContactsGroupQuery.QUERY_ID)) {
             // When the loader is being reset, clear the cursor from the adapter. This allows the
             // cursor resources to be freed.
             mAdapter.swapCursor(null);
@@ -731,6 +832,7 @@ public class ContactsListFragment extends ListFragment implements
 
         /**
          * Instantiates a new Contacts Adapter.
+         *
          * @param context A context that has access to the app's layout.
          */
         public ContactsAdapter(Context context) {
@@ -952,6 +1054,7 @@ public class ContactsListFragment extends ListFragment implements
     public interface OnContactsInteractionListener {
         /**
          * Called when a contact is selected from the ListView.
+         *
          * @param contactUri The contact Uri.
          */
         public void onContactSelected(Uri contactUri);
@@ -985,7 +1088,7 @@ public class ContactsListFragment extends ListFragment implements
         @SuppressLint("InlinedApi")
         final static String SELECTION =
                 (Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME) +
-                "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
+                        "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
 
         // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
         // sort key allows for localization. In earlier versions. use the display name as the sort
@@ -1022,7 +1125,7 @@ public class ContactsListFragment extends ListFragment implements
                 // android.provider.ContactsContract.Contacts.
                 Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
 
-                Contacts.LAST_TIME_CONTACTED ,
+                Contacts.LAST_TIME_CONTACTED,
 
                 // The sort order column for the returned Cursor, used by the AlphabetIndexer
                 SORT_ORDER,
@@ -1062,7 +1165,7 @@ public class ContactsListFragment extends ListFragment implements
         @SuppressLint("InlinedApi")
         final static String[] PROJECTION = {
 
-                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
+                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
 
                 // The contact's row id
                 Contacts._ID,
@@ -1085,7 +1188,7 @@ public class ContactsListFragment extends ListFragment implements
                 // android.provider.ContactsContract.Contacts.
                 Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
 
-                Contacts.LAST_TIME_CONTACTED ,
+                Contacts.LAST_TIME_CONTACTED,
 
 
                 // The sort order column for the returned Cursor, used by the AlphabetIndexer
@@ -1103,8 +1206,41 @@ public class ContactsListFragment extends ListFragment implements
     }
 
 
+    private void addContactToGroup() {
+
+        final Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+
+        startActivityForResult(intent, PICK_CONTACT_REQUEST);
 
 
+    }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent data) {
+        if (requestCode == PICK_CONTACT_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                // A contact was picked.  Here we will just display it
+                // to the user.
+                Uri uri = data.getData();
 
+                // get the contact lookupKey
+                //List<String> path = uri.getPathSegments();
+                //String contactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
+
+                String contactID = uri.getLastPathSegment();
+
+                // remove the contact from the group
+                GroupMembership groupMembership = new GroupMembership(getActivity());
+
+                // if the remove action fails, throw out a Toast for the user
+                if (!groupMembership.setContactGroupMembership(mGroupID, contactID)) {
+                    // notify user of the bad contact
+                    Toast.makeText(getActivity(), "Error with contact selection",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        }
+    }
 }

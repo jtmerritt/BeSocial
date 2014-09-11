@@ -89,7 +89,7 @@
 
     <style name="ActionBarTitle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textSize">18sp</item>
-        <item name="android:paddingLeft">5dp</item>   <!-- Can't get this padding to work :( -->
+        <!--<item name="android:paddingLeft">5dp</item>   Can't get this padding to work :( -->
     </style>
 
 </resources>

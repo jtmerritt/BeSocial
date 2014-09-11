@@ -43,6 +43,7 @@ import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.util.Utils;
+import android.app.NotificationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,7 @@ public class ContactsListActivity extends FragmentActivity implements
         }
         super.onCreate(savedInstanceState);
 
+
         // Set main content view. On smaller screen devices this is a single pane view with one
         // fragment. One larger screen devices this is a two pane view with two fragments.
         setContentView(R.layout.activity_main);
@@ -126,8 +128,9 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+
+        getActionBar().setDisplayHomeAsUpEnabled(false);
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
@@ -150,8 +153,21 @@ public class ContactsListActivity extends FragmentActivity implements
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        setDefaultContactGroup();
 
+        // This activity might receive an intent that contains the uri of a contact
+        if (getIntent() != null) {
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                setDefaultContactGroup(extras.getString("group_name"));
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.cancel(10002);
+                //Integer.getInteger(extras.getString("notification_id")));
+            }else {
+                setDefaultContactGroup(null);
+            }
+        }else {
+            setDefaultContactGroup(null);
+        }
         // add gmail contact groups to spinner menu
         //addItemsToGroupsSpinner();
         //addListenerOnSpinnerItemSelection();
@@ -393,14 +409,21 @@ Send intent for opening the XML file import activity
     }
 
 
-    private void setDefaultContactGroup() {
+    private void setDefaultContactGroup(String intentGroupName) {
 
         int i=0;
+        String preferredDefaultGroupName;
+
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //Read the preferences to get the default group for display
-        String preferredDefaultGroupName = sharedPref.getString("source_group_list_preference_key",
+        if(intentGroupName == null){
+            //Read the preferences to get the default group for display
+            preferredDefaultGroupName = sharedPref.getString("source_group_list_preference_key",
                 getResources().getString(R.string.contact_group_preference_default));
+        }else {
+            preferredDefaultGroupName =intentGroupName;
+
+        }
 
         // update the main content by replacing fragments
         ContactsListFragment mContactsListFragment = (ContactsListFragment)

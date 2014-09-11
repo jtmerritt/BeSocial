@@ -100,8 +100,8 @@ public class SetAlarm {
 
         Calendar calendar = Calendar.getInstance();
         // 12 PM today
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 3);
+        calendar.set(Calendar.HOUR_OF_DAY, 17);
+        calendar.set(Calendar.MINUTE, 43);
         calendar.set(Calendar.SECOND, 0);
 
         //TODO create a preference for setting this notification time
@@ -111,7 +111,7 @@ public class SetAlarm {
 
         // set the alarm to repeat every day at the appointed time
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES, pintent);
+                AlarmManager.INTERVAL_DAY, pintent);
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
