@@ -17,6 +17,8 @@ import java.util.List;
 
 /**
  * Created by Tyson Macdonald on 1/25/14.
+ * Managing and referring to the last time the database was updated.
+ * It actually creates a new event with name "UPDATE RECORD" to store this info.
  */
 public class ImportLog {
     Context mContext;
@@ -57,7 +59,7 @@ public class ImportLog {
             //set the new record to have the above name,
             // we will search this record out by this name
             record = new EventInfo(name, name, name, eventClass, 0,
-                    new_date, now.format3339(false), 0,0,0);
+                    new_date, now.format3339(false), 0,0,0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
             db.addEvent(record);
 

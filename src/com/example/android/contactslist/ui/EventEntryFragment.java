@@ -429,7 +429,7 @@ public class EventEntryFragment extends Fragment implements
                         mEventDate, "",
                         mDuration,
                         mWordCount,
-                        0);
+                        0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
                 //TODO: save everything to an eventInfo and send to the database
                 // TODO: make a preview screen for the data to be saved
 

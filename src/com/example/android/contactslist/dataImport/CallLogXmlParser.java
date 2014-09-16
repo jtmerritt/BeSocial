@@ -177,7 +177,8 @@ Method to update the notification window and the activity progress bar, if avail
                         reverseLookupContact.getKeyString(), //use the lookup key of the first contact
                         eventContactAddress,
                         EventInfo.PHONE_CLASS,  event_type, date_ms, readable_date, duration,
-                        0,0);
+                        0,0,
+                        EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                 eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
 
@@ -189,7 +190,8 @@ Method to update the notification window and the activity progress bar, if avail
         }
 
         return new EventInfo(contact_name, "", eventContactAddress, EventInfo.PHONE_CLASS, event_type,
-                date_ms, readable_date, duration, 0, 0);
+                date_ms, readable_date, duration, 0, 0,
+                EventInfo.NOT_SENT_TO_CONTACT_STATS);
     }
 
 

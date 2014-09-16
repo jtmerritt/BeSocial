@@ -34,6 +34,10 @@
     <string name="menu_accept">Accept</string>
     <string name="menu_back">Back</string>
 
+    <string name="all_data">All Time</string>
+    <string name="one_month_of_data">1 Month</string>
+    <string name="six_months_of_data">6 Months</string>
+
 
 
 

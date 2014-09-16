@@ -50,7 +50,7 @@ public class ContactStatsContract {
 | Field Name            |  Field Type                       | Sample                    |
 +-----------------------+------------+------------------------------+---+--------+--+
 | ID                        |  PRIMARY KEY [Auto Generated] |  1                         |
-| Contact ID                |  Long                         | 7                      |
+| Contact ID                |  Long                         | 7                          |
 | Name                      |  TEXT                         | Chintan Khetiya            |
 | Contact Key               |  TEXT                         | 787                        |
 | Date Last Event IN        |  Long                         | 555555555555555555         |
@@ -61,17 +61,17 @@ public class ContactStatsContract {
 | Contact Interval Limit    |  Int                          |  60                        |
 | Contact Interval longest  | Int                           |  70
 | Contact Interval Avg      | Int                           |  12
-| Call Duration Total       | Int                           |  32514 (s)
-| Call Duration Avg         | Int                           |  350 (s)
-| Word Count Avg In         | Int                           |  24
-| Word Count Avg Out        | Int                           |  102
-| Word Count In             | Int                           |  5532
-| Word Count Out            | Int                           |  11234
-| Message Count In          | Int                           |  2134
-| Message Count Out         | Int                           |  2134
-| Call count In             | Int                           |  1234
-| Call count Out            | Int                           |  1234
-| Call count Missed         | Int                           |  5
+| Call Duration Total       | Int                           |  32514 (s)                |
+| Call Duration Avg         | Int                           |  350 (s)                  |
+| Word Count Avg In         | Int                           |  24                       |
+| Word Count Avg Out        | Int                           |  102                      |
+| Word Count In             | Int                           |  5532                     |
+| Word Count Out            | Int                           |  11234                    |
+| Message Count In          | Int                           |  2134                     |
+| Message Count Out         | Int                           |  2134                     |
+| Call count In             | Int                           |  1234                     |
+| Call count Out            | Int                           |  1234                     |
+| Call count Missed         | Int                           |  5                        |
 | event count               | Int                           |  2345
 | Standing value            | REAL                          |  34.5
 | Decay rate                | REAL                          |  2.45

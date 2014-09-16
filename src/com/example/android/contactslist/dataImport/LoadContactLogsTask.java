@@ -140,7 +140,8 @@ public class LoadContactLogsTask //extends AsyncTask<Void, Void, List<EventInfo>
                         EventInfo eventInfo = new EventInfo(mContactName, mContactKey,
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                new StringTokenizer(smsBody).countTokens(), smsBody.length());
+                                new StringTokenizer(smsBody).countTokens(), smsBody.length(),
+                                EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                         eventInfo.setContactID(mContactId);
                         eventInfo.setEventID(eventID);
@@ -219,7 +220,8 @@ public class LoadContactLogsTask //extends AsyncTask<Void, Void, List<EventInfo>
                 if((mContactName.equals(eventmContactName))){
                     EventInfo eventInfo = new EventInfo(eventmContactName, mContactKey,
                             phone_number, EventInfo.PHONE_CLASS,
-                            eventType, eventDate, "", eventDuration, 0, 0);
+                            eventType, eventDate, "", eventDuration, 0, 0,
+                            EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                     eventInfo.setContactID(mContactId);
 

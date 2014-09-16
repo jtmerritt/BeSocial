@@ -56,6 +56,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -66,13 +67,17 @@ import android.widget.FrameLayout;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.dataImport.LoadContactLogsTask;
 import com.example.android.contactslist.util.Utils;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.eventLogs.EventInfo;
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -132,12 +137,14 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mEmptyView;
     private TextView mContactNameView;
     private TextView mNotesView;
+    private TextView mDetailsSubtitleView;
     private MenuItem mEditContactMenuItem;
     private String mContactNameString;
     private FractionView fractionView = null;
     private Context mContext;
     private ImageButton mOpenFullScreenChartButton;
     private LinearLayout mDetailFillerSpace;
+    private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
 
 
 
@@ -228,6 +235,20 @@ public class ContactDetailFragment extends Fragment implements
             getSMSNumber();
             getEmailAddress();
             getContactNote();
+
+            //Populate the message stats
+
+            // set the data time window to include all event data
+            mNumMonthsBackForMessageStats = 500;
+
+            //retrieve the event data, calculate stats, and display
+            getContactMessageStats();
+
+            //set the subtitle of the view
+            mDetailsSubtitleView.setText(R.string.all_data);
+
+
+
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -328,17 +349,12 @@ public class ContactDetailFragment extends Fragment implements
         mDetailFillerSpace = (LinearLayout)detailView.findViewById(R.id.filler_layout_container);
         mDetailFillerSpace.setMinimumHeight(800);
 
-        //************ action view
 
         // get the layout container resource
-       // mActionLayoutContainer = (LinearLayout) detailView.findViewById(R.id.action_layout_container);
         mStatsLayoutContainer = (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
 
-
-
-        // Inflates the tab_action view with the new fragment.
-        //mActionLayout = (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                       // R.layout.contact_detail_action_fragment, mActionLayoutContainer, false);
+        // build buttons for the contact stats control
+        buildContactStatsButtonLayout(detailView);
 
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
@@ -359,6 +375,8 @@ public class ContactDetailFragment extends Fragment implements
                 Toast.makeText(getActivity(), "Maybe next version", Toast.LENGTH_SHORT).show();
             }
         });
+
+        mDetailsSubtitleView = (TextView) detailView.findViewById(R.id.text_detailsSubtitle);
 
         return detailView;
     }
@@ -419,6 +437,9 @@ public class ContactDetailFragment extends Fragment implements
     }
     private void getContactNote(){
         getLoaderManager().restartLoader(ContactNotesQuery.QUERY_ID, null, this);
+    }
+    private void getContactMessageStats(){
+        getLoaderManager().restartLoader(ContactEventLogQuery.QUERY_ID, null, this);
     }
 
 
@@ -598,6 +619,50 @@ public class ContactDetailFragment extends Fragment implements
                         noteWhere,
                         noteWhereParams,
                         null);
+
+            case ContactEventLogQuery.QUERY_ID:
+                // This query loads data from SocialEventsContentPRovider.
+
+                // If there is a call to retrieve all the data, then use only the contactKey in the query
+                if(mNumMonthsBackForMessageStats >= 500){
+                    //prepare the shere and args clause for the contact lookup key
+                    final String where2 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+
+                    String[] whereArgs2 ={ mContactLookupKey};
+
+                    return new CursorLoader(getActivity(),
+                            SocialEventsContentProvider.SOCIAL_EVENTS_URI,
+                            null,
+                            where2, whereArgs2,
+                            SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
+
+                }else {
+                    // If there is a call to retrieve data for a small number of months of data,
+                    // then perform the query for the specified time range back from the current date
+                    Long startDate;
+                    Long endDate;
+                    Calendar cal = Calendar.getInstance();
+                    endDate = cal.getTimeInMillis();
+
+                    cal.set(Calendar.MONTH, -mNumMonthsBackForMessageStats);
+
+                    startDate = cal.getTimeInMillis();
+
+
+                    //prepare the shere and args clause for the contact lookup key
+                    final String where3 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                            + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
+
+                    String[] whereArgs3 ={ mContactLookupKey,
+                            Long.toString(startDate), Long.toString(endDate)};
+
+                    return new CursorLoader(getActivity(),
+                            SocialEventsContentProvider.SOCIAL_EVENTS_URI,
+                            null,
+                            where3, whereArgs3,
+                            SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
+                }
+
         }
         return null;
 
@@ -735,7 +800,7 @@ public class ContactDetailFragment extends Fragment implements
                 if (mContactStats != null) {
 
                     // put the stats up on display
-                    displayContactStatsInfo();
+                    //displayContactStatsInfo();
                     setFractionView();
                 }
                     break;
@@ -781,6 +846,16 @@ public class ContactDetailFragment extends Fragment implements
                     mNotesView.setText(mContactNotes);
                 }
                 break;
+
+            case ContactEventLogQuery.QUERY_ID:
+
+                tallyStatsFromEventCursor(data);
+                if (mContactStats != null) {
+
+                    // put the stats up on display
+                    displayContactStatsInfo();
+                }
+                break;
         }
     }
 
@@ -822,7 +897,15 @@ public class ContactDetailFragment extends Fragment implements
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST)));
             mContactStats.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
+            mContactStats.setStanding(cursor.getFloat(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_STANDING)));
 
+            mContactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
+                    ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
+
+
+
+            // Make the following get calculated on the fly
             mContactStats.setCallDurationTotal(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_CALL_DURATION_TOTAL)));
             mContactStats.setCallDurationAvg(cursor.getInt(cursor.getColumnIndex(
@@ -850,12 +933,6 @@ public class ContactDetailFragment extends Fragment implements
 
             mContactStats.setEventCount(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));
-            mContactStats.setStanding(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_STANDING)));
-
-            mContactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
-
 
             mContactStats.setTextSmileyCountIn(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_TEXT_SMILEY_COUNT_IN)));
@@ -872,10 +949,252 @@ public class ContactDetailFragment extends Fragment implements
             mContactStats.setTextQuestionCountOut(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_TEXT_QUESTION_COUNT_OUT)));
 
-
             mContactStats.resetUpdateFlag(); //because this is just reporting on the database content
         }
     }
+
+
+
+    /*
+Take the cursor containing all the event data and pace it in a contactInfo for dispaly
+*/
+    private void tallyStatsFromEventCursor(Cursor cursor){
+
+        int count;
+        int event_type;
+        int event_class;
+        long date_millis;
+        final long ONE_DAY = 86400000;
+
+        if (mContactStats == null) {
+            //TODO plan for the eventuality of mContactStats being null
+        }
+
+
+            if (cursor.moveToFirst()) {
+
+            // Make the following get calculated on the fly
+
+            //so we first zero them out
+            mContactStats.setCallDurationTotal(0);
+            mContactStats.setCallDurationAvg(0);
+            mContactStats.setWordCountAvgIn(0);
+            mContactStats.setWordCountAvgOut(0);
+
+            mContactStats.setWordCountIn(0);
+            mContactStats.setWordCountOut(0);
+            mContactStats.setMessageCountIn(0);
+            mContactStats.setMessageCountOut(0);
+
+            mContactStats.setCallCountIn(0);
+            mContactStats.setCallCountOut(0);
+            mContactStats.setCallCountMissed(0);
+            mContactStats.setEventCount(0);
+
+            mContactStats.setTextSmileyCountIn(0);
+            mContactStats.setTextSmileyCountOut(0);
+            mContactStats.setTextHeartCountIn(0);
+            mContactStats.setTextHeartCountOut(0);
+
+            mContactStats.setTextQuestionCountIn(0);
+            mContactStats.setTextQuestionCountOut(0);
+
+            mContactStats.setFirstPersonWordCountIn(0);
+            mContactStats.setFirstPersonWordCountOut(0);
+            mContactStats.setSecondPersonWordCountIn(0);
+            mContactStats.setSecondPersonWordCountOut(0);
+        }
+
+
+        do {
+
+            // grab the event type
+            event_type = cursor.getInt(cursor.getColumnIndex(
+                    SocialEventsContract.TableEntry.KEY_TYPE));
+
+            // grab the event class
+            event_class = cursor.getInt(cursor.getColumnIndex(
+                    SocialEventsContract.TableEntry.KEY_CLASS));
+
+
+            // add into the data set
+
+            //increment the total event count
+            count = mContactStats.getEventCount();
+            count++;
+            mContactStats.setEventCount(count);
+
+            // switch based on the cleass of the event
+            switch(event_class){
+                //TODO think more about how to incorporate services like skype
+                case EventInfo.PHONE_CLASS:
+                    // tally up all the call durations
+                    //TODO: need checks for negative values
+                    count = mContactStats.getCallDurationTotal(); //seconds
+                    count += cursor.getInt(cursor.getColumnIndex(
+                            SocialEventsContract.TableEntry.KEY_DURATION));
+                    mContactStats.setCallDurationTotal(count);
+                    // continue to the combined case
+                case EventInfo.SKYPE:
+
+                    // tally up all the number of calls
+                    if(event_type == EventInfo.INCOMING_TYPE) {
+                        count = mContactStats.getCallCountIn();
+                        count++;
+                        mContactStats.setCallCountIn(count);
+                    }
+                    if(event_type == EventInfo.OUTGOING_TYPE) {
+                        count = mContactStats.getCallCountOut();
+                        count++;
+                        mContactStats.setCallCountOut(count);
+                    }
+                    if(event_type == EventInfo.MISSED_DRAFT) {
+                        //increment number of missed phone calls
+                        count = mContactStats.getCallCountMissed();
+                        count++;
+                        mContactStats.setCallCountMissed(count);
+                    }
+
+                    //set all time call duration average
+                    count = mContactStats.getCallCountIn() + mContactStats.getCallCountOut();
+                    if(count>0){
+                        mContactStats.setCallDurationAvg((int)((float)mContactStats.getCallDurationTotal()/
+                                (float)count));
+                    }else{
+                        mContactStats.setCallDurationAvg(0);
+                    }
+
+                    break;
+
+                case EventInfo.SMS_CLASS:
+                case EventInfo.GOOGLE_HANGOUTS:
+                case EventInfo.EMAIL_CLASS:
+                case EventInfo.FACEBOOK:
+
+                    if(event_type == EventInfo.INCOMING_TYPE){
+                        //increment the message count
+                        count = mContactStats.getMessagesCountIn();
+                        count++;
+                        mContactStats.setMessageCountIn(count);
+
+                        //increment the word count
+                        count = mContactStats.getWordCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_WORD_COUNT));
+                        mContactStats.setWordCountIn(count);
+
+                        mContactStats.setWordCountAvgIn((int)((float)mContactStats.getWordCountIn()/
+                                (float)mContactStats.getMessagesCountIn()));
+
+                        count = mContactStats.getSmileyCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_SMILEY_COUNT));
+                        mContactStats.setTextSmileyCountIn(count);
+
+                        count = mContactStats.getHeartCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_HEART_COUNT));
+                        mContactStats.setTextHeartCountIn(count);
+
+                        count = mContactStats.getQuestionCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_QUESTION_COUNT));
+                        mContactStats.setTextQuestionCountIn(count);
+
+                        count = mContactStats.getFirstPersonWordCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_FIRST_PERSON_WORD_COUNT));
+                        mContactStats.setFirstPersonWordCountIn(count);
+
+                        count = mContactStats.getSecondPersonWordCountIn();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_SECOND_PERSON_WORD_COUNT));
+                        mContactStats.setSecondPersonWordCountIn(count);
+                    }
+
+                    if(event_type == EventInfo.OUTGOING_TYPE){
+                        count = mContactStats.getMessagesCountOut();
+                        count++;
+                        mContactStats.setMessageCountOut(count);
+
+                        count = mContactStats.getWordCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_WORD_COUNT));
+                        mContactStats.setWordCountOut(count);
+
+                        mContactStats.setWordCountAvgOut((int)((float)mContactStats.getWordCountOut()/
+                                (float)mContactStats.getMessagesCountOut()));
+
+                        count = mContactStats.getSmileyCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_SMILEY_COUNT));
+                        mContactStats.setTextSmileyCountOut(count);
+
+                        count = mContactStats.getHeartCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_HEART_COUNT));
+                        mContactStats.setTextHeartCountOut(count);
+
+                        count = mContactStats.getQuestionCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_TEXT_QUESTION_COUNT));
+                        mContactStats.setTextQuestionCountOut(count);
+
+                        count = mContactStats.getFirstPersonWordCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_FIRST_PERSON_WORD_COUNT));
+                        mContactStats.setFirstPersonWordCountOut(count);
+
+                        count = mContactStats.getSecondPersonWordCountOut();
+                        count += cursor.getInt(cursor.getColumnIndex(
+                                SocialEventsContract.TableEntry.KEY_SECOND_PERSON_WORD_COUNT));
+                        mContactStats.setSecondPersonWordCountOut(count);
+                    }
+
+
+
+                    break;
+                default:
+
+            }
+
+
+
+            // generalized recording of event dates
+            date_millis = cursor.getInt(cursor.getColumnIndex(
+                    SocialEventsContract.TableEntry.KEY_EVENT_TIME));
+
+            switch (event_type){
+                // missed calls should totally count as incoming
+                case EventInfo.MISSED_DRAFT:
+                    if(event_class != EventInfo.PHONE_CLASS){
+                        break;
+                    }
+                case EventInfo.INCOMING_TYPE:
+                    if(date_millis > mContactStats.getDateLastEventIn()){
+                        mContactStats.setDateLastEventIn(date_millis);
+                    }
+
+                    break;
+                case EventInfo.OUTGOING_TYPE:
+                    if(date_millis > mContactStats.getDateLastEventOut()){
+                        mContactStats.setDateLastEventOut(date_millis);
+                    }
+                    break;
+
+                default:
+                    // This should never happen
+            }
+
+
+    } while (cursor.moveToNext());
+
+
+
+    }
+
+
+
 
     /**
      * Fetches the width or height of the screen in pixels, whichever is larger. This is used to
@@ -1104,56 +1423,76 @@ public class ContactDetailFragment extends Fragment implements
         final static int QUERY_ID = 9;
     }
 
-    /* INTERFACE ELEMENTS*/
-    /*
-    private LinearLayout buildActionLayout() {
+    // for getting the event Log
+    public interface ContactEventLogQuery{
+        final static int QUERY_ID = 10;
+    }
+
+/*
+    Build the buttons for the Contact Stats Display
+*/
+    private void buildContactStatsButtonLayout(View mainView) {
 
         // Gets handles to the view objects in the layout
-        final ImageButton callButton =
-                (ImageButton) mActionLayout.findViewById(R.id.imageButton_call);
-        callButton.setOnClickListener(new View.OnClickListener() {
+        final Button statsRangeButton1 =
+                (Button) mainView.findViewById(R.id.stats_range_button_1);
+        statsRangeButton1.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                startPhoneCall();
+
+                // set the data time window to include all event data
+                mNumMonthsBackForMessageStats = 500;
+
+                //retrieve the event data, calculate stats, and display
+                getContactMessageStats();
+
+                //set the subtitle of the view
+                mDetailsSubtitleView.setText(R.string.all_data);
+
             }
         });
 
 
-        final ImageButton smsButton =
-                (ImageButton) mActionLayout.findViewById(R.id.imageButton_chat);
-        smsButton.setOnClickListener(new View.OnClickListener() {
+        final Button statsRangeButton2 =
+                (Button) mainView.findViewById(R.id.stats_range_button_2);
+        statsRangeButton2.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                startSMS();
+
+                // set the data time window to include the past 6 months of event data
+                mNumMonthsBackForMessageStats = 6;
+
+                //retrieve the event data, calculate stats, and display
+                getContactMessageStats();
+
+                //set the subtitle of the view
+                mDetailsSubtitleView.setText(R.string.six_months_of_data);
+
             }
         });
 
 
-        final ImageButton emailButton =
-                (ImageButton) mActionLayout.findViewById(R.id.imageButton_email);
-        emailButton.setOnClickListener(new View.OnClickListener() {
+        final Button statsRangeButton3 =
+                (Button) mainView.findViewById(R.id.stats_range_button_3);
+        statsRangeButton3.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                startEmail();
+
+                // set the data time window to include the past 1 month of event data
+                mNumMonthsBackForMessageStats = 1;
+
+                //retrieve the event data, calculate stats, and display
+                getContactMessageStats();
+
+                //set the subtitle of the view
+                mDetailsSubtitleView.setText(R.string.one_month_of_data);
             }
         });
 
-        final ImageButton newEventButton =
-                (ImageButton) mActionLayout.findViewById(R.id.imageButton_new_event);
-        newEventButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                //Toast.makeText(getActivity(), "Logging Activity", Toast.LENGTH_SHORT).show();
-                startNewEntry();
-            }
-        });
-
-        return mActionLayout;
-    }*/
+       }
 
     private void startPhoneCall() {
         Intent implicitIntent = new Intent();
@@ -1380,9 +1719,11 @@ Set the FractionView with appropriate time data
         View view;
         if (mContactStats != null) {
 
-            //TODO: Get all text into Strings File
+            mStatsLayoutContainer.removeAllViews();
+
+            //TODO: Get all text into Strings Resource
             view = buildContactStatsItemLayout("Call Count",
-                    mContactStats.getCallCountOut(), mContactStats.getCallCountOut());
+                    mContactStats.getCallCountOut(), mContactStats.getCallCountIn());
             mStatsLayoutContainer.addView(view);
 
             view = buildContactStatsItemLayout("Messages",
@@ -1391,6 +1732,10 @@ Set the FractionView with appropriate time data
 
             view = buildContactStatsItemLayout("Word Count",
                     mContactStats.getWordCountOut(), mContactStats.getWordCountIn());
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Word Count Average",
+                    mContactStats.getWordCountAvgOut(), mContactStats.getWordCountAvgIn());
             mStatsLayoutContainer.addView(view);
 
             view = buildContactStatsItemLayout("Smileys",
@@ -1406,21 +1751,28 @@ Set the FractionView with appropriate time data
             mStatsLayoutContainer.addView(view);
 
             view = buildContactStatsItemLayout("Average Reply Time",
-                    0, 0);
+                    -1, -1);
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Conversations Started",
-                    0, 0);
+            view = buildContactStatsItemLayout("First Person Word Count",
+                    mContactStats.getFirstPersonWordCountOut(),
+                    mContactStats.getFirstPersonWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Conversations Ended",
-                    0, 0);
+            view = buildContactStatsItemLayout("Second Person Word Count",
+                    mContactStats.getSecondPersonWordCountOut(),
+                    mContactStats.getSecondPersonWordCountIn());
             mStatsLayoutContainer.addView(view);
 
 
             view = buildContactStatsItemLayout("Average Call Duration (min)",
                     // convert from seconds to minues
-                    mContactStats.getCallDurationAvg()/60, mContactStats.getCallDurationTotal()/60);
+                    mContactStats.getCallDurationAvg()/60, -1);
+            mStatsLayoutContainer.addView(view);
+
+            view = buildContactStatsItemLayout("Accumulated Call Duration (min)",
+                    // convert from seconds to minues
+                    -1, mContactStats.getCallDurationTotal()/60);
             mStatsLayoutContainer.addView(view);
         }
 
@@ -1629,8 +1981,22 @@ Set the FractionView with appropriate time data
 
             // Sets TextView objects in the layout
         contactStatsItem.setText(description);
-        contactStatsItmeOutValue.setText(Integer.toString(out_value));
-        contactStatsItmeInValue.setText(Integer.toString(in_value));
+
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 50);
+
+        // if the value is -1 don't display any value
+        if(out_value != -1){
+            contactStatsItmeOutValue.setText(Integer.toString(out_value));
+        }else{
+            contactStatsItmeOutValue.setLayoutParams(lp);
+        }
+
+        if(in_value != -1) {
+            contactStatsItmeInValue.setText(Integer.toString(in_value));
+        }else {
+            contactStatsItmeInValue.setLayoutParams(lp);
+        }
 
         return statsLayout;
     }

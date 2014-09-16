@@ -89,15 +89,15 @@ public class ContactStatsHelper {
                                 (float)stats.getMessagesCountIn()));
 
                         count = stats.getSmileyCountIn();
-                        count += event.getEventSmileyCount();
+                        count += event.getSmileyCount();
                         stats.setTextSmileyCountIn(count);
 
                         count = stats.getHeartCountIn();
-                        count += event.getEventHeartCount();
+                        count += event.getHeartCount();
                         stats.setTextHeartCountIn(count);
 
                         count = stats.getQuestionCountIn();
-                        count += event.getEventQuestionCount();
+                        count += event.getQuestionCount();
                         stats.setTextQuestionCountIn(count);
                     }
                     if(event.getEventType() == EventInfo.OUTGOING_TYPE){
@@ -113,15 +113,15 @@ public class ContactStatsHelper {
                                 (float)stats.getMessagesCountOut()));
 
                         count = stats.getSmileyCountOut();
-                        count += event.getEventSmileyCount();
+                        count += event.getSmileyCount();
                         stats.setTextSmileyCountOut(count);
 
                         count = stats.getHeartCountOut();
-                        count += event.getEventHeartCount();
+                        count += event.getHeartCount();
                         stats.setTextHeartCountOut(count);
 
                         count = stats.getQuestionCountOut();
-                        count += event.getEventQuestionCount();
+                        count += event.getQuestionCount();
                         stats.setTextQuestionCountOut(count);
                     }
 

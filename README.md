@@ -2,17 +2,26 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- app should remove contact from Misses You group automatically at the appropriate times
-- Use ActionMode.callback to manually select contacts to remove from a group
+- add another option to the CAB: Move selection to another group
+- There's a bug with the stats display in the contactDetailFragment.  Bad numbers for 1 Month.
+- move all the stats accumulation to a ContactDetailFragment for on the fy display of the same stats
+ for 1 month and 6 month time ranges, as well, as all time, in an on-demand fashion
+  - involves making a EventLog content Provider
+  - removing the old code
+- app should add and remove contact from Misses You group automatically at the appropriate times
+    - can remove contacts from group at time of update
+    - can add/remove contacts if all contacts are updated, before a notification
+    - can remove contacts when examining the content of the group, assuming all are updated.
+- Use ActionMode.callback to manually select multiple contacts to remove from a group
     - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
 - make animation for welcome screen
-- bug with phone call count, both parties get same number on readout
 - Make static plot for recent history of contact
 - Make values persist with screen rotation in the event entry activity
 - group stats must be collected just like contact stats
 -- performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 - Have a nightly database maintenance routine
 - fix the fact that tapping on the update notification initiates a new file import activity
+- have a feature to display the library of smilies
 
 ***Medium Tasks***
 - Figure out how to cluster events into a conversation
@@ -57,6 +66,8 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- bug with phone call count, both parties get same number on readout
+
 - from the group list, pressing the + button should allow the user to add an existing contact to the group
   - can use standard contacts app to perform selection
 _ editing dialog for new event notes

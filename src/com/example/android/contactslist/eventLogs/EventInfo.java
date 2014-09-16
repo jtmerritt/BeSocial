@@ -21,6 +21,10 @@ public class EventInfo {
     public int eventSmileyCount;
     public int eventHeartCount;
     public int eventQuestionCount;
+    public int eventScore; //The numberical score the event accumulates for the relationship
+    public int eventEnteredInContactStats;
+    public int eventFirstPersonWordCount;
+    public int eventSecondPersonWordCount;
 
     public String eventNotes;
 
@@ -34,6 +38,8 @@ public class EventInfo {
     final public static int FACEBOOK = 5;
     final public static int GOOGLE_HANGOUTS = 6;
     final public static int SKYPE = 7;
+    final public static int NOT_SENT_TO_CONTACT_STATS = 0;
+    final public static int SENT_TO_CONTACT_STATS = 1;
 
 
     public void clear(){
@@ -47,6 +53,8 @@ public class EventInfo {
         eventCharCount = 0;
         eventSmileyCount = 0;
         eventHeartCount = 0;
+        eventFirstPersonWordCount = 0;
+        eventSecondPersonWordCount = 0;
 
     }
 
@@ -66,7 +74,7 @@ public class EventInfo {
     public EventInfo(String name, String contactKey,
                      String phoneNumber, int event_class, int event_type,
                            long date_ms, String date_string, long duration,
-                           long wordCount, long charCount){
+                           long wordCount, long charCount, int eventEnteredInContactStats){
 
         this.eventContactName = name;
         //this.eventContactID = contactID;
@@ -78,6 +86,7 @@ public class EventInfo {
         this.eventDuration = duration;
         this.eventWordCount = wordCount;
         this.eventCharCount = charCount;
+        this.eventEnteredInContactStats = eventEnteredInContactStats;
     }
 
 
@@ -115,16 +124,27 @@ public class EventInfo {
     public String getContactKey() {
         return eventContactKey;
     }
-    public int getEventSmileyCount() {
+    public int getSmileyCount() {
         return eventSmileyCount;
     }
-    public int getEventHeartCount() {
+    public int getHeartCount() {
         return eventHeartCount;
     }
-    public int getEventQuestionCount() {
+    public int getScore() {
+        return eventScore;
+    }
+    public int getQuestionCount() {
         return eventQuestionCount;
     }
-
+    public int getEventEnteredInContactStats() {
+        return eventEnteredInContactStats;
+    }
+    public int getFirstPersonWordCount() {
+        return eventFirstPersonWordCount;
+    }
+    public int getSecondPersonWordCount() {
+        return eventSecondPersonWordCount;
+    }
 
 
 
@@ -194,16 +214,35 @@ public class EventInfo {
     public void setContactKey(String key) {
         eventContactKey = key;
     }
-    public void setEventSmileyCount(int count) {
+    public void setSmileyCount(int count) {
         eventSmileyCount = count;
     }
-    public void setEventHeartCount(int count) {
+    public void setHeartCount(int count) {
         eventHeartCount = count;
     }
-    public void setEventQuestionCount(int count) {
+    public void setQuestionCount(int count) {
         eventQuestionCount = count;
     }
+    public void setScore(int count) {
+        eventScore = count;
+    }
 
+    public void setEnteredInContactStats(int count) {
 
+        if(count > 1){
+            count = SENT_TO_CONTACT_STATS;
+        }
+        if(count <0){
+            count = NOT_SENT_TO_CONTACT_STATS;
+        }
+        eventEnteredInContactStats = count;
+    }
+
+    public void setFirstPersonWordCount(int count) {
+        eventFirstPersonWordCount = count;
+    }
+    public void setSecondPersonWordCount(int count) {
+        eventSecondPersonWordCount = count;
+    }
 
 }

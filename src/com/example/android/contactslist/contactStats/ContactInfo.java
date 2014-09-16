@@ -13,17 +13,17 @@ public class ContactInfo {
     private String dateLastEvent = "";  //formatted string // -
 
     private long dateRecordLastUpdated = 0;  //when was the database record updated // -
-    private int eventIntervalLimit = 0; // number of days
+    private int eventIntervalLimit = 0; // number of days //-
     private int eventIntervalLongest = 0; // number of days
     private int eventIntervalAvg = 0; // number of days
 
     private int callDurationTotal = 0; //seconds // -
-    private int callDurationAvg = 0; // seconds
+    private int callDurationAvg = 0; // seconds //-
     private int wordCountIn = 0; // -
     private int wordCountOut = 0; // -
 
-    private int wordCountAvgIn = 0;
-    private int wordCountAvgOut = 0;
+    private int wordCountAvgIn = 0; //-
+    private int wordCountAvgOut = 0; //-
     private int messagesCountIn = 0; // -
     private int messagesCountOut = 0; // -
 
@@ -37,19 +37,26 @@ public class ContactInfo {
 
     private float decay_rate = 0;
 
-    private long primary_group_membership = 0;  //by ID
-    private int primary_behavior = 0;
+    private long primary_group_membership = 0;  //by ID //-
+    private int primary_behavior = 0; //-
 
     private int member_count = 0;
 
-    private int textSmileyCountIn = 0;
-    private int textSmileyCountOut = 0;
+    private int textSmileyCountIn = 0; //-
+    private int textSmileyCountOut = 0;//-
 
-    private int textHeartCountIn = 0;
-    private int textHeartCountOut = 0;
+    private int textHeartCountIn = 0; //-
+    private int textHeartCountOut = 0; //-
 
-    private int textQuestionCountIn = 0;
-    private int textQuestionCountOut = 0;
+    private int textQuestionCountIn = 0; //-
+    private int textQuestionCountOut = 0; //-
+
+    private int eventFirstPersonWordCountIn = 0;
+    private int eventFirstPersonWordCountOut = 0;
+
+    private int eventSecondPersonWordCountIn = 0;
+    private int eventSecondPersonWordCountOut = 0;
+
 
     private String preferredContactMethod; // not fully connected in the database
 
@@ -216,6 +223,20 @@ public class ContactInfo {
         return textQuestionCountOut;
 
     }
+
+    public int getFirstPersonWordCountIn(){
+        return eventFirstPersonWordCountIn;
+    }
+    public int getFirstPersonWordCountOut(){
+        return eventFirstPersonWordCountOut;
+    }
+    public int getSecondPersonWordCountIn(){
+        return eventSecondPersonWordCountIn;
+    }
+    public int getSecondPersonWordCountOut(){
+        return eventSecondPersonWordCountOut;
+    }
+
 
     public boolean getUpdatedFlag(){
         return Updated;
@@ -385,6 +406,24 @@ public class ContactInfo {
         textQuestionCountOut = id;
         Updated = true;
     }
+
+    public void setFirstPersonWordCountIn(int id){
+        eventFirstPersonWordCountIn = id;
+        Updated = true;
+    }
+    public void setFirstPersonWordCountOut(int id){
+        eventFirstPersonWordCountOut = id;
+        Updated = true;
+    }
+    public void setSecondPersonWordCountIn(int id){
+        eventSecondPersonWordCountIn = id;
+        Updated = true;
+    }
+    public void setSecondPersonWordCountOut(int id){
+        eventSecondPersonWordCountOut = id;
+        Updated = true;
+    }
+
     public void resetUpdateFlag(){
         Updated = false;
     }

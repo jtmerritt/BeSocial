@@ -13,8 +13,8 @@ import java.util.List;
 
 /**
  * Created by Tyson Macdonald on 3/6/14.
+ *
  */
-
 public class SocialEventsContract {
     Context mContext;
     // To access your database, instantiate your subclass of SQLiteOpenHelper:
@@ -49,7 +49,15 @@ public class SocialEventsContract {
 | Type                  |  Int                          |   1                           |
 | Word Count            |  Long                         | 5555                          |
 | Char Count            |  Long                         |  555555555555555555           |
-| Duration       (s)       |  Long                         |  555555555555555555           |
+| Duration       (s)       |  Long                      |  555555555555555555           |
+| eventScore                | INt                       | 11
+| eventEnteredInContactStats | Int                      | 0
+| Smiley count          | int
+| heart count           | int
+| Question Count        |  int
+| First person word count   | int
+| Second person word count  | int
+|
 | Location Lon          |
 | Location Lat          |
 +-----------------------+------------+------------------------------+---+--------+--+
@@ -67,6 +75,16 @@ public class SocialEventsContract {
         public static final String KEY_WORD_COUNT = "word_count";
         public static final String KEY_CHAR_COUNT = "char_count";
         public static final String KEY_DURATION  = "duration";
+        public static final String KEY_EVENT_SCORE  = "event_score";
+        public static final String KEY_EVENT_ENTERED_IN_CONTACT_STATS  = "event_entered_in_contact_stats";
+
+        public static final String KEY_TEXT_SMILEY_COUNT = "text_smiley_count";
+        public static final String KEY_TEXT_HEART_COUNT = "text_heart_count";
+        public static final String KEY_TEXT_QUESTION_COUNT = "text_question_count";
+        public static final String KEY_FIRST_PERSON_WORD_COUNT = "first_person_word_count";
+        public static final String KEY_SECOND_PERSON_WORD_COUNT = "second_person_word_count";
+
+
 
         public final static int ROW_ID = 0;
         public final static int ANDROID_EVENT_ID = 1;
@@ -80,6 +98,15 @@ public class SocialEventsContract {
         public final static int WORD_COUNT = 8;
         public final static int CHAR_COUNT = 9;
         public final static int DURATION = 10;
+        public final static int EVENT_SCORE = 11;
+        public final static int EVENT_ENTERED_IN_CONTACT_STATS = 12;
+
+        public final static int TEXT_SMILEY_COUNT = 13;
+        public final static int TEXT_HEART_COUNT = 14;
+        public final static int TEXT_QUESTION_COUNT = 15;
+        public final static int FIRST_PERSON_WORD_COUNT = 16;
+        public final static int SECOND_PERSON_WORD_COUNT = 17;
+
 
         // provide the name of a column in which the framework can insert NULL 
         // in the event that the ContentValues is empty
@@ -98,7 +125,7 @@ public class SocialEventsContract {
     public static class EventLogDbHandler extends SQLiteOpenHelper {
 
         // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 3;
         public static final String DATABASE_NAME = "EventLog.db";
         private static final String TEXT_TYPE = " TEXT";
         private static final String LONG_TYPE = " LONG";
@@ -125,7 +152,14 @@ public class SocialEventsContract {
                         TableEntry.KEY_TYPE + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_WORD_COUNT + LONG_TYPE + COMMA_SEP +
                         TableEntry.KEY_CHAR_COUNT + LONG_TYPE + COMMA_SEP +
-                        TableEntry.KEY_DURATION + LONG_TYPE + //COMMA_SEP +
+                        TableEntry.KEY_DURATION + LONG_TYPE + COMMA_SEP +
+                        TableEntry.KEY_EVENT_SCORE + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_EVENT_ENTERED_IN_CONTACT_STATS + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_SMILEY_COUNT + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_HEART_COUNT + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_TEXT_QUESTION_COUNT + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_FIRST_PERSON_WORD_COUNT + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_SECOND_PERSON_WORD_COUNT + INT_TYPE + //COMMA_SEP +
 
                         //... // Any other options for the CREATE command
                         " );";
@@ -157,6 +191,34 @@ public class SocialEventsContract {
     }
 
 
+    public interface EventQuery{
+        // Define a projection that specifies which columns from the database
+        // you will actually use after this query.
+        String[] projection = {
+                TableEntry._ID,
+                TableEntry.KEY_ANDROID_EVENT_ID,
+                TableEntry.KEY_EVENT_TIME,
+                TableEntry.KEY_CONTACT_NAME,
+                TableEntry.KEY_CONTACT_KEY,
+                TableEntry.KEY_CONTACT_ADDRESS,
+                TableEntry.KEY_CLASS,
+                TableEntry.KEY_TYPE,
+                TableEntry.KEY_WORD_COUNT,
+                TableEntry.KEY_CHAR_COUNT,
+                TableEntry.KEY_DURATION,
+                TableEntry.KEY_EVENT_SCORE,
+                TableEntry.KEY_EVENT_ENTERED_IN_CONTACT_STATS,
+                TableEntry.KEY_TEXT_SMILEY_COUNT,
+                TableEntry.KEY_TEXT_HEART_COUNT,
+                TableEntry.KEY_TEXT_QUESTION_COUNT,
+                TableEntry.KEY_FIRST_PERSON_WORD_COUNT,
+                TableEntry.KEY_SECOND_PERSON_WORD_COUNT
+
+                //...
+        };
+    }
+
+
     /**
      * All CRUD(Create, Read, Update, Delete) Operations
      */
@@ -167,18 +229,9 @@ public class SocialEventsContract {
 
     // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
-        values.put(TableEntry.KEY_ANDROID_EVENT_ID, event.getEventID());
-        values.put(TableEntry.KEY_EVENT_TIME, event.getDate());
-        values.put(TableEntry.KEY_CONTACT_NAME, event.getContactName());
-        values.put(TableEntry.KEY_CONTACT_KEY, event.getContactKey());
-        values.put(TableEntry.KEY_CONTACT_ADDRESS, event.getAddress());
-        values.put(TableEntry.KEY_CLASS, event.getEventClass());
-        values.put(TableEntry.KEY_TYPE, event.getEventType());
-        values.put(TableEntry.KEY_WORD_COUNT, event.getWordCount());
-        values.put(TableEntry.KEY_CHAR_COUNT, event.getCharCount());
-        values.put(TableEntry.KEY_DURATION, event.getDuration());
 
-
+        // populate the values table
+        values = setValuesFromEvent(values, event);
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId;
@@ -189,6 +242,32 @@ public class SocialEventsContract {
 
         db.close();
         return newRowId;
+    }
+
+
+    /*
+    helper function to set values with all the table entries from the event
+     */
+    private ContentValues setValuesFromEvent(ContentValues values, EventInfo event) {
+        values.put(TableEntry.KEY_ANDROID_EVENT_ID, event.getEventID());
+        values.put(TableEntry.KEY_EVENT_TIME, event.getDate());
+        values.put(TableEntry.KEY_CONTACT_NAME, event.getContactName());
+        values.put(TableEntry.KEY_CONTACT_KEY, event.getContactKey());
+        values.put(TableEntry.KEY_CONTACT_ADDRESS, event.getAddress());
+        values.put(TableEntry.KEY_CLASS, event.getEventClass());
+        values.put(TableEntry.KEY_TYPE, event.getEventType());
+        values.put(TableEntry.KEY_WORD_COUNT, event.getWordCount());
+        values.put(TableEntry.KEY_CHAR_COUNT, event.getCharCount());
+        values.put(TableEntry.KEY_DURATION, event.getDuration());
+        values.put(TableEntry.KEY_EVENT_SCORE, event.getScore());
+        values.put(TableEntry.KEY_EVENT_ENTERED_IN_CONTACT_STATS, event.getEventEnteredInContactStats());
+        values.put(TableEntry.KEY_TEXT_SMILEY_COUNT, event.getSmileyCount());
+        values.put(TableEntry.KEY_TEXT_HEART_COUNT, event.getHeartCount());
+        values.put(TableEntry.KEY_TEXT_QUESTION_COUNT, event.getQuestionCount());
+        values.put(TableEntry.KEY_FIRST_PERSON_WORD_COUNT, event.getFirstPersonWordCount());
+        values.put(TableEntry.KEY_SECOND_PERSON_WORD_COUNT, event.getSecondPersonWordCount());
+
+        return values;
     }
 
     public long checkEventExists(EventInfo event){
@@ -279,26 +358,9 @@ public class SocialEventsContract {
                 TableEntry.KEY_CONTACT_NAME + " DESC";
 
 
-        // Define a projection that specifies which columns from the database
-        // you will actually use after this query.
-        String[] projection = {
-                TableEntry._ID,
-                TableEntry.KEY_ANDROID_EVENT_ID,
-                TableEntry.KEY_EVENT_TIME,
-                TableEntry.KEY_CONTACT_NAME,
-                TableEntry.KEY_CONTACT_KEY,
-                TableEntry.KEY_CONTACT_ADDRESS,
-                TableEntry.KEY_CLASS,
-                TableEntry.KEY_TYPE,
-                TableEntry.KEY_WORD_COUNT,
-                TableEntry.KEY_CHAR_COUNT,
-                TableEntry.KEY_DURATION
-        //...
-        };
-
         Cursor cursor = db.query(
                 TableEntry.TABLE_NAME,  // The table to query
-                projection,                               // The columns to return
+                EventQuery.projection,                               // The columns to return
                 selection,                                // The columns for the WHERE clause
                 selectionArgs,                            // The values for the WHERE clause
                 null,                                     // don't group the rows
@@ -309,32 +371,52 @@ public class SocialEventsContract {
 
         // organize the event info and pass it back
         if (cursor.moveToFirst()) {
-            event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
-                    cursor.getString(TableEntry.CONTACT_KEY),
-                    cursor.getString(TableEntry.CONTACT_ADDRESS),
-                    cursor.getInt(TableEntry.CLASS),
-                    cursor.getInt(TableEntry.TYPE),
-                    cursor.getLong(TableEntry.EVENT_TIME),
-                    "",
-                    cursor.getInt(TableEntry.DURATION),
-                    cursor.getInt(TableEntry.WORD_COUNT),
-                    cursor.getInt(TableEntry.CHAR_COUNT)
-                    );
-            event.setRowId(cursor.getLong(TableEntry.ROW_ID));
-            event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-            //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-            //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
-            event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-            //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-            //event.setEventClass(cursor.getInt(TableEntry.CLASS));
-            //event.setEventType(cursor.getInt(TableEntry.TYPE));
-            //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-            //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-            //event.setDuration(cursor.getInt(TableEntry.DURATION));
+
+            //populate the event from the cursor
+            event = setEventInfoFromCursor(event, cursor);
+
         }
 
         db.close();
         cursor.close();
+        return event;
+    }
+
+    /*
+    load the cursor information into the eventInfo
+     */
+    private EventInfo setEventInfoFromCursor(EventInfo event, Cursor cursor) {
+        event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
+                cursor.getString(TableEntry.CONTACT_KEY),
+                cursor.getString(TableEntry.CONTACT_ADDRESS),
+                cursor.getInt(TableEntry.CLASS),
+                cursor.getInt(TableEntry.TYPE),
+                cursor.getLong(TableEntry.EVENT_TIME),
+                "",
+                cursor.getInt(TableEntry.DURATION),
+                cursor.getInt(TableEntry.WORD_COUNT),
+                cursor.getInt(TableEntry.CHAR_COUNT),
+                cursor.getInt(TableEntry.EVENT_ENTERED_IN_CONTACT_STATS)
+        );
+        event.setRowId(cursor.getLong(TableEntry.ROW_ID));
+        event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
+        //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
+        //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
+        event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
+        //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
+        //event.setEventClass(cursor.getInt(TableEntry.CLASS));
+        //event.setEventType(cursor.getInt(TableEntry.TYPE));
+        //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
+        //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
+        //event.setDuration(cursor.getInt(TableEntry.DURATION));
+        event.setScore(cursor.getInt(TableEntry.EVENT_SCORE));
+
+        event.setSmileyCount(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT));
+        event.setHeartCount(cursor.getInt(TableEntry.TEXT_HEART_COUNT));
+        event.setQuestionCount(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT));
+        event.setFirstPersonWordCount(cursor.getInt(TableEntry.FIRST_PERSON_WORD_COUNT));
+        event.setSecondPersonWordCount(cursor.getInt(TableEntry.SECOND_PERSON_WORD_COUNT));
+
         return event;
     }
 
@@ -344,21 +426,10 @@ public class SocialEventsContract {
         //Since this is an update, we should already have a rowId of _ID
         long rowId = event.getRowId();
 
-// New value for one column
-        //TODO: Evaluate use of flags for whether to update each value
         ContentValues values = new ContentValues();
-        //values.put(TableEntry._ID, event.getRowId());
-        values.put(TableEntry.KEY_ANDROID_EVENT_ID, event.getEventID());
-        values.put(TableEntry.KEY_EVENT_TIME, event.getDate());
-        values.put(TableEntry.KEY_CONTACT_NAME, event.getContactName());
-        values.put(TableEntry.KEY_CONTACT_KEY, event.getContactKey());
-        values.put(TableEntry.KEY_CONTACT_ADDRESS, event.getAddress());
-        values.put(TableEntry.KEY_CLASS, event.getEventClass());
-        values.put(TableEntry.KEY_TYPE, event.getEventType());
-        values.put(TableEntry.KEY_WORD_COUNT, event.getWordCount());
-        values.put(TableEntry.KEY_CHAR_COUNT, event.getCharCount());
-        values.put(TableEntry.KEY_DURATION, event.getDuration());
 
+        // populate the values table
+        values = setValuesFromEvent(values, event);
 
 // Which row to update, based on the ID
         String selection = TableEntry._ID + " LIKE ?";
@@ -405,29 +476,9 @@ public class SocialEventsContract {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
-                        cursor.getString(TableEntry.CONTACT_KEY),
-                        cursor.getString(TableEntry.CONTACT_ADDRESS),
-                        cursor.getInt(TableEntry.CLASS),
-                        cursor.getInt(TableEntry.TYPE),
-                        cursor.getLong(TableEntry.EVENT_TIME),
-                        "",
-                        cursor.getInt(TableEntry.DURATION),
-                        cursor.getInt(TableEntry.WORD_COUNT),
-                        cursor.getInt(TableEntry.CHAR_COUNT)
-                );
-                event.setRowId(cursor.getLong(TableEntry.ROW_ID));
-                event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-                //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-                //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
-                event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-                //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-                //event.setEventClass(cursor.getInt(TableEntry.CLASS));
-               // event.setEventType(cursor.getInt(TableEntry.TYPE));
-                //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-                //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-                //event.setDuration(cursor.getInt(TableEntry.DURATION));
-                // Adding contact to list
+                //populate the event from the cursor
+                event = setEventInfoFromCursor(event, cursor);
+
                 eventList.add(event);
             } while (cursor.moveToNext());
         }
@@ -483,26 +534,11 @@ public class SocialEventsContract {
 
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        // Define a projection that specifies which columns from the database
-        // you will actually use after this query.
-        String[] projection = {
-                TableEntry._ID,
-                TableEntry.KEY_ANDROID_EVENT_ID,
-                TableEntry.KEY_EVENT_TIME,
-                TableEntry.KEY_CONTACT_NAME,
-                TableEntry.KEY_CONTACT_KEY,
-                TableEntry.KEY_CONTACT_ADDRESS,
-                TableEntry.KEY_CLASS,
-                TableEntry.KEY_TYPE,
-                TableEntry.KEY_WORD_COUNT,
-                TableEntry.KEY_CHAR_COUNT,
-                TableEntry.KEY_DURATION
-                //...
-        };
+
 
         Cursor cursor = db.query(
                 TableEntry.TABLE_NAME,  // The table to query
-                projection,                               // The columns to return
+                EventQuery.projection,                               // The columns to return
                 where,                                // The columns for the WHERE clause
                 whereArgs,                            // The values for the WHERE clause
                 null,                                     // don't group the rows
@@ -515,28 +551,9 @@ public class SocialEventsContract {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
-                        cursor.getString(TableEntry.CONTACT_KEY),
-                        cursor.getString(TableEntry.CONTACT_ADDRESS),
-                        cursor.getInt(TableEntry.CLASS),
-                        cursor.getInt(TableEntry.TYPE),
-                        cursor.getLong(TableEntry.EVENT_TIME),
-                        "",
-                        cursor.getInt(TableEntry.DURATION),
-                        cursor.getInt(TableEntry.WORD_COUNT),
-                        cursor.getInt(TableEntry.CHAR_COUNT)
-                );
-                event.setRowId(cursor.getLong(TableEntry.ROW_ID));
-                event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-                //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-                //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
-                event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-                //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-                //event.setEventClass(cursor.getInt(TableEntry.CLASS));
-                //event.setEventType(cursor.getInt(TableEntry.TYPE));
-                //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-                //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-                //event.setDuration(cursor.getInt(TableEntry.DURATION));
+                //populate the event from the cursor
+                event = setEventInfoFromCursor(event, cursor);
+
                 // Adding contact to list
                 eventList.add(event);
 
@@ -578,26 +595,11 @@ public class SocialEventsContract {
 
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        // Define a projection that specifies which columns from the database
-        // you will actually use after this query.
-        String[] projection = {
-                TableEntry._ID,
-                TableEntry.KEY_ANDROID_EVENT_ID,
-                TableEntry.KEY_EVENT_TIME,
-                TableEntry.KEY_CONTACT_NAME,
-                TableEntry.KEY_CONTACT_KEY,
-                TableEntry.KEY_CONTACT_ADDRESS,
-                TableEntry.KEY_CLASS,
-                TableEntry.KEY_TYPE,
-                TableEntry.KEY_WORD_COUNT,
-                TableEntry.KEY_CHAR_COUNT,
-                TableEntry.KEY_DURATION
-                //...
-        };
+
 
         Cursor cursor = db.query(
                 TableEntry.TABLE_NAME,  // The table to query
-                projection,                               // The columns to return
+                EventQuery.projection,                               // The columns to return
                 where,                                // The columns for the WHERE clause
                 whereArgs,                            // The values for the WHERE clause
                 null,                                     // don't group the rows
@@ -610,28 +612,9 @@ public class SocialEventsContract {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
-                        cursor.getString(TableEntry.CONTACT_KEY),
-                        cursor.getString(TableEntry.CONTACT_ADDRESS),
-                        cursor.getInt(TableEntry.CLASS),
-                        cursor.getInt(TableEntry.TYPE),
-                        cursor.getLong(TableEntry.EVENT_TIME),
-                        "",
-                        cursor.getInt(TableEntry.DURATION),
-                        cursor.getInt(TableEntry.WORD_COUNT),
-                        cursor.getInt(TableEntry.CHAR_COUNT)
-                );
-                event.setRowId(cursor.getLong(TableEntry.ROW_ID));
-                event.setEventID(cursor.getString(TableEntry.ANDROID_EVENT_ID));
-                //event.setDate(cursor.getLong(TableEntry.EVENT_TIME));
-                //event.setContactName(cursor.getString(TableEntry.CONTACT_NAME));
-                event.setContactKey(cursor.getString(TableEntry.CONTACT_KEY));
-                //event.setAddress(cursor.getString(TableEntry.CONTACT_ADDRESS));
-                //event.setEventClass(cursor.getInt(TableEntry.CLASS));
-                //event.setEventType(cursor.getInt(TableEntry.TYPE));
-                //event.setWordCount(cursor.getInt(TableEntry.WORD_COUNT));
-                //event.setCharCount(cursor.getInt(TableEntry.CHAR_COUNT));
-                //event.setDuration(cursor.getInt(TableEntry.DURATION));
+                //populate the event from the cursor
+                event = setEventInfoFromCursor(event, cursor);
+
                 // Adding contact to list
                 eventList.add(event);
 

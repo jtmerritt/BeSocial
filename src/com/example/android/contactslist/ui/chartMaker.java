@@ -523,8 +523,8 @@ public class chartMaker implements ChartMakerCallback {
                 ChartEventInfo = new EventInfo("", "", "",
                         mEventLog.get(j).getEventClass(), mEventLog.get(j).getEventType(),
                         cal.getTimeInMillis(), "",
-                        0,0,0  //set all counts to zero
-                        );
+                        0,0,0,  //set all counts to zero
+                        EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                 ChartEventInfo.eventID = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US);
 

@@ -206,12 +206,15 @@ Method to update the notification window and the activity progress bar, if avail
                                 reverseLookupContact.getKeyString(), //use the lookup key of the first contact
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                new StringTokenizer(smsBody).countTokens(), smsBody.length());
+                                new StringTokenizer(smsBody).countTokens(), smsBody.length(),
+                                EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                         //count the number of smiley faces in the string
-                        eventInfo.setEventSmileyCount(countSmileysInString(smsBody));
-                        eventInfo.setEventHeartCount(countHeartsInString(smsBody));
-                        eventInfo.setEventQuestionCount(countQuestionsInString(smsBody));
+                        eventInfo.setSmileyCount(countSmileysInString(smsBody));
+                        eventInfo.setHeartCount(countHeartsInString(smsBody));
+                        eventInfo.setQuestionCount(countQuestionsInString(smsBody));
+                        eventInfo.setFirstPersonWordCount(countFirstPersonPronounsInString(smsBody));
+                        eventInfo.setSecondPersonWordCount(countSecondPersonPronounsInString(smsBody));
 
 
                         eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
@@ -231,12 +234,15 @@ Method to update the notification window and the activity progress bar, if avail
                                 reverseLookupContacts.get(0).getKeyString(), //use the lookup key of the first contact
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                new StringTokenizer(smsBody).countTokens(), smsBody.length());
+                                new StringTokenizer(smsBody).countTokens(), smsBody.length(),
+                                EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
                         //count the number of smiley faces in the string
-                        eventInfo.setEventSmileyCount(countSmileysInString(smsBody));
-                        eventInfo.setEventHeartCount(countHeartsInString(smsBody));
-                        eventInfo.setEventQuestionCount(countQuestionsInString(smsBody));
+                        eventInfo.setSmileyCount(countSmileysInString(smsBody));
+                        eventInfo.setHeartCount(countHeartsInString(smsBody));
+                        eventInfo.setQuestionCount(countQuestionsInString(smsBody));
+                        eventInfo.setFirstPersonWordCount(countFirstPersonPronounsInString(smsBody));
+                        eventInfo.setSecondPersonWordCount(countSecondPersonPronounsInString(smsBody));
 
 
                         eventInfo.setContactID(reverseLookupContacts.get(0).getIDLong());  //use the ID of the first contact
@@ -263,7 +269,7 @@ Method to update the notification window and the activity progress bar, if avail
      */
     private int countSmileysInString(String str){
         String[] smileys = {":)",":D",":-)",":-D",";)",";-)"
-                ,"(:","(-:","^_^","(^_-)","(-_^)"};
+                ,"(:","(-:","^_^","(^_-)","(-_^)", ":-P", ":P", ":-p", ":p"};
 
         int count = 0;
 
@@ -275,10 +281,10 @@ Method to update the notification window and the activity progress bar, if avail
     }
 
     /*
-Method ot count the number of smileys in a string
+Method ot count the number of Kisses, hugs, and hearts in a string
  */
     private int countHeartsInString(String str){
-        String[] hearts = {"<3","<kiss>","<muah>","love you","hugs","Hugs",":-*",":*","Kiss", "kiss"};
+        String[] hearts = {"<3","<kiss>","<muah>","love you","hugs","Hugs",":-*",":*","Kiss", "kiss", "XOXO", "xoxo"};
 
         int count = 0;
 
@@ -290,10 +296,40 @@ Method ot count the number of smileys in a string
     }
 
     /*
-Method ot count the number of smileys in a string
+Method ot count the number of questionmarks in a string
 */
     private int countQuestionsInString(String str){
         String[] hearts = {"?"};
+
+        int count = 0;
+
+        for(String sub: hearts){
+            count += countSubstring(sub, str);
+        }
+
+        return count;
+    }
+
+    /*
+Method ot count the number of First Person Pronouns in a string
+*/
+    private int countFirstPersonPronounsInString(String str){
+        String[] hearts = {"I ","i "," me ","We "," we ", "I'll", "I've", "we'll", "we've", "We'll", "We've", "I'm"};
+
+        int count = 0;
+
+        for(String sub: hearts){
+            count += countSubstring(sub, str);
+        }
+
+        return count;
+    }
+
+    /*
+Method ot count the number of Second Person Pronouns in a string
+*/
+    private int countSecondPersonPronounsInString(String str){
+        String[] hearts = {"You","you", "You've", "you've", "You're", "you're", "Your", "your"};
 
         int count = 0;
 
@@ -425,7 +461,9 @@ Method ot count the number of smileys in a string
                 if((mContactName.equals(eventmContactName))){
                     EventInfo eventInfo = new EventInfo(eventmContactName, mContactKey,
                             phone_number, EventInfo.PHONE_CLASS,
-                            eventType, eventDate, "", eventDuration, 0, 0);
+                            eventType, eventDate, "", eventDuration, 0, 0,
+                            EventInfo.NOT_SENT_TO_CONTACT_STATS);
+
                     //TODO: why do phone calls not have eventID?
 
                     eventInfo.setContactID(mContactId);
