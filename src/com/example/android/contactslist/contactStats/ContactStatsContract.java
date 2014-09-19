@@ -61,28 +61,30 @@ public class ContactStatsContract {
 | Contact Interval Limit    |  Int                          |  60                        |
 | Contact Interval longest  | Int                           |  70
 | Contact Interval Avg      | Int                           |  12
-| Call Duration Total       | Int                           |  32514 (s)                |
-| Call Duration Avg         | Int                           |  350 (s)                  |
-| Word Count Avg In         | Int                           |  24                       |
-| Word Count Avg Out        | Int                           |  102                      |
-| Word Count In             | Int                           |  5532                     |
-| Word Count Out            | Int                           |  11234                    |
-| Message Count In          | Int                           |  2134                     |
-| Message Count Out         | Int                           |  2134                     |
-| Call count In             | Int                           |  1234                     |
-| Call count Out            | Int                           |  1234                     |
-| Call count Missed         | Int                           |  5                        |
+-| Call Duration Total       | Int                           |  32514 (s)                |
+-| Call Duration Avg         | Int                           |  350 (s)                  |
+-| Word Count Avg In         | Int                           |  24                       |
+-| Word Count Avg Out        | Int                           |  102                      |
+-| Word Count In             | Int                           |  5532                     |
+-| Word Count Out            | Int                           |  11234                    |
+-| Message Count In          | Int                           |  2134                     |
+-| Message Count Out         | Int                           |  2134                     |
+-| Call count In             | Int                           |  1234                     |
+-| Call count Out            | Int                           |  1234                     |
+-| Call count Missed         | Int                           |  5                        |
 | event count               | Int                           |  2345
 | Standing value            | REAL                          |  34.5
 | Decay rate                | REAL                          |  2.45
 | PRIMARY GROUP MEMBERSHIP  | lONG
 | PRIMARY BEHAVIOR          | iNT
-| SMILELY COUNT In             | INT                            |200
-| SMILELY COUNT Out           | INT                            |200
-| HEART COUNT In             | INT                            |200
-| HEART COUNT Out           | INT                            |200
-| HEART Question In             | INT                            |200
-| HEART Question Out           | INT                            |200
+-| SMILELY COUNT In             | INT                            |200
+-| SMILELY COUNT Out           | INT                            |200
+-| HEART COUNT In             | INT                            |200
+-| HEART COUNT Out           | INT                            |200
+-| HEART Question In             | INT                            |200
+-| HEART Question Out           | INT                            |200
+intensity AVG
+preferred contact method
 +-----------------------+------------+------------------------------+---+--------+--+
 */
 
@@ -101,7 +103,7 @@ public class ContactStatsContract {
         public static final String KEY_EVENT_INTERVAL_LONGEST = "EVENT_INTERVAL_LONGEST";
         public static final String KEY_EVENT_INTERVAL_AVG = "contact_interval_average";
 
-        public static final String KEY_CALL_DURATION_TOTAL = "call_length_total";
+       /* public static final String KEY_CALL_DURATION_TOTAL = "call_length_total";
         public static final String KEY_CALL_DURATION_AVG = "call_length_average";
         public static final String KEY_WORD_COUNT_AVG_IN = "word_count_average_in";
         public static final String KEY_WORD_COUNT_AVG_OUT = "word_count_average_out";
@@ -113,7 +115,7 @@ public class ContactStatsContract {
 
         public static final String KEY_CALL_COUNT_IN = "call_count_in";
         public static final String KEY_CALL_COUNT_OUT = "call_count_out";
-        public static final String KEY_CALL_COUNT_MISSED = "call_count_missed";
+        public static final String KEY_CALL_COUNT_MISSED = "call_count_missed"; */
         public static final String KEY_EVENT_COUNT = "event_count";
 
         public static final String KEY_STANDING = "standing";
@@ -121,12 +123,12 @@ public class ContactStatsContract {
         public static final String KEY_PRIMARY_GROUP_MEMBERSHIP = "primary_group_membership";
         public static final String KEY_PRIMARY_BEHAVIOR = "primary_behavior";
 
-        public static final String KEY_TEXT_SMILEY_COUNT_IN = "text_smiley_count_in";
+       /* public static final String KEY_TEXT_SMILEY_COUNT_IN = "text_smiley_count_in";
         public static final String KEY_TEXT_SMILEY_COUNT_OUT = "text_smiley_count_out";
         public static final String KEY_TEXT_HEART_COUNT_IN = "text_heart_count_in";
         public static final String KEY_TEXT_HEART_COUNT_OUT = "text_heart_count_out";
         public static final String KEY_TEXT_QUESTION_COUNT_IN = "text_question_count_in";
-        public static final String KEY_TEXT_QUESTION_COUNT_OUT = "text_question_count_out";
+        public static final String KEY_TEXT_QUESTION_COUNT_OUT = "text_question_count_out";*/
 
         //public static final String KEY_PREFERRED_CONTACT_METHOD = "preferred_contact_method";
 
@@ -147,7 +149,7 @@ public class ContactStatsContract {
         public final static int EVENT_INTERVAL_LONGEST = 10;
         public final static int EVENT_INTERVAL_AVG = 11;
 
-        public final static int CALL_DURATION_TOTAL = 12;
+        /*public final static int CALL_DURATION_TOTAL = 12;
         public final static int CALL_DURATION_AVG = 13;
         public final static int WORD_COUNT_AVG_IN = 14;
         public final static int WORD_COUNT_AVG_OUT = 15;
@@ -159,20 +161,20 @@ public class ContactStatsContract {
 
         public final static int CALL_COUNT_IN = 20;
         public final static int CALL_COUNT_OUT = 21;
-        public final static int CALL_COUNT_MISSED = 22;
-        public final static int EVENT_COUNT = 23;
+        public final static int CALL_COUNT_MISSED = 22;*/
+        public final static int EVENT_COUNT = 12;
 
-        public final static int STANDING = 24;
-        public final static int DECAY_RATE = 25;
-        public final static int PRIMARY_GROUP_MEMBERSHIP = 26;
-        public final static int PRIMARY_BEHAVIOR = 27;
+        public final static int STANDING = 13;
+        public final static int DECAY_RATE = 14;
+        public final static int PRIMARY_GROUP_MEMBERSHIP = 15;
+        public final static int PRIMARY_BEHAVIOR = 16;
 
-        public final static int TEXT_SMILEY_COUNT_IN = 28;
+        /*public final static int TEXT_SMILEY_COUNT_IN = 28;
         public final static int TEXT_SMILEY_COUNT_OUT = 29;
         public final static int TEXT_HEART_COUNT_IN = 30;
         public final static int TEXT_HEART_COUNT_OUT = 31;
         public final static int TEXT_QUESTION_COUNT_IN = 32;
-        public final static int TEXT_QUESTION_COUNT_OUT = 33;
+        public final static int TEXT_QUESTION_COUNT_OUT = 33;*/
 
 
         //public final static int PREFERRED_CONTACT_METHOD = 28;
@@ -191,7 +193,7 @@ public class ContactStatsContract {
     public class ContactStatsDbHelper extends SQLiteOpenHelper {
 
         // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 3;
+        public static final int DATABASE_VERSION = 1;
         public static final String DATABASE_NAME = "Contacts.db";
         private static final String TEXT_TYPE = " TEXT";
         private static final String LONG_TYPE = " LONG";
@@ -218,7 +220,7 @@ public class ContactStatsContract {
                         TableEntry.KEY_EVENT_INTERVAL_LONGEST + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_EVENT_INTERVAL_AVG + INT_TYPE + COMMA_SEP +
 
-                        TableEntry.KEY_CALL_DURATION_TOTAL + INT_TYPE + COMMA_SEP +
+                        /*TableEntry.KEY_CALL_DURATION_TOTAL + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_CALL_DURATION_AVG + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_WORD_COUNT_AVG_IN + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_WORD_COUNT_AVG_OUT + INT_TYPE + COMMA_SEP +
@@ -230,21 +232,21 @@ public class ContactStatsContract {
 
                         TableEntry.KEY_CALL_COUNT_IN + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_CALL_COUNT_OUT + INT_TYPE + COMMA_SEP +
-                        TableEntry.KEY_CALL_COUNT_MISSED + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_CALL_COUNT_MISSED + INT_TYPE + COMMA_SEP +*/
                         TableEntry.KEY_EVENT_COUNT + INT_TYPE + COMMA_SEP +
 
                         TableEntry.KEY_STANDING + REAL_TYPE + COMMA_SEP +
                         TableEntry.KEY_DECAY_RATE + REAL_TYPE + COMMA_SEP +
                         TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP + LONG_TYPE + COMMA_SEP +
-                        TableEntry.KEY_PRIMARY_BEHAVIOR + INT_TYPE + COMMA_SEP +
+                        TableEntry.KEY_PRIMARY_BEHAVIOR + INT_TYPE + //COMMA_SEP +
 
-                        TableEntry.KEY_TEXT_SMILEY_COUNT_IN + INT_TYPE + COMMA_SEP +
+                        /*TableEntry.KEY_TEXT_SMILEY_COUNT_IN + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_TEXT_SMILEY_COUNT_OUT + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_TEXT_HEART_COUNT_IN + INT_TYPE + COMMA_SEP +
                         TableEntry.KEY_TEXT_HEART_COUNT_OUT + INT_TYPE + COMMA_SEP +
 
                         TableEntry.KEY_TEXT_QUESTION_COUNT_IN + INT_TYPE + COMMA_SEP +
-                        TableEntry.KEY_TEXT_QUESTION_COUNT_OUT + INT_TYPE + //COMMA_SEP +
+                        TableEntry.KEY_TEXT_QUESTION_COUNT_OUT + INT_TYPE + //COMMA_SEP +*/
 
                         //... // Any other options for the CREATE command
                         " )";
@@ -515,7 +517,7 @@ public class ContactStatsContract {
         values.put(TableEntry.KEY_EVENT_INTERVAL_LONGEST, contact.getEventIntervalLongest());
         values.put(TableEntry.KEY_EVENT_INTERVAL_AVG, contact.getEventIntervalAvg());
 
-        values.put(TableEntry.KEY_CALL_DURATION_TOTAL, contact.getCallDurationTotal());
+        /*values.put(TableEntry.KEY_CALL_DURATION_TOTAL, contact.getCallDurationTotal());
         values.put(TableEntry.KEY_CALL_DURATION_AVG, contact.getCallDurationAvg());
         values.put(TableEntry.KEY_WORD_COUNT_AVG_IN, contact.getWordCountAvgIn());
         values.put(TableEntry.KEY_WORD_COUNT_AVG_OUT, contact.getWordCountAvgOut());
@@ -527,7 +529,7 @@ public class ContactStatsContract {
 
         values.put(TableEntry.KEY_CALL_COUNT_IN, contact.getCallCountIn());
         values.put(TableEntry.KEY_CALL_COUNT_OUT, contact.getCallCountOut());
-        values.put(TableEntry.KEY_CALL_COUNT_MISSED, contact.getCallCountMissed());
+        values.put(TableEntry.KEY_CALL_COUNT_MISSED, contact.getCallCountMissed());*/
 
         values.put(TableEntry.KEY_EVENT_COUNT, contact.getEventCount());
         values.put(TableEntry.KEY_STANDING, contact.getStandingValue());
@@ -536,13 +538,13 @@ public class ContactStatsContract {
         values.put(TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP, contact.getPrimaryGroupMembership());
         values.put(TableEntry.KEY_PRIMARY_BEHAVIOR, contact.getBehavior());
 
-        values.put(TableEntry.KEY_TEXT_SMILEY_COUNT_IN, contact.getSmileyCountIn());
+        /*values.put(TableEntry.KEY_TEXT_SMILEY_COUNT_IN, contact.getSmileyCountIn());
         values.put(TableEntry.KEY_TEXT_SMILEY_COUNT_OUT, contact.getSmileyCountOut());
         values.put(TableEntry.KEY_TEXT_HEART_COUNT_IN, contact.getHeartCountIn());
         values.put(TableEntry.KEY_TEXT_HEART_COUNT_OUT, contact.getHeartCountOut());
 
         values.put(TableEntry.KEY_TEXT_QUESTION_COUNT_IN, contact.getQuestionCountIn());
-        values.put(TableEntry.KEY_TEXT_QUESTION_COUNT_OUT, contact.getQuestionCountOut());
+        values.put(TableEntry.KEY_TEXT_QUESTION_COUNT_OUT, contact.getQuestionCountOut());*/
 
 
         return values;
@@ -568,7 +570,7 @@ public class ContactStatsContract {
         contact.setEventIntervalLongest(cursor.getInt(TableEntry.EVENT_INTERVAL_LONGEST));
         contact.setEventIntervalAvg(cursor.getInt(TableEntry.EVENT_INTERVAL_AVG));
 
-        contact.setCallDurationTotal(cursor.getInt(TableEntry.CALL_DURATION_TOTAL));
+        /*contact.setCallDurationTotal(cursor.getInt(TableEntry.CALL_DURATION_TOTAL));
         contact.setCallDurationAvg(cursor.getInt(TableEntry.CALL_DURATION_AVG));
         contact.setWordCountAvgIn(cursor.getInt(TableEntry.WORD_COUNT_AVG_IN));
         contact.setWordCountAvgOut(cursor.getInt(TableEntry.WORD_COUNT_AVG_OUT));
@@ -580,7 +582,7 @@ public class ContactStatsContract {
 
         contact.setCallCountIn(cursor.getInt(TableEntry.CALL_COUNT_IN));
         contact.setCallCountOut(cursor.getInt(TableEntry.CALL_COUNT_OUT));
-        contact.setCallCountMissed(cursor.getInt(TableEntry.CALL_COUNT_MISSED));
+        contact.setCallCountMissed(cursor.getInt(TableEntry.CALL_COUNT_MISSED));*/
 
         contact.setEventCount(cursor.getInt(TableEntry.EVENT_COUNT));
         contact.setStanding(cursor.getFloat(TableEntry.STANDING));
@@ -589,13 +591,13 @@ public class ContactStatsContract {
         contact.setPrimaryGroupMembership(cursor.getLong(TableEntry.PRIMARY_GROUP_MEMBERSHIP));
         contact.setBehavior(cursor.getInt(TableEntry.PRIMARY_BEHAVIOR));
 
-        contact.setTextSmileyCountIn(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT_IN));
+        /*contact.setTextSmileyCountIn(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT_IN));
         contact.setTextSmileyCountOut(cursor.getInt(TableEntry.TEXT_SMILEY_COUNT_OUT));
         contact.setTextHeartCountIn(cursor.getInt(TableEntry.TEXT_HEART_COUNT_IN));
         contact.setTextHeartCountOut(cursor.getInt(TableEntry.TEXT_HEART_COUNT_OUT));
 
         contact.setTextQuestionCountIn(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT_IN));
-        contact.setTextQuestionCountOut(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT_OUT));
+        contact.setTextQuestionCountOut(cursor.getInt(TableEntry.TEXT_QUESTION_COUNT_OUT));*/
 
 
 
@@ -621,7 +623,7 @@ public class ContactStatsContract {
                 TableEntry.KEY_EVENT_INTERVAL_LONGEST,
                 TableEntry.KEY_EVENT_INTERVAL_AVG,
 
-                TableEntry.KEY_CALL_DURATION_TOTAL,
+                /*TableEntry.KEY_CALL_DURATION_TOTAL,
                 TableEntry.KEY_CALL_DURATION_AVG,
                 TableEntry.KEY_WORD_COUNT_AVG_IN,
                 TableEntry.KEY_WORD_COUNT_AVG_OUT,
@@ -633,20 +635,20 @@ public class ContactStatsContract {
 
                 TableEntry.KEY_CALL_COUNT_IN,
                 TableEntry.KEY_CALL_COUNT_OUT,
-                TableEntry.KEY_CALL_COUNT_MISSED,
+                TableEntry.KEY_CALL_COUNT_MISSED,*/
                 TableEntry.KEY_EVENT_COUNT,
 
                 TableEntry.KEY_STANDING,
                 TableEntry.KEY_DECAY_RATE,
                 TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP,
-                TableEntry.KEY_PRIMARY_BEHAVIOR,
+                TableEntry.KEY_PRIMARY_BEHAVIOR
 
-                TableEntry.KEY_TEXT_SMILEY_COUNT_IN,
+                /*TableEntry.KEY_TEXT_SMILEY_COUNT_IN,
                 TableEntry.KEY_TEXT_SMILEY_COUNT_OUT,
                 TableEntry.KEY_TEXT_HEART_COUNT_IN,
                 TableEntry.KEY_TEXT_HEART_COUNT_OUT,
                 TableEntry.KEY_TEXT_QUESTION_COUNT_IN,
-                TableEntry.KEY_TEXT_QUESTION_COUNT_OUT
+                TableEntry.KEY_TEXT_QUESTION_COUNT_OUT*/
 
 
 

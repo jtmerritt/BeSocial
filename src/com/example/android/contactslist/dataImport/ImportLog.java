@@ -19,6 +19,7 @@ import java.util.List;
  * Created by Tyson Macdonald on 1/25/14.
  * Managing and referring to the last time the database was updated.
  * It actually creates a new event with name "UPDATE RECORD" to store this info.
+ * Change to ImportDateTracker ?
  */
 public class ImportLog {
     Context mContext;

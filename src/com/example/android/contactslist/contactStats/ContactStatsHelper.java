@@ -9,18 +9,36 @@ import com.example.android.contactslist.eventLogs.EventInfo;
 
 /**
  * Created by Tyson Macdonald on 5/20/2014.
+ * All calls for an instance of this class should pertain to the same contact.
+ *
+ * Methods assume the same contact is in play.
  */
 public class ContactStatsHelper {
     Context mContext;
+    ContactStatsContract statsDb;
+    ContactInfo mContact = null;
+    final long ONE_DAY = 86400000;
+    int count;
+    long date_millis;
+    Long newInterval;
+    String where;
+    String whereArg;
+    ContactGroupsList contactList = new ContactGroupsList();
+
+
+
     // constructor
     public ContactStatsHelper(Context context){
         mContext = context;
+        statsDb = new ContactStatsContract(mContext);
+    }
+
+    public void close(){
+        statsDb.close();
     }
 
     public ContactInfo basicEventIntoStat(EventInfo event, ContactInfo stats){
-        int count;
-        long date_millis;
-        final long ONE_DAY = 86400000;
+
 
         if(event.getContactKey().equals(stats.getKeyString())){
             // add into the data set
@@ -30,7 +48,7 @@ public class ContactStatsHelper {
             count++;
             stats.setEventCount(count);
 
-            switch(event.getEventClass()){
+            /*switch(event.getEventClass()){
                 //TODO think more about how to incorporate services like skype
                 case EventInfo.PHONE_CLASS:
                     // tally up all the call durations
@@ -130,7 +148,7 @@ public class ContactStatsHelper {
                     break;
                 default:
 
-            }
+            }*/
 
             // generalized recording of event dates
             switch (event.getEventType()){
@@ -160,7 +178,7 @@ public class ContactStatsHelper {
 
 
             // after the last event dates have been set, set the due date
-            Long newInterval = ONE_DAY;
+            newInterval = ONE_DAY;
 
             switch (stats.getBehavior()){
                 case ContactInfo.COUNTDOWN_BEHAVIOR:
@@ -189,11 +207,11 @@ public class ContactStatsHelper {
     }
 
 
-    public ContactInfo getContactStatsFromEvent(EventInfo event, ContactStatsContract statsDb) {
+    public ContactInfo getContactStatsFromEvent(EventInfo event) {
 
         // Select All Query
-        String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
-        String whereArg = event.getContactKey();
+        where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
+        whereArg = event.getContactKey();
 
         // since the contact key might not be set, we could fall back on ID
         if(whereArg == null){
@@ -210,8 +228,12 @@ public class ContactStatsHelper {
 
 
     private ContactInfo setStrictestGroupAffiliation(ContactInfo contact){
+
+        if(contact == null){
+            return null;
+        }
+
         // collect list of applicable gmail contact groups
-        ContactGroupsList contactList = new ContactGroupsList();
         contactList.setGroupsContentResolver(mContext.getContentResolver());
 
         contactList.loadGroupsFromContactID(contact.getKeyString());
@@ -234,33 +256,33 @@ public class ContactStatsHelper {
     /*
     contact can be null, this method will pull the contact info from the database
      */
-    public boolean updateContactStatsFromEvent(EventInfo event, ContactInfo contact){
-
-        ContactStatsContract statsDb = new ContactStatsContract(mContext);
-
+    public boolean updateContactStatsFromEvent(EventInfo event, ContactInfo contactInfo){
 
         // if we're passed in a contact, use it, otherwise get the contact from the database
-        if(contact == null){
+        if(contactInfo == null){
 
-            contact = getContactStatsFromEvent(event, statsDb);
-            //this function returns null if the event holds a contact not in the database
+            // but only update the mContact if the mContact isn't set.
+            if(mContact == null) {
+                mContact = getContactStatsFromEvent(event);
+                //this function returns null if the event holds a contact not in the database
 
+                //Let's make sure that this contact's primary group affiliation is up to date
+                // might return null
+                mContact = setStrictestGroupAffiliation(mContact);
+            }
+        }else {
+            mContact = contactInfo;
         }
 
         //stats could be null, which could mean the contact does not exist in the local db
-        if(contact != null){
-
-            //Let's make sure that this contact's primary group affiliation is up to date
-            contact = setStrictestGroupAffiliation(contact);
+        if(mContact != null){
 
             // call function which parses the entire event into the correct stats
-            statsDb.updateContact(basicEventIntoStat(event, contact));
+            statsDb.updateContact(basicEventIntoStat(event, mContact));
 
-            statsDb.close();
             return true;
         }
 
-        statsDb.close();
         return false;
     }
 

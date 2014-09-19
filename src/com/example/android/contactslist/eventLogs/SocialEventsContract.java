@@ -125,7 +125,7 @@ public class SocialEventsContract {
     public static class EventLogDbHandler extends SQLiteOpenHelper {
 
         // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 3;
+        public static final int DATABASE_VERSION = 1;
         public static final String DATABASE_NAME = "EventLog.db";
         private static final String TEXT_TYPE = " TEXT";
         private static final String LONG_TYPE = " LONG";

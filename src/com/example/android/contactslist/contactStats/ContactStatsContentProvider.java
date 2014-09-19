@@ -208,7 +208,7 @@ public class ContactStatsContentProvider extends ContentProvider {
                 ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST,
                 ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG,
 
-                ContactStatsContract.TableEntry.KEY_CALL_DURATION_AVG,
+                /*ContactStatsContract.TableEntry.KEY_CALL_DURATION_AVG,
                 ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_IN,
                 ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_OUT,
                 ContactStatsContract.TableEntry.KEY_WORD_COUNT_IN,
@@ -218,10 +218,12 @@ public class ContactStatsContentProvider extends ContentProvider {
                 ContactStatsContract.TableEntry.KEY_CALL_COUNT_OUT,
                 ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_IN,
 
-                ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_OUT,
+                ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_OUT,*/
                 ContactStatsContract.TableEntry.KEY_EVENT_COUNT,
                 ContactStatsContract.TableEntry.KEY_STANDING,
-                ContactStatsContract.TableEntry.KEY_DECAY_RATE
+                ContactStatsContract.TableEntry.KEY_DECAY_RATE,
+                ContactStatsContract.TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP,
+                ContactStatsContract.TableEntry.KEY_PRIMARY_BEHAVIOR
         };
 
         if (projection != null) {

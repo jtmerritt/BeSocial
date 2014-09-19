@@ -520,7 +520,7 @@ public class ContactDetailChartFragment extends Fragment implements
             mContactStats.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
 
-            mContactStats.setCallDurationTotal(cursor.getInt(cursor.getColumnIndex(
+            /*mContactStats.setCallDurationTotal(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_CALL_DURATION_TOTAL)));
             mContactStats.setCallDurationAvg(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_CALL_DURATION_AVG)));
@@ -543,7 +543,7 @@ public class ContactDetailChartFragment extends Fragment implements
             mContactStats.setCallCountOut(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_CALL_COUNT_OUT)));
             mContactStats.setCallCountMissed(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_MISSED)));
+                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_MISSED)));*/
 
             mContactStats.setEventCount(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));

@@ -47,7 +47,7 @@ public class Updates {
     private String mXMLFilePath;
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
     private ContactInfo largestGroup;
-    private List<EventInfo> mSMSEventLog = new ArrayList<EventInfo>();
+    private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
     private List<EventInfo> mXMLEventLog = new ArrayList<EventInfo>();
     private ProgressBar activity_progress_bar;
     private UpdateNotification updateNotification;
@@ -75,6 +75,7 @@ public class Updates {
 
 
     public void localSourceRead(){
+        // We're already in an async task
 
 
         if(getLargestGroup()){
@@ -85,47 +86,73 @@ public class Updates {
             // only work with a non-empty list
             if(!masterContactList.isEmpty()){
 
+
+                ImportLog importLog = new ImportLog(mContext);
+                Long lastUpdateTime = importLog.getImportTime(EventInfo.SMS_CLASS);
+
                 int contactCount = masterContactList.size();
 
-                Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
 
                 // grab the SMS database for the master list of contacts
-                mSMSEventLog = getAllSMSLogs(masterContactList);  //also updates the progress bar
+                GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                        mContext, activity_progress_bar, updateNotification);
 
-                Log.d("LOCAL SOURCE READ: ", "Got SMS log");
+                gatherSMSLog.openSMSLog(lastUpdateTime);
+
 
                 int i = 0;
                 for(ContactInfo contact:masterContactList){
+
+                    // there is a chance that the contact is completely new to the db
+                    // Contact groups are read fro/m google and may be updated on the website
+                    addContactToDbIfNew(contact);
+
+                    Log.d("LOCAL SOURCE READ: ", "Begin contact query");
+
                     if(continueDBRead == false){
                         break;
                     }
 
+                    // get list of SMS events for named contacts, if masterList is null, returns all SMS events
+                    mEventLog = gatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
 
-                    //Only update the database if okayed by the preferences
-                    if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
-                        // there is a chance that the contact is completely new to the db
-                        // Contact groups are read fro/m google and may be updated on the website
-                        addContactToDbIfNew(contact);
+
+
+                    // Only bother updates if the list has entries
+                    if(mEventLog.size() > 0) {
 
                         // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(getAllEventLogsForContact(contact), contact);
+                        insertEventLogIntoDatabases(mEventLog, contact);
+                    }
 
+                    //UPDATE the call data
 
-                    }else {
-                        //otherwise we just go through the motions
-                        getAllEventLogsForContact(contact);
+                    // initialize the localEventLog with the call log for the contact
+                    mEventLog = getAllCallLogsForContact(contact);
+
+                    // Only bother updates if the list has entries
+                    if(mEventLog.size() > 0) {
+
+                        // feed the all events for contact to the local databases
+                        insertEventLogIntoDatabases(mEventLog, contact);
+
                     }
 
                     //update the progress bar
                     i++;
-                    updateProgress((int)(((float)i/(float)contactCount)*100));
+                    updateProgress((int) (((float) i / (float) contactCount) * 100));
+
+                    Log.d("LOCAL SOURCE READ: ", "End contact query");
+
                 }
 
                 //set the  time of this database update
                 // It's not quite right, since we're actually working with both phone and SMS
-                ImportLog importLog = new ImportLog(mContext);
                 importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
                 importLog.setImportTimeRecord(EventInfo.SMS_CLASS);
+
+                // close out the SMS log cursor
+                gatherSMSLog.closeSMSLog();
             }
         }
     }
@@ -299,10 +326,14 @@ public class Updates {
 
     private void addContactToDbIfNew(ContactInfo contact){
 
+        Log.d("LOCAL SOURCE READ: ", "Begin contact addIfNew");
+
         ContactStatsContract statsDb = new ContactStatsContract(mContext);
         statsDb.addIfNewContact(contact);
 
         statsDb.close();
+        Log.d("LOCAL SOURCE READ: ", "End contact addIfNew");
+
     }
 
     private void testContact(ContactInfo testContact){
@@ -329,7 +360,7 @@ public class Updates {
 
     /*
     Here is where the bulk of the work is managed
-    populating the mSMSEventLog seems to take about 8 minutes
+    populating the mEventLog seems to take about 8 minutes
     iterating through it again and again takes another 4
     For an sms database of 10k+
      */
@@ -339,11 +370,11 @@ public class Updates {
 
 
         //if we haven't yet grabbed the SMS database for the master contact list...
-        if(mSMSEventLog.isEmpty()){
+        if(mEventLog.isEmpty()){
             // grab the entire SMS database for named contacts
 
             Log.d("GET CALL EVENTS: ", "Event log is empty");
-            //mSMSEventLog = getAllSMSLogs(null);
+            //mEventLog = getAllSMSLogs(null);
         }
 
         // initialize the localEventLog with the call log for the contact
@@ -353,7 +384,7 @@ public class Updates {
         //search through SMS event log for contact and add items to the local event log
         // note that this list could be very long: My sms log is 10k+ entries
         //TODO: find a way to limit the number of iterations of this list
-        for(EventInfo event : mSMSEventLog) {
+        for(EventInfo event : mEventLog) {
             if(isEventWithContact(contact,event,0)){
                 localEventLog.add(event);
 
@@ -365,7 +396,7 @@ public class Updates {
         //TODO Try not removing taken elements
         // remove all sms events that have already been added to the local event Log
         if(!removeLog.isEmpty()){
-            mSMSEventLog.removeAll(removeLog);
+            mEventLog.removeAll(removeLog);
         }
 
         // return the event log that is ready for the database
@@ -401,11 +432,23 @@ public class Updates {
 
 
 
+    // get SMS log for contact going bact to specified time.
+    // if time is <=0, the full dataset is returned.
+    private List<EventInfo> getSMSLogsForContact(ContactInfo contact, Long lastUpdateTime) {
+
+        // We're already in an async task, and we should probably do this sequentially
+        GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                mContext, activity_progress_bar, updateNotification);
+
+        // get list of SMS events for named contacts, if masterList is null, returns all SMS events
+        return gatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
+    }
+
+
     // get full SMS log for further search
     //if masterList is null, returns all SMS events
     private List<EventInfo> getAllSMSLogs(List<ContactInfo> masterList) {
 
-        // TODO: look into possibility of including date range
 
         // We're already in an async task, and we should probably do this sequentially
         PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(),
@@ -418,7 +461,6 @@ public class Updates {
     // get call log specific to contact
     private List<EventInfo> getAllCallLogsForContact(ContactInfo contact) {
 
-        // TODO: look into possibility of including date range
 
         // We're already in an async task, and we should probably do this sequentially
         PhoneLogAccess phoneLogAccess = new PhoneLogAccess(mContext.getContentResolver(), mContext);
@@ -426,6 +468,8 @@ public class Updates {
         // gather up event data from call logs for the specific contact
         return phoneLogAccess.getAllCallLogs(contact.getIDLong(),
                 contact.getName(), contact.getKeyString());
+
+
     }
 
 
@@ -439,6 +483,7 @@ public class Updates {
         SocialEventsContract eventDb = new SocialEventsContract(mContext);
         ContactStatsHelper csh = new ContactStatsHelper(mContext);
 
+        Log.d("LOCAL SOURCE READ: ", "Begin eventLog DB entry");
 
         //step through mEventLog (new events) to load individual events into the eventLog database
         for(EventInfo event : eventLog){
@@ -451,19 +496,22 @@ public class Updates {
             }
         }
 
+        csh.close();
         eventDb.close();
+        Log.d("LOCAL SOURCE READ: ", "End eventLog DB entry");
+
     }
 
 
     private boolean insertEventIntoDatabaseIfNew(EventInfo event, SocialEventsContract eventDb){
-        long dbRowID = (long)0;
+       // long dbRowID = (long)0;
 
         //proceed if the event is likely new
         if(eventDb.checkEventExists(event) == -1) {
             //TODO: what todo about the error state, 0;
 
             //insert event into database
-            dbRowID = eventDb.addEvent(event);
+            eventDb.addEvent(event);
             //Log.d("Insert: ", "Row ID: " + dbRowID);
 
             //String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()

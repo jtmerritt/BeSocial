@@ -4,16 +4,15 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.CallLog;
-import android.telephony.PhoneNumberUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.ProgressBar;
+import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 
-import com.example.android.contactslist.UpdateLogsCallback;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
-import com.example.android.contactslist.eventLogs.SocialEventsContract;
+import com.example.android.contactslist.language.LanguageAnalysis;
 import com.example.android.contactslist.notification.UpdateNotification;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.StringTokenizer;
     Loading event logs (phone and SMS) from the android phone and SMS database
  */
 
-public class PhoneLogAccess //extends AsyncTask<Void, Void, List<EventInfo>>
+public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
 {
     private ContentResolver mContentResolver;
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
@@ -37,29 +36,82 @@ public class PhoneLogAccess //extends AsyncTask<Void, Void, List<EventInfo>>
     private ProgressBar activity_progress_bar;
     private UpdateNotification updateNotification;
     final long ONE_HOUR = 3600000;
+    private Cursor mSMSLogCursor;
+    private int mCursorCount;
 
 
 
-    public PhoneLogAccess(ContentResolver contentResolver,
-                          Context context,  // only added so this class can call on the event database
-                          ProgressBar activity_progress_bar,
-                          UpdateNotification updateNotification) {
+    public GatherSMSLog(ContentResolver contentResolver,
+                        Context context,  // only added so this class can call on the event database
+                        ProgressBar activity_progress_bar,
+                        UpdateNotification updateNotification) {
         mContentResolver = contentResolver;
         mContext = context;
         this.activity_progress_bar = activity_progress_bar;
         this.updateNotification = updateNotification;
+
     }
 
 
-    public PhoneLogAccess(ContentResolver contentResolver,
-                          Context context  // only added so this class can call on the event database
-    ) {
-        mContentResolver = contentResolver;
-        mContext = context;
-        activity_progress_bar = null;
-        updateNotification = null;
+    public void openSMSLog(Long lastUpdateTime){
+        Time now = new Time();
+        now.setToNow();
+        Long date_now = now.toMillis(true);
+
+        // subtracting an hour just to give a margine of error. messages could come in during update
+        lastUpdateTime -= ONE_HOUR;
+
+
+                /*
+        This version of 'where' would be great if I had a fully internally referenced time
+         where = "datetime(date/1000, 'unixepoch') between date('now', '-1 day') and date('now')";
+
+        http://stackoverflow.com/questions/15130280/how-to-count-last-date-inbox-sms-in-android
+        http://www.sqlite.org/lang_datefunc.html
+         */
+        String where = "date BETWEEN ? AND ? ";  // all comparrisons in milliseconds
+        String[] whereArgs = {Long.toString(lastUpdateTime), Long.toString(date_now)};
+
+        //but if the date is less than 1, it means there has been no previous update
+        // so we get the whole database by setting the query arguments to null
+        if(lastUpdateTime <= 0){
+            where = null;
+            whereArgs = null;
+        }
+
+        Log.d("GatherSMSLog: ", "Begin SMS log acquisition");
+
+
+        /*Query SMS Log Content Provider*/
+        /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
+        mSMSLogCursor = mContentResolver.query(
+                ContactSMSLogQuery.SMSLogURI,
+                ContactSMSLogQuery.PROJECTION,
+                where,
+                whereArgs,
+                ContactSMSLogQuery.SORT_ORDER);
+
+
+        Log.d("GatherSMSLog: ", "End SMS log acquisition");
+
+        // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
+
+        mCursorCount = mSMSLogCursor.getCount();
+
     }
 
+    public void closeSMSLog(){
+            /*Close the cursor  for this iteration of the loop*/
+        mSMSLogCursor.close();
+    }
+
+    public List<EventInfo> getSMSLogsForContact(ContactInfo contact) {
+        mEventLog.clear();
+        loadSMSLogForContact(contact);
+        return mEventLog;
+    }
+
+    /*
     public List<EventInfo> getSMSLogsForContactList(List<ContactInfo> masterContactList) {
         mEventLog.clear();
         loadSMSLogForContactList(masterContactList);
@@ -71,22 +123,7 @@ public class PhoneLogAccess //extends AsyncTask<Void, Void, List<EventInfo>>
         loadSMSLogForContactList(null);
         return mEventLog;
     }
-
-    public List<EventInfo> getAllCallLogs(Long cID, String cName, String contactKey) {
-        mContactId = cID;
-        mContactName = cName;
-        mContactKey = contactKey;
-
-        Log.d("Phone Log Access: ", "Begin CallLog query");
-
-
-        mEventLog.clear();
-        loadContactCallLogs();
-
-        Log.d("Phone Log Access: ", "End CallLog query");
-
-        return mEventLog;
-    }
+    */
 
 
     /*
@@ -106,16 +143,150 @@ Method to update the notification window and the activity progress bar, if avail
 
     }
 
-        /*
-    This method grabs the content of the entire SMS database and uses a reverse lookup to filter out
-    un-named events, as well as append the contact information.
+
+
+
+
+    /*
+    This method grabs the content of the entire SMS database and uses reverse lookup to filter out
+    all events not pertaining to the specified contact
+    lastUpdateTime is the record of the last global update of the SMS database.
+    This method does not reach back further in time.
      */
 
-    private void loadContactSMSLogs() {
+    private void loadSMSLogForContact(ContactInfo contact) {
 
-        // get everything!!!
-        loadSMSLogForContactList(null);
+        ((ArrayList<EventInfo>)mEventLog).ensureCapacity(mCursorCount);
+
+        // for the phone number reverse lookup
+        List<String> contactPhoneList = new ArrayList<String>(20);
+        String phoneNumber;
+        PhoneNumberUtils phoneNumberUtils = new PhoneNumberUtils();
+        Boolean phoneNumberHit = false; // track whether the sms number is in the contact phone list
+
+        Log.d("GatherSMSLog: ", "Begin contact phone number acquisition");
+
+
+        // get the phone numbers for the contact.
+        // If none abort.
+        Cursor phoneNumberCursor = mContentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
+                ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?",
+                new String[] { contact.getKeyString() },
+                null);
+
+        Log.d("GatherSMSLog: ", "End contact phone number acquisition");
+
+        if(phoneNumberCursor.moveToFirst()){
+
+            do {
+                phoneNumber = phoneNumberCursor.getString(phoneNumberCursor
+                        .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+                contactPhoneList.add(phoneNumber);
+            }while(phoneNumberCursor.moveToNext());
+        }else {
+            // if the contact has no phone number, then there won't be any match and we can all go home
+            phoneNumberCursor.close();
+            return;
+        }
+        phoneNumberCursor.close();
+        Log.d("GatherSMSLog: ", "Closed phone number cursor");
+
+
+        /*Check if cursor is not null*/
+        if (mSMSLogCursor != null&& mSMSLogCursor.moveToFirst()) {
+
+            EventInfo eventInfo;
+            String eventContactAddress;
+            String eventID = null;
+            Long eventDate;
+            String smsBody = null;
+            int eventType;
+
+            int updateCount = 0;
+            int eventInfoCount = 0;
+
+            //initialize the language analysis package
+            LanguageAnalysis languageAnalysis = new LanguageAnalysis();
+
+            Log.d("GatherSMSLog: ", "Begin cycling through SMS database");
+
+        /*Loop through the cursor*/
+            do{
+                //reset the flag
+                phoneNumberHit = false;
+
+                // get the phone number from the event for comparison
+                eventContactAddress = mSMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
+
+                for(String contactNumber:contactPhoneList) {
+                    if(phoneNumberUtils.compare(eventContactAddress, contactNumber)){
+                        phoneNumberHit = true;
+                        break;
+                    }
+                }
+
+
+                // If we have a contact that matches the SMS number,
+                // then add that event to the eventLog
+                if(phoneNumberHit){
+
+                    eventID = mSMSLogCursor.getString(ContactSMSLogQuery.ID);
+                    eventDate = mSMSLogCursor.getLong(ContactSMSLogQuery.DATE);
+                    smsBody = mSMSLogCursor.getString(ContactSMSLogQuery.BODY);
+                    eventType = mSMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
+
+                    //set the working string with the language analysis package
+                    languageAnalysis.setString(smsBody, languageAnalysis.CONSUME_STRING);
+
+                    eventInfo = new EventInfo(
+                            contact.getName(),// use the name of the first contact
+                            contact.getKeyString(), //use the lookup key of the first contact
+                            eventContactAddress,
+                            EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
+                            languageAnalysis.countWordsInString(), smsBody.length(),
+                            EventInfo.NOT_SENT_TO_CONTACT_STATS);
+
+
+                    //Log.d("GatherSMSLog: ", "Begin language count");
+
+                    //count the number of special sub strings in the sms message
+                    eventInfo.setSmileyCount(languageAnalysis.countSmileysInString());
+                    eventInfo.setHeartCount(languageAnalysis.countHeartsInString());
+                    eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
+                    eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
+                    eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
+                    //Log.d("GatherSMSLog: ", "End language count");
+
+
+                    eventInfo.setContactID(contact.getIDLong());  //use the ID of the first contact
+                    eventInfo.setEventID(eventID);
+
+                    //Set the new event to the ArrayList in the next open slot
+                    mEventLog.add(eventInfo);
+
+                    //Maintain count of which open slot we're at
+                    eventInfoCount++;
+                }
+
+
+
+
+                //update the progressBar if it's being used.
+                updateCount++;
+                updateProgress(updateCount, mCursorCount);
+
+
+
+            }while (mSMSLogCursor.moveToNext());
+            Log.d("GatherSMSLog: ", "End cycling through SMS database");
+
+        }
     }
+
+
 
 
     /*
@@ -184,6 +355,10 @@ Method to update the notification window and the activity progress bar, if avail
             int eventType;
 
             int i = 0;
+
+            //initialize the language analysis package
+            LanguageAnalysis languageAnalysis = new LanguageAnalysis();
+
         /*Loop through the cursor*/
             do{
                 //Long eventContactId = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_ID);
@@ -192,6 +367,9 @@ Method to update the notification window and the activity progress bar, if avail
                 eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
                 smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
                 eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
+
+                //set the working string with the language analysis package
+                languageAnalysis.setString(smsBody, languageAnalysis.CONSUME_STRING);
 
                 //get list of contacts for reverse phone number lookup
                 reverseLookupContacts = contactPhoneNumbers.getContactsFromPhoneNumber(eventContactAddress);
@@ -212,15 +390,15 @@ Method to update the notification window and the activity progress bar, if avail
                                 reverseLookupContact.getKeyString(), //use the lookup key of the first contact
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                new StringTokenizer(smsBody).countTokens(), smsBody.length(),
+                                languageAnalysis.countWordsInString(), smsBody.length(),
                                 EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
-                        //count the number of smiley faces in the string
-                        eventInfo.setSmileyCount(countSmileysInString(smsBody));
-                        eventInfo.setHeartCount(countHeartsInString(smsBody));
-                        eventInfo.setQuestionCount(countQuestionsInString(smsBody));
-                        eventInfo.setFirstPersonWordCount(countFirstPersonPronounsInString(smsBody));
-                        eventInfo.setSecondPersonWordCount(countSecondPersonPronounsInString(smsBody));
+                        //count the number of special sub strings in the sms message
+                        eventInfo.setSmileyCount(languageAnalysis.countSmileysInString());
+                        eventInfo.setHeartCount(languageAnalysis.countHeartsInString());
+                        eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
+                        eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
+                        eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
 
 
                         eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
@@ -240,15 +418,15 @@ Method to update the notification window and the activity progress bar, if avail
                                 reverseLookupContacts.get(0).getKeyString(), //use the lookup key of the first contact
                                 eventContactAddress,
                                 EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                new StringTokenizer(smsBody).countTokens(), smsBody.length(),
+                                languageAnalysis.countWordsInString(), smsBody.length(),
                                 EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
-                        //count the number of smiley faces in the string
-                        eventInfo.setSmileyCount(countSmileysInString(smsBody));
-                        eventInfo.setHeartCount(countHeartsInString(smsBody));
-                        eventInfo.setQuestionCount(countQuestionsInString(smsBody));
-                        eventInfo.setFirstPersonWordCount(countFirstPersonPronounsInString(smsBody));
-                        eventInfo.setSecondPersonWordCount(countSecondPersonPronounsInString(smsBody));
+                        //count the number of special sub strings in the sms message
+                        eventInfo.setSmileyCount(languageAnalysis.countSmileysInString());
+                        eventInfo.setHeartCount(languageAnalysis.countHeartsInString());
+                        eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
+                        eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
+                        eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
 
 
                         eventInfo.setContactID(reverseLookupContacts.get(0).getIDLong());  //use the ID of the first contact
@@ -270,90 +448,6 @@ Method to update the notification window and the activity progress bar, if avail
         SMSLogCursor.close();
     }
 
-    /*
-    Method ot count the number of smileys in a string
-     */
-    private int countSmileysInString(String str){
-        String[] smileys = {":)",":D",":-)",":-D",";)",";-)"
-                ,"(:","(-:","^_^","(^_-)","(-_^)", ":-P", ":P", ":-p", ":p"};
-
-        int count = 0;
-
-        for(String sub: smileys){
-            count += countSubstring(sub, str);
-        }
-
-        return count;
-    }
-
-    /*
-Method ot count the number of Kisses, hugs, and hearts in a string
- */
-    private int countHeartsInString(String str){
-        String[] hearts = {"<3","<kiss>","<muah>","love you","hugs","Hugs",":-*",":*","Kiss", "kiss", "XOXO", "xoxo"};
-
-        int count = 0;
-
-        for(String sub: hearts){
-            count += countSubstring(sub, str);
-        }
-
-        return count;
-    }
-
-    /*
-Method ot count the number of questionmarks in a string
-*/
-    private int countQuestionsInString(String str){
-        String[] hearts = {"?"};
-
-        int count = 0;
-
-        for(String sub: hearts){
-            count += countSubstring(sub, str);
-        }
-
-        return count;
-    }
-
-    /*
-Method ot count the number of First Person Pronouns in a string
-*/
-    private int countFirstPersonPronounsInString(String str){
-        String[] hearts = {"I ","i "," me ","We "," we ", "I'll", "I've", "we'll", "we've", "We'll", "We've", "I'm"};
-
-        int count = 0;
-
-        for(String sub: hearts){
-            count += countSubstring(sub, str);
-        }
-
-        return count;
-    }
-
-    /*
-Method ot count the number of Second Person Pronouns in a string
-*/
-    private int countSecondPersonPronounsInString(String str){
-        String[] hearts = {"You","you", "You've", "you've", "You're", "you're", "Your", "your"};
-
-        int count = 0;
-
-        for(String sub: hearts){
-            count += countSubstring(sub, str);
-        }
-
-        return count;
-    }
-
-    /*
-    Method to count the number of unique substrings in a string
-    http://rosettacode.org/wiki/Count_occurrences_of_a_substring#Java
-     */
-    private int countSubstring(String subStr, String str){
-        return (int)((float)(str.length() - str.replace(subStr, "").length()) / (float)subStr.length());
-    }
-
 
 
     /*
@@ -361,7 +455,6 @@ Method ot count the number of Second Person Pronouns in a string
     by testing the contacts lookup key
         It's not very likely that we'd have multiple contacts for an SMS event - would probably be due to a duplicated contact
 
-    TODO: move into the ContactPhoneNumbersClass
      */
     private ContactInfo getReverseContactOnMasterList(List<ContactInfo> reverseLookupContacts,
                                            List<ContactInfo> masterContactList){
@@ -388,113 +481,7 @@ Method ot count the number of Second Person Pronouns in a string
 
 
 
-   /********call log reading**************************/
-// taken from http://developer.samsung.com/android/technical-docs/CallLogs-in-Android#
-    private void loadContactCallLogs() {
 
-        int j=0;
-        ImportLog importLog = new ImportLog(mContext);
-
-        Long lastUpdateTime = importLog.getImportTime(EventInfo.PHONE_CLASS);
-        Time now = new Time();
-        now.setToNow();
-        Long date_now = now.toMillis(true);
-
-        // subtracting an hour just to give a margine of error. messages could come in during update
-        lastUpdateTime -= ONE_HOUR;
-        // Select All Query
-
-        /*
-        This version of 'where' would be great if I had a fully internally referenced time
-         where = "datetime(date/1000, 'unixepoch') between date('now', '-1 day') and date('now')";
-
-        http://stackoverflow.com/questions/15130280/how-to-count-last-date-inbox-sms-in-android
-        http://www.sqlite.org/lang_datefunc.html
-         */
-        String where = CallLog.Calls.CACHED_NAME + "= ? AND "
-                + CallLog.Calls.DATE + " BETWEEN ? AND ? ";  // all comparrisons in milliseconds
-        String[] whereArgs = {mContactName, Long.toString(lastUpdateTime), Long.toString(date_now)};
-
-        final String parameters[] = {mContactName};
-//TODO: Why am I searching based on contact name instead of lookupKey?
-
-        //but if the date is less than 1, it means there has been no previous update
-        // so we get the whole database by setting the query arguments to null
-        if(lastUpdateTime <= 0){
-            where = CallLog.Calls.CACHED_NAME + "= ? ";
-            whereArgs = parameters;
-        }
-
-
-
-
-	/*Query Call Log Content Provider*/
-        //Note: it's possible to specify an offset in the returned records to not have to start in at the beginning
-        // http://developer.android.com/reference/android/provider/CallLog.Calls.html
-        Cursor callLogCursor = mContentResolver.query(
-                ContactCallLogQuery.ContentURI, //android.provider.CallLog.Calls.CONTENT_URI;
-                null, //ContactCallLogQuery.PROJECTION,
-                where,
-                whereArgs,//null,
-                "date ASC" /*android.provider.CallLog.Calls.DEFAULT_SORT_ORDER*/);
-
-	/*Check if cursor is not null*/
-        if (callLogCursor.moveToFirst()) { //changed from !=null
-
-	/*Loop through the cursor*/
-            do {
-
-    		/*Get Contact Name*/
-                String eventmContactName = callLogCursor.getString(
-                        callLogCursor.getColumnIndex(CallLog.Calls.CACHED_NAME));
-
-		    /*Get Date and time information*/
-                long eventDate = callLogCursor.getLong(
-                        callLogCursor.getColumnIndex(CallLog.Calls.DATE));
-                long eventDuration = callLogCursor.getLong(
-                        callLogCursor.getColumnIndex(CallLog.Calls.DURATION));
-
-    		/*Get Call Type*/
-                int eventType = callLogCursor.getInt(
-                        callLogCursor.getColumnIndex(CallLog.Calls.TYPE));
-
-                String phone_number = callLogCursor.getString(
-                        callLogCursor.getColumnIndex(CallLog.Calls.NUMBER));
-
-                if (eventmContactName == null)
-                    eventmContactName = "No Name";
-
-                if((mContactName.equals(eventmContactName))){
-                    EventInfo eventInfo = new EventInfo(eventmContactName, mContactKey,
-                            phone_number, EventInfo.PHONE_CLASS,
-                            eventType, eventDate, "", eventDuration, 0, 0,
-                            EventInfo.NOT_SENT_TO_CONTACT_STATS);
-
-                    //TODO: why do phone calls not have eventID?
-
-                    eventInfo.setContactID(mContactId);
-
-    		        /*Add it into the ArrayList*/
-                    mEventLog.add(eventInfo);
-                }
-                j++;
-            } while (callLogCursor.moveToNext());
-        }
-
-        /*Close the cursor*/
-        callLogCursor.close();
-    }
-
-
-    public interface ContactCallLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 3;
-
-        //create URI for the SMS query
-        // final String contentParsePhrase = "content://sms/";  //for all messages
-        final static Uri ContentURI= CallLog.Calls.CONTENT_URI;
-    }
 
     private interface ContactSMSLogQuery {
         // A unique query ID to distinguish queries being run by the
