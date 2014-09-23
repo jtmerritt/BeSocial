@@ -2,28 +2,31 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- add another option to the CAB: Move selection to another group
-- There's a bug with the stats display in the contactDetailFragment.  Bad numbers for 1 Month.
-- move all the stats accumulation to a ContactDetailFragment for on the fy display of the same stats
- for 1 month and 6 month time ranges, as well, as all time, in an on-demand fashion
-  - involves making a EventLog content Provider
-  - removing the old code
+
+- Use ActionMode.callback to manually select multiple contacts to remove from a group
+    - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
+    - http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
+    - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
+    - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
+    - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
+- Make static plot for recent history of contact
+- Make values persist with screen rotation in the event entry activity
+- group stats must be collected just like contact stats
+- Have a nightly database maintenance routine
+- fix the fact that tapping on the update notification initiates a new file import activity
+- have a feature to display the library of tags
+
+***Medium Tasks***
+-- performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
+- add another option to the CAB:
+    - Move selection to another group
+    -
 - app should add and remove contact from Misses You group automatically at the appropriate times
     - can remove contacts from group at time of update
     - can add/remove contacts if all contacts are updated, before a notification
     - can remove contacts when examining the content of the group, assuming all are updated.
-- Use ActionMode.callback to manually select multiple contacts to remove from a group
-    - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
-- make animation for welcome screen
-- Make static plot for recent history of contact
-- Make values persist with screen rotation in the event entry activity
-- group stats must be collected just like contact stats
--- performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
-- Have a nightly database maintenance routine
-- fix the fact that tapping on the update notification initiates a new file import activity
-- have a feature to display the library of smilies
 
-***Medium Tasks***
+
 - Figure out how to cluster events into a conversation
 - Figure out how to calculate average reply time
 - Create routine for producing the long duration statistics:
@@ -34,16 +37,17 @@ ___________________________________________________________________
 
 
 ***Large Tasks***
-- FEATURE TO add contacts to a group
+- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
+- make animation for welcome screen
+
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
-- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Access hangouts data: ?
 - Access facebook through official API: https://developers.facebook.com/docs/android
 - fix crash when setDisplayChartValues(true) for renderer_SMS
 - On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
-- Fix Default Contact Group of the Preferences menu, currently hard set
+- Make the Cancel update button work.
 
 
 
@@ -66,8 +70,14 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- Fix Default Contact Group of the Preferences menu, currently hard set
+- FEATURE TO add contacts to a group
 - bug with phone call count, both parties get same number on readout
-
+- There's a bug with the stats display in the contactDetailFragment.  Bad numbers for 1 Month.
+- move all the stats accumulation to a ContactDetailFragment for on the fly display of the same stats
+ for 1 month and 6 month time ranges, as well, as all time, in an on-demand fashion
+  - involves making a EventLog content Provider
+  - removing the old code
 - from the group list, pressing the + button should allow the user to add an existing contact to the group
   - can use standard contacts app to perform selection
 _ editing dialog for new event notes

@@ -39,8 +39,8 @@ public class ContactInfo {
 
     private long primary_group_membership = 0;  //by ID //-
     private int primary_behavior = 0; //-
-
     private int member_count = 0;
+
 
     private int textSmileyCountIn = 0; //-
     private int textSmileyCountOut = 0;//-

@@ -67,6 +67,7 @@ import android.widget.FrameLayout;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactStats.IntervalStats;
 import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
@@ -102,6 +103,9 @@ public class ContactDetailFragment extends Fragment implements
 
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
+
+    public static final String EXTRA_NUM_MONTHS_BACK =
+            "com.example.android.contactslist.ui.NUM_MONTHS_BACK";
 
     // Defines a tag for identifying log entries
     private static final String TAG = "ContactDetailFragment";
@@ -379,6 +383,8 @@ public class ContactDetailFragment extends Fragment implements
             // If being recreated from a saved state, sets the contact from the incoming
             // savedInstanceState Bundle
             setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
+
+            mNumMonthsBackForMessageStats = savedInstanceState.getInt(EXTRA_NUM_MONTHS_BACK);
         }
 
 
@@ -423,15 +429,8 @@ public class ContactDetailFragment extends Fragment implements
 
     private void setDefaultMessageStats(){
         //Populate the message stats
-
-        // set the data time window to include all event data
-        mNumMonthsBackForMessageStats = 500;
-
         //retrieve the event data, calculate stats, and display
         getContactMessageStats();
-
-        //set the subtitle of the view
-        mDetailsSubtitleView.setText(R.string.all_data);
     }
 
     /**
@@ -443,6 +442,9 @@ public class ContactDetailFragment extends Fragment implements
         super.onSaveInstanceState(outState);
         // Saves the contact Uri
         outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
+
+        //save the display state of the stats
+        outState.putInt(EXTRA_NUM_MONTHS_BACK, mNumMonthsBackForMessageStats);
     }
 
     @Override
@@ -481,6 +483,9 @@ public class ContactDetailFragment extends Fragment implements
             case R.id.menu_imageButton_new_event:
                 startNewEntry();
                 break;
+            case R.id.run_interval_stats:
+                runIntervalStats();
+                break;
             default:
                 // Display the fragment as the main content.
                 Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
@@ -488,6 +493,16 @@ public class ContactDetailFragment extends Fragment implements
                 startActivity(launchPreferencesIntent);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void runIntervalStats() {
+        mContactStats.setDecay_rate((float)0.5);
+        IntervalStats intervalStats = new IntervalStats(mContext, mContactStats);
+        intervalStats.getAllEventsForContact();
+        intervalStats.calculateLongStats();
+        mContactStats = intervalStats.getUpdatedContact();
+
+        intervalStats.close();
     }
 
     @Override

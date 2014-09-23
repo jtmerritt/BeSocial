@@ -591,7 +591,10 @@ public class Updates {
     }
 
 
-
+/*
+Groups have similar status to contacts
+This method ensures that groups and their behaviors are recorded in the contactStats DB
+ */
     private void updateGroupsInStatsDatabase(){
         ContactStatsContract statsDb = new ContactStatsContract(mContext);
         GroupStatsHelper groupStatsHelper = new GroupStatsHelper(mContext);

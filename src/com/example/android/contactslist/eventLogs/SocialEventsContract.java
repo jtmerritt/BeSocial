@@ -503,7 +503,11 @@ public class SocialEventsContract {
         return count;
     }
 
+
+
     public List<EventInfo> getEventsInDateRange(String contactLookupKey, int dataFeedClass, long startDate, long endDate){
+
+        // TODO set size of eventlist at time of initialization according to number of cursor entries
         List<EventInfo> eventList = new ArrayList<EventInfo>();
 
         // Select All Query

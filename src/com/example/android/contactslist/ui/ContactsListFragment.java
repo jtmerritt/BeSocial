@@ -116,6 +116,10 @@ public class ContactsListFragment extends ListFragment implements
     private static final String STATE_PREVIOUSLY_SELECTED_KEY =
             "com.example.android.contactslist.ui.SELECTED_ITEM";
 
+    // Bundle key for saving the current group displayed
+    private static final String STATE_GROUP_ID =
+            "com.example.android.contactslist.ui.GROUP_ID";
+
     private ContactsAdapter mAdapter; // The main query adapter
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
     private String mSearchTerm; // Stores the current search query term
@@ -197,6 +201,9 @@ public class ContactsListFragment extends ListFragment implements
             mSearchTerm = savedInstanceState.getString(SearchManager.QUERY);
             mPreviouslySelectedSearchItem =
                     savedInstanceState.getInt(STATE_PREVIOUSLY_SELECTED_KEY, 0);
+
+            // get the group id from the saved state for display
+            mGroupID = savedInstanceState.getInt(STATE_GROUP_ID);
         }
 
         /*
@@ -559,6 +566,9 @@ public class ContactsListFragment extends ListFragment implements
             // Saves the currently selected contact
             outState.putInt(STATE_PREVIOUSLY_SELECTED_KEY, getListView().getCheckedItemPosition());
         }
+
+        //Save the current group ID
+        outState.putInt(STATE_GROUP_ID, mGroupID);
     }
 
     @Override

@@ -27,6 +27,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +59,10 @@ public class ContactsListActivity extends FragmentActivity implements
     // Defines a tag for identifying log entries
     private static final String TAG = "ContactsListActivity";
 
+    // Bundle key for saving the current group displayed
+    private static final String STATE_GROUP =
+            "com.example.android.contactslist.ui.GROUP";
+
     private ContactDetailFragment mContactDetailFragment;
 
     // If true, this is a larger screen device which fits two panes
@@ -77,6 +82,7 @@ public class ContactsListActivity extends FragmentActivity implements
 
     ContactGroupsList contactGroupsList = new ContactGroupsList();
     List<ContactInfo> mGroups;// = new ArrayList<GroupInfo>();
+    String mGroupName;
 
 
 
@@ -154,32 +160,59 @@ public class ContactsListActivity extends FragmentActivity implements
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 
-        // This activity might receive an intent that contains the uri of a contact
-        if (getIntent() != null) {
-            Bundle extras = getIntent().getExtras();
-            if (extras != null) {
-                setDefaultContactGroup(extras.getString("group_name"));
-                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.cancel(10002);
-                //Integer.getInteger(extras.getString("notification_id")));
-            }else {
-                setDefaultContactGroup(null);
-            }
-        }else {
-            setDefaultContactGroup(null);
-        }
-        // add gmail contact groups to spinner menu
-        //addItemsToGroupsSpinner();
-        //addListenerOnSpinnerItemSelection();
-
         if (isTwoPaneLayout) {
             // If two pane layout, locate the contact detail fragment
             mContactDetailFragment = (ContactDetailFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_detail);
         }
+
+
+
+        // This activity might receive an intent that contains the uri of a contact
+        if (getIntent() != null) {
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                mGroupName = extras.getString(STATE_GROUP);
+                setDefaultContactGroup(mGroupName);
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.cancel(10002);
+                //Integer.getInteger(extras.getString("notification_id")));
+            }else {
+                if (savedInstanceState != null) {
+                    // If we're restoring state after this fragment was recreated then
+                    // get the group id from the saved state for display
+                    mGroupName = savedInstanceState.getString(STATE_GROUP);
+                    setDefaultContactGroup(mGroupName);
+
+                }else {
+                    setDefaultContactGroup(null);
+
+                }            }
+        }else {
+
+            if (savedInstanceState != null) {
+                // If we're restoring state after this fragment was recreated then
+                // get the group id from the saved state for display
+                mGroupName = savedInstanceState.getString(STATE_GROUP);
+                    setDefaultContactGroup(mGroupName);
+
+            }else {
+                   setDefaultContactGroup(null);
+
+            }
+        }
+
+
     }
 
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        //Save the current group ID
+        outState.putString(STATE_GROUP, mGroupName);
+    }
     /*
     Populate the activity navigation drawer
      */
@@ -304,6 +337,8 @@ Send intent for opening the XML file import activity
 
             //passing the integer ID
             mContactsListFragment.setGroupQuery((int) mGroups.get(pos).getIDLong());
+
+            mGroupName = mGroups.get(pos).getName();
         }
 
         @Override
@@ -389,8 +424,11 @@ Send intent for opening the XML file import activity
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(pos, true);
-        setTitle(mGroups.get(pos).toString());
+        setTitle(mGroups.get(pos).getGroupSummary());
         mDrawerLayout.closeDrawer(mDrawerList);
+
+        //record keeping for activity state
+        mGroupName = mGroups.get(pos).getName();
     }
 
 
@@ -412,16 +450,15 @@ Send intent for opening the XML file import activity
     private void setDefaultContactGroup(String intentGroupName) {
 
         int i=0;
-        String preferredDefaultGroupName;
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         if(intentGroupName == null){
             //Read the preferences to get the default group for display
-            preferredDefaultGroupName = sharedPref.getString("source_group_list_preference_key",
+            mGroupName = sharedPref.getString("source_group_list_preference_key",
                 getResources().getString(R.string.contact_group_preference_default));
         }else {
-            preferredDefaultGroupName =intentGroupName;
+            mGroupName =intentGroupName;
 
         }
 
@@ -430,13 +467,13 @@ Send intent for opening the XML file import activity
                 getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
        for(ContactInfo group:mGroups){
-           if(preferredDefaultGroupName.equals(group.getName())){
+           if(mGroupName.equals(group.getName())){
                mContactsListFragment.setGroupQuery((int)group.getIDLong()); //passing the integer ID
 
                // update selected item and title
                mDrawerList.setItemChecked(i, true);
-               setTitle(group.getName() + ": " + Integer.toString(group.getMemberCount())
-                       + " Members");
+               setTitle(group.getGroupSummary());
+
 
                return;
            }

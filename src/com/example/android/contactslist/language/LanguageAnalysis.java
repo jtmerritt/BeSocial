@@ -21,6 +21,8 @@ public class LanguageAnalysis {
 
     int count = 0;
 
+    //TODO this library should be part of the resources files
+
     String[] smileys = {":)",":D",":-)",":-D",";)",";-)"
             ,"(:","(-:","^_^","(^_-)","(-_^)", ":-P", ":P", ":-p", ":p"};
 

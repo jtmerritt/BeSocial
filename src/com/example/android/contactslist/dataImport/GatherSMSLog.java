@@ -159,7 +159,7 @@ Method to update the notification window and the activity progress bar, if avail
         ((ArrayList<EventInfo>)mEventLog).ensureCapacity(mCursorCount);
 
         // for the phone number reverse lookup
-        List<String> contactPhoneList = new ArrayList<String>(20);
+        List<String> contactPhoneList = new ArrayList<String>();
         String phoneNumber;
         PhoneNumberUtils phoneNumberUtils = new PhoneNumberUtils();
         Boolean phoneNumberHit = false; // track whether the sms number is in the contact phone list

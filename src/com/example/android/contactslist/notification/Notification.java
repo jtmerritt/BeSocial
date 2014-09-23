@@ -48,6 +48,10 @@ public class Notification {
     private ContentResolver mContentResolver;
     private Cursor cursor;
 
+    // Bundle key for saving the current group displayed
+    private static final String STATE_GROUP =
+            "com.example.android.contactslist.ui.GROUP";
+
 
     public Notification(Context context) {
         mContext = context;
@@ -138,7 +142,7 @@ But if there are multiple contacts in the list, take the user to the Misses You 
 
         if(cursor.getCount() > 1){
             resultIntent = new Intent(mContext, ContactsListActivity.class);
-            resultIntent.putExtra("group_name", groupName);
+            resultIntent.putExtra(STATE_GROUP, groupName);
             mId = mIdList;
         }
 
