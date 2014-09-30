@@ -45,6 +45,7 @@
                 android:layout_width="0dp"
                 android:layout_weight=".7"
             style="@style/AppTheme"
+            android:textColor="#eee"
             android:autoText="false"
             android:layout_gravity="center_vertical" />
 
@@ -56,6 +57,7 @@
             android:layout_weight=".15"
             android:linksClickable="false"
             android:autoText="false"
+            android:textColor="#eee"
             android:layout_gravity="center"
             android:textAlignment="center" />
 
@@ -67,6 +69,7 @@
             android:layout_weight=".15"
             android:linksClickable="false"
             android:autoText="false"
+            android:textColor="#eee"
             android:layout_gravity="center_vertical"
             android:textAlignment="center" />
     </LinearLayout>

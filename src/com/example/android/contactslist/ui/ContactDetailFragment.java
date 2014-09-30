@@ -16,7 +16,7 @@
 
 package com.example.android.contactslist.ui;
 
-
+import android.app.Activity;
 import java.util.*;  // for date formatting
 import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,8 +41,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.provider.MediaStore;
+import android.graphics.BitmapFactory;
 
-import android.support.v4.view.GravityCompat;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -61,22 +63,28 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.TabHost;
-import android.widget.TabHost.TabSpec;
 import android.widget.FrameLayout;
+import android.widget.ListView;
+
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.ScrollViewListener;
 import com.example.android.contactslist.contactStats.IntervalStats;
 import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
+import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.ImageLoader;
+import com.example.android.contactslist.util.ImageUtils;
+import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
 import com.example.android.contactslist.contactStats.ContactInfo;
-import com.example.android.contactslist.eventLogs.EventInfo;
+
+
+
 
 
 import java.io.FileNotFoundException;
@@ -127,9 +135,18 @@ public class ContactDetailFragment extends Fragment implements
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
+
+    // the main layout to be used by this fragment
+    private View detailView;
+
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
-   // private ImageView mImageView;
+   private ImageView mContactDetailImage;
+    private ImageView mBlurredContactDetailImage;
+    private Bitmap image, newImg;
+    private int screenWidth;
+    private int getScreenHeight;
+
     private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
     //private LinearLayout mActionLayout;
@@ -137,18 +154,20 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mStatsLayoutContainer;
     private LinearLayout mDetailsCallLogLayout;
     private LinearLayout mDetailsSMSLogLayout;
+    private ListView mListView;
     private TextView mEmptyView;
     private TextView mContactNameView;
     private TextView mNotesView;
     private TextView mDetailsSubtitleView;
     private MenuItem mEditContactMenuItem;
     private String mContactNameString;
+
     private FractionView fractionView = null;
     private Context mContext;
     private ImageButton mOpenFullScreenChartButton;
     private LinearLayout mDetailFillerSpace;
     private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
-
+    private ObservableScrollView mScrollView;
 
 
 
@@ -300,6 +319,7 @@ public class ContactDetailFragment extends Fragment implements
 
         mContext = getActivity().getApplicationContext();
 
+
         // reference to the actionBar ImageView
         mActionBarIcon = (ImageView) getActivity().findViewById(android.R.id.home);
 
@@ -309,6 +329,10 @@ public class ContactDetailFragment extends Fragment implements
         iconLp.leftMargin = 10;
         iconLp.rightMargin = 10;
         mActionBarIcon.setLayoutParams(iconLp);
+
+        // Get the screen width
+        screenWidth = ImageUtils.getScreenWidth(getActivity());
+        getScreenHeight = ImageUtils.getScreenHeight(getActivity());
     }
 
     @Override
@@ -316,14 +340,46 @@ public class ContactDetailFragment extends Fragment implements
             Bundle savedInstanceState) {
 
         // Inflates the main layout to be used by this fragment
-        final View detailView =
-                inflater.inflate(R.layout.contact_detail_fragment, container, false);
+        detailView = inflater.inflate(R.layout.contact_detail_fragment, container, false);
 
-        // Gets handles to view objects in the layout
-        mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
-        mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
-        //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
-        mOpenFullScreenChartButton = (ImageButton) detailView.findViewById(R.id.open_full_screen_chart_button);
+        if (mIsTwoPaneLayout) {
+            // If this is a two pane view, the following code changes the visibility of the contact
+            // name in details. For a one-pane view, the contact name is displayed as a title.
+            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
+            mContactNameView.setVisibility(View.VISIBLE);
+        }
+
+        //Expand the filler space
+        mDetailFillerSpace = (LinearLayout)detailView.findViewById(R.id.filler_layout_container);
+        mDetailFillerSpace.setMinimumHeight(800);
+
+
+        //Populate items in content list
+
+        //Fraction View
+
+                //addView(detailFractionViewLayout);
+        fractionView = (FractionView) detailView.findViewById(R.id.fraction);
+
+
+
+        // stats layout
+
+        // get the layout container resource
+        mStatsLayoutContainer =
+                (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
+
+        // build buttons for the contact stats control
+        buildContactStatsButtonLayout(detailView);
+
+        mDetailsSubtitleView = (TextView) detailView.findViewById(R.id.text_detailsSubtitle);
+
+
+
+        //Chart Layout
+        // addatch the button on the chart layout
+        mOpenFullScreenChartButton =
+                (ImageButton) detailView.findViewById(R.id.open_full_screen_chart_button);
         mOpenFullScreenChartButton.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
@@ -334,28 +390,8 @@ public class ContactDetailFragment extends Fragment implements
         });
 
 
-        //Expand the filler space
-        mDetailFillerSpace = (LinearLayout)detailView.findViewById(R.id.filler_layout_container);
-        mDetailFillerSpace.setMinimumHeight(800);
-
-
-        // get the layout container resource
-        mStatsLayoutContainer = (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
-
-        // build buttons for the contact stats control
-        buildContactStatsButtonLayout(detailView);
-
-        //Fraction View
-        fractionView = (FractionView) detailView.findViewById(R.id.fraction);
-
-
-       if (mIsTwoPaneLayout) {
-            // If this is a two pane view, the following code changes the visibility of the contact
-            // name in details. For a one-pane view, the contact name is displayed as a title.
-            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
-            mContactNameView.setVisibility(View.VISIBLE);
-       }
-
+        //Notes Layout
+         // attach notes button
         mNotesView = (TextView) detailView.findViewById(R.id.notes_view);
         mNotesView.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
@@ -365,7 +401,77 @@ public class ContactDetailFragment extends Fragment implements
             }
         });
 
-        mDetailsSubtitleView = (TextView) detailView.findViewById(R.id.text_detailsSubtitle);
+
+
+
+
+
+
+
+
+        // Gets handles to view objects in the layout
+        mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
+        mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
+        //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+
+
+        //initialize the image view for the main contact detail image
+        mContactDetailImage = (ImageView) detailView.findViewById(R.id.contact_detail_image);
+        // and the blurred image
+        mBlurredContactDetailImage = (ImageView) detailView.findViewById(R.id.blurred_contact_detail_image);
+
+
+
+
+        mScrollView = (ObservableScrollView) detailView.findViewById(R.id.scrollView);
+
+
+
+
+        /*
+        This call to the scrollViewListener brings out the exposed onScrollChanged() method
+        which has direct access to the position of the scroll
+
+        That position is then used to set the position and alpha level of the background photo
+
+        http://stackoverflow.com/questions/20050196/blur-background-image-like-yahoo-weather-app-in-android
+        https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/src/com/npi/blureffect/MainActivity.java
+        https://github.com/nirhart/ParallaxScroll/blob/master/ParallaxScroll/src/com/nirhart/parallaxscroll/views/ParallaxScrollView.java
+
+         */
+        mScrollView.setScrollViewListener(new ScrollViewListener() {
+
+            float alpha;
+            int parallax;
+            @Override
+            public void onScrollChanged(ObservableScrollView scrollView, int x, int y, int oldx, int oldy) {
+                /**
+                 * Listen to the list scroll. This is where magic happens ;)
+                 */
+
+                // Blurring
+
+                alpha = (y <= 0) ? 1 : (400 / ((float)y));
+                parallax = -y/20;
+
+                //limit the paralax to 70 pixels
+                if(parallax < -100){
+                    parallax = -100;
+                }
+
+                // alpha only has meaning in the range of 0 to 1
+                if (alpha > 1.0) {
+
+                    alpha = (float) 1.0;
+                }
+
+                //Log.i("Scrolling", "Y to ["+y+"], Alpha to [" + alpha +"]");
+
+                mContactDetailImage.setAlpha(alpha);
+                mContactDetailImage.setTop(parallax);
+                mBlurredContactDetailImage.setTop(parallax);
+            }
+        }) ;
 
         return detailView;
     }
@@ -425,7 +531,9 @@ public class ContactDetailFragment extends Fragment implements
     private void getContactMessageStats(){
         getLoaderManager().restartLoader(ContactEventLogQuery.QUERY_ID, null, this);
     }
-
+    private void getContactDetailImage(){
+        getLoaderManager().restartLoader(ContactDetailPhotoQuery.QUERY_ID, null, this);
+    }
 
     private void setDefaultMessageStats(){
         //Populate the message stats
@@ -522,6 +630,7 @@ public class ContactDetailFragment extends Fragment implements
         // add the last settings menu to the end of the action bar
         MenuItem settingsItem = menu.add("Settings");
     }
+
 
 
     @Override
@@ -668,6 +777,26 @@ public class ContactDetailFragment extends Fragment implements
                             where3, whereArgs3,
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
                 }
+            case ContactDetailPhotoQuery.QUERY_ID:
+
+                String[] projection=new String[]{MediaStore.Images.ImageColumns._ID,
+                        MediaStore.Images.ImageColumns.DATA,
+                        MediaStore.Images.ImageColumns.DATE_TAKEN};
+
+                //prepare the shere and args clause for the contact lookup key
+                final String where4 = MediaStore.Images.ImageColumns.TITLE + " Like ?";
+
+                // TODO replace with query of other photo sources
+                StringTokenizer stringTokenizer= new StringTokenizer(mContactNameString);
+
+                String[] whereArgs4 ={stringTokenizer.nextToken() + "%"};
+
+
+                return new CursorLoader(getActivity(),
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        where4, whereArgs4,
+                        MediaStore.Images.ImageColumns.DATE_TAKEN+" DESC");
 
         }
         return null;
@@ -694,6 +823,9 @@ public class ContactDetailFragment extends Fragment implements
                     // ContactDetailQuery.DISPLAY_NAME maps to the appropriate display
                     // name field based on OS version.
                     mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
+
+                    getContactDetailImage();
+
 
 
 
@@ -859,7 +991,7 @@ public class ContactDetailFragment extends Fragment implements
 
                 if (mContactStats != null) {
 
-                    if(data.moveToNext()){
+                    if(data.moveToFirst()){
                         tallyStatsFromEventCursor(data);
 
                         // put the stats up on display
@@ -887,6 +1019,70 @@ public class ContactDetailFragment extends Fragment implements
                     }
 
                 }
+                break;
+
+            case ContactDetailPhotoQuery.QUERY_ID:
+
+
+                //boolean isOK=false; //Found a DCIM path ?
+                if(data.moveToFirst())
+                {
+                    final String path=data.getString(1);
+
+                    //Drawable background = Drawable.createFromPath(path);
+                    //detailView.setBackground(background);
+
+
+
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            // No image found => let's generate it!
+                            BitmapFactory.Options options = new BitmapFactory.Options();
+
+                            //TODO take care of margin at the bottom of the photo
+                            options.outHeight = getScreenHeight + 200;
+                            options.inSampleSize = 2;
+                            image = BitmapFactory.decodeFile(path, options);
+
+                            // not allowed to blur more than 25
+                            newImg = Blur.fastblur(mContext, image, 25);
+
+                            newImg = Bitmap.createScaledBitmap(newImg, screenWidth,
+                                    (int) (newImg.getHeight()
+                                    * ((float) screenWidth) / (float) newImg.getWidth()), false);
+
+                            //ImageUtils.storeImage(newImg, blurredImage);
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    updateView();
+
+                                    // And finally stop the progressbar
+                                }
+                            });
+
+                        }
+                    }).start();
+
+
+                   /* while(!isOK)
+                    {
+                        path=data.getString(1);
+                        Log.i("CONTACT DETAIL FRAGMENT", "File Path: "+path);
+                        path=path.substring(0, path.lastIndexOf('/')+1);
+                        isOK=!(path.indexOf("DCIM")==-1); //Is the photo from DCIM folder ?
+
+                        data.moveToNext(); //Add this so we don't get an infinite loop if the first image from
+                        //the cursor is not from DCIM
+                    }*/
+                }else {
+
+                }
+
                 break;
         }
     }
@@ -1414,6 +1610,11 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     // for getting the event Log
     public interface ContactEventLogQuery{
         final static int QUERY_ID = 10;
+    }
+
+    // for getting a MMS photo
+    public interface ContactDetailPhotoQuery{
+        final static int QUERY_ID = 11;
     }
 
 /*
@@ -1981,6 +2182,13 @@ Set the FractionView with appropriate time data
         return statsLayout;
     }
 
+/*
+https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/src/com/npi/blureffect/MainActivity.java
+ */
+    private void updateView() {
+        mContactDetailImage.setImageBitmap(image);
+        mBlurredContactDetailImage.setImageBitmap(newImg);
+    }
 }
 
 

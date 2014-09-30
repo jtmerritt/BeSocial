@@ -3,6 +3,7 @@ ___________________________________________________________________
 
 ***Small Tasks***
 
++ Make values persist with screen rotation in the event entry activity
 - Use ActionMode.callback to manually select multiple contacts to remove from a group
     - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
     - http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
@@ -10,38 +11,36 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
 - Make static plot for recent history of contact
-- Make values persist with screen rotation in the event entry activity
 - group stats must be collected just like contact stats
 - Have a nightly database maintenance routine
-- fix the fact that tapping on the update notification initiates a new file import activity
+
 - have a feature to display the library of tags
 
 ***Medium Tasks***
--- performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
-- add another option to the CAB:
-    - Move selection to another group
-    -
-- app should add and remove contact from Misses You group automatically at the appropriate times
++ performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
++ Create routine for producing the long duration statistics:
+    - average time
+    - score over time
++ Create class to estimate contact due date
++ app should add and remove contact from Misses You group automatically at the appropriate times
     - can remove contacts from group at time of update
     - can add/remove contacts if all contacts are updated, before a notification
     - can remove contacts when examining the content of the group, assuming all are updated.
-
-
+- add another option to the CAB:
+    - Move selection to another group
+    -
 - Figure out how to cluster events into a conversation
 - Figure out how to calculate average reply time
-- Create routine for producing the long duration statistics:
-    - average time
-    - score over time
-- Create class to estimate contact due date
-- Create interface for adding contacts to group
+
 
 
 ***Large Tasks***
-- Change UI to infinite tab interface (like photo viewing) for switcing between contacts
-- make animation for welcome screen
+
++ Change UI to infinite tab interface (like photo viewing) for switcing between contacts
 
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
+    - make animation for welcome screen
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Access hangouts data: ?
 - Access facebook through official API: https://developers.facebook.com/docs/android
@@ -70,6 +69,13 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+
++ Use photo blur on contact detail image as user scrolls down
+    - http://nicolaspomepuy.fr/blur-effect-for-android-design/
+    - https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/res/layout/activity_main.xml
+- Create interface for adding contacts to group
++ fix the fact that tapping on the update notification initiates a new file import activity
+  - remove the intent
 - Fix Default Contact Group of the Preferences menu, currently hard set
 - FEATURE TO add contacts to a group
 - bug with phone call count, both parties get same number on readout

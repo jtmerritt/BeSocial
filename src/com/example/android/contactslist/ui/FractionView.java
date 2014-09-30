@@ -78,8 +78,10 @@ public class FractionView extends View implements FractionViewCallback {
     mBackgroundPaint.setColor(Color.parseColor("#F5F5F5"));
     mBackgroundPaint.setStyle(Paint.Style.FILL);
 
-    setBackgroundColor(Color.parseColor("#F5F5F5"));//Color.LTGRAY);
-    //TODO Choose better color or transpanrancy for background
+    //setBackgroundColor(Color.parseColor("#F5F5F5"));//Color.LTGRAY);
+      setBackgroundColor(Color.TRANSPARENT);
+
+      //TODO Choose better color or transpanrancy for background
 
     mRedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     mRedPaint.setColor(getResources().getColor(android.R.color.holo_green_light));//Color.RED);
@@ -197,6 +199,7 @@ public class FractionView extends View implements FractionViewCallback {
    protected void onDraw(Canvas canvas) {
 
        setPadding(7, 7, 7, 7);
+
        int width = getWidth() - getPaddingLeft() - getPaddingRight();
        int height = getHeight() - getPaddingTop() - getPaddingBottom();
        int size = Math.min(width, height);

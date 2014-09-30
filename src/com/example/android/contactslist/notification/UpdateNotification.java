@@ -65,7 +65,9 @@ public class UpdateNotification {
                 );
 
 
-        mBuilder.setContentIntent(resultPendingIntent);
+        // removed the pending intent (below) because it would not be the correct instance of the
+        // import activity
+        //mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager nMgr = (NotificationManager) mContext.getSystemService(ns);
 // mId allows you to update the notification later on.
         nMgr.notify(mId, mBuilder.build());
