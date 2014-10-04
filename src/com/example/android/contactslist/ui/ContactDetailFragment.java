@@ -169,6 +169,8 @@ public class ContactDetailFragment extends Fragment implements
     private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
     private ObservableScrollView mScrollView;
 
+    private ContactDetailAdapter mContactDetailAdapter;
+
 
 
     /**
@@ -208,6 +210,8 @@ public class ContactDetailFragment extends Fragment implements
      * @param contactLookupUri The contact lookup Uri to load and display in this fragment. Passing
      *                         null is valid and the fragment will display a message that no
      *                         contact is currently selected instead.
+     *
+     * This is directly set by the ContactListActivity in TwoPaneLayouts
      */
     public void setContact(Uri contactLookupUri) {
 
@@ -500,7 +504,7 @@ public class ContactDetailFragment extends Fragment implements
     }
 
     private void setBasicContactInfo(){
-        // Starts two queries to to retrieve contact information from the Contacts Provider.
+        // Starts  queries to to retrieve contact information from the Contacts Provider.
         // restartLoader() is used instead of initLoader() as this method may be called
         // multiple times.
 
@@ -2188,6 +2192,14 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
     private void updateView() {
         mContactDetailImage.setImageBitmap(image);
         mBlurredContactDetailImage.setImageBitmap(newImg);
+    }
+
+
+    /*
+    Method allows a reference back to the adapter for possible addition or removal of contacts
+     */
+    public void setAdapter(ContactDetailAdapter adapter) {
+        mContactDetailAdapter = adapter;
     }
 }
 

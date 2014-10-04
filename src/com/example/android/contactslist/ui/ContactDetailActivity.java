@@ -17,25 +17,46 @@
 package com.example.android.contactslist.ui;
 
 import android.annotation.TargetApi;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
+import  android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
+
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.R;
+import com.example.android.contactslist.util.ParallaxPagerTransformer;
 import com.example.android.contactslist.util.Utils;
+
+import java.util.List;
+
 
 /**
  * This class defines a simple FragmentActivity as the parent of {@link ContactDetailFragment}.
  */
-public class ContactDetailActivity extends FragmentActivity {
+public class ContactDetailActivity extends FragmentActivity
+        implements LoaderManager.LoaderCallbacks<Cursor>{
     // Defines a tag for identifying the single fragment that this activity holds
     private static final String TAG = "ContactDetailActivity";
+
+    ViewPager mPager;
+    ContactDetailAdapter mContactDetailAdapter;
+    Boolean useAdapter = true;
+    private int mGroupID = -1;  //stores the selected groupID for display
+    private  int mStartingAdapterPosition = 0;
+    private Uri mContactUri;
+
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
@@ -65,18 +86,56 @@ public class ContactDetailActivity extends FragmentActivity {
             }
 
             // Fetch the data Uri from the intent provided to this activity
-            final Uri uri = getIntent().getData();
+            mContactUri = getIntent().getData();
+            mGroupID = getIntent().getIntExtra("group_id", -1);
 
-            // Checks to see if fragment has already been added, otherwise adds a new
-            // ContactDetailFragment with the Uri provided in the intent
-            if (getSupportFragmentManager().findFragmentByTag(TAG) == null) {
-                final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-                // Adds a newly created ContactDetailFragment that is instantiated with the
-                // data Uri
-                ft.add(android.R.id.content, ContactDetailFragment.newInstance(uri), TAG);
-                ft.commit();
+            if(useAdapter){
+                setContentView(R.layout.contact_detail_activity);
+
+                mPager = (ViewPager) findViewById(R.id.pager);
+                //mPager.setBackgroundColor(0xFF000000);
+
+                ParallaxPagerTransformer pt = new ParallaxPagerTransformer((R.id.contact_detail_image));
+                //pt.setBorder(20);
+                //pt.setSpeed(0.2f);
+                mPager.setPageTransformer(false, pt);
+
+                mContactDetailAdapter = new ContactDetailAdapter(this, getSupportFragmentManager());
+                mContactDetailAdapter.setPager(mPager);
+
+
+                getLoaderManager().restartLoader(
+                        ContactsListFragment.ContactsGroupQuery.QUERY_ID,
+                        null,
+                        ContactDetailActivity.this);
+
+
+
+
+                // otherwise, do the normal thing
+            }else{
+
+
+                // Checks to see if fragment has already been added, otherwise adds a new
+                // ContactDetailFragment with the Uri provided in the intent
+                if (getSupportFragmentManager().findFragmentByTag(TAG) == null) {
+                    final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+                    // Adds a newly created ContactDetailFragment that is instantiated with the
+                    // data Uri
+                    ft.add(android.R.id.content, ContactDetailFragment.newInstance(mContactUri), TAG);
+                    ft.commit();
+                }
             }
+
+
+
+
+
+
+
+
         } else {
             // No intent provided, nothing to do so finish()
             finish();
@@ -99,5 +158,90 @@ public class ContactDetailActivity extends FragmentActivity {
         // documentation.
         return super.onOptionsItemSelected(item);
     }
+
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri contentUri;
+
+
+        // switch between search query and a group query
+        switch (id) {
+
+            case ContactsListFragment.ContactsGroupQuery.QUERY_ID:
+                if (mGroupID != -1) {
+                    contentUri = ContactsListFragment.ContactsGroupQuery.CONTENT_URI;
+
+                    final String parameters[] = {String.valueOf(mGroupID)};
+
+                    return new CursorLoader(this,
+                            contentUri,
+                            ContactsListFragment.ContactsGroupQuery.PROJECTION,
+
+                            // The result is a very rough interface
+                            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
+
+                            parameters,
+
+                            ContactsListFragment.ContactsGroupQuery.SORT_ORDER);
+                }
+
+            default:
+
+                Log.e(TAG, "onCreateLoader - incorrect ID provided (" + id + ")");
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        String testKey;
+        // Parse the contact uri to get the lookup key for the contact
+        List<String> path = mContactUri.getPathSegments();
+        // the lookup key is the second element in
+        String uriKey = path.get(path.size() - 2);
+
+
+        // This swaps the new cursor into the adapter.
+        switch (loader.getId()) {
+            case ContactsListFragment.ContactsGroupQuery.QUERY_ID:
+
+                if((data != null) && (data.moveToFirst())) {
+
+                    do{
+                        testKey = data.getString(ContactsListFragment.ContactsQuery.LOOKUP_KEY);
+
+                        if(uriKey.equals(testKey)){
+                            mStartingAdapterPosition = data.getPosition();
+                            break;
+                        }
+                    }while(data.moveToNext());
+                }
+
+
+                    mContactDetailAdapter.swapCursor(data);
+
+                mPager.setAdapter(mContactDetailAdapter);
+                mPager.setCurrentItem(mStartingAdapterPosition);
+
+               break;
+            default:
+
+
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        if ((loader.getId() == ContactsListFragment.ContactsGroupQuery.QUERY_ID)) {
+            // When the loader is being reset, clear the cursor from the adapter. This allows the
+            // cursor resources to be freed.
+            mContactDetailAdapter.swapCursor(null);
+        }
+    }
+
+
 
 }

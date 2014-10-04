@@ -13,7 +13,7 @@ ___________________________________________________________________
 - Make static plot for recent history of contact
 - group stats must be collected just like contact stats
 - Have a nightly database maintenance routine
-
+- Fix bug: The user should not be able to delete contacts from the search results in the Contact List
 - have a feature to display the library of tags
 
 ***Medium Tasks***
@@ -37,6 +37,9 @@ ___________________________________________________________________
 ***Large Tasks***
 
 + Change UI to infinite tab interface (like photo viewing) for switcing between contacts
+    - http://developer.android.com/reference/android/support/v4/app/FragmentStatePagerAdapter.html
+    - https://github.com/xgc1986/ParallaxPagerTransformer
+    - http://stackoverflow.com/questions/23433027/onpagechangelistener-alpha-crossfading
 
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI

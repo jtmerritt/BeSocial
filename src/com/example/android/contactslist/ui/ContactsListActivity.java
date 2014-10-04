@@ -357,15 +357,18 @@ Send intent for opening the XML file import activity
      * @param contactUri The contact Uri to the selected contact.
      */
     @Override
-    public void onContactSelected(Uri contactUri) {
+    public void onContactSelected(Uri contactUri, int groupID) {
         if (isTwoPaneLayout && mContactDetailFragment != null) {
+            //TODO This will not work with the pageView
             // If two pane layout then update the detail fragment to show the selected contact
-            mContactDetailFragment.setContact(contactUri);
+
+           mContactDetailFragment.setContact(contactUri);
         } else {
             // Otherwise single pane layout, start a new ContactDetailActivity with
             // the contact Uri
             Intent intent = new Intent(this, ContactDetailActivity.class);
             intent.setData(contactUri);
+            intent.putExtra("group_id", groupID);
 
             //Notification.simpleNotification(this);
             startActivity(intent);

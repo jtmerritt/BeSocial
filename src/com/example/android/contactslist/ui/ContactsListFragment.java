@@ -414,7 +414,7 @@ public class ContactsListFragment extends ListFragment implements
         // parent activity loads a ContactDetailFragment that displays the details for the selected
         // contact. In a single-pane layout, the parent activity starts a new activity that
         // displays contact details in its own Fragment.
-        mOnContactSelectedListener.onContactSelected(uri);
+        mOnContactSelectedListener.onContactSelected(uri, mGroupID);
 
         // If two-pane layout sets the selected item to checked so it remains highlighted. In a
         // single-pane layout a new activity is started so this is not needed.
@@ -696,7 +696,7 @@ public class ContactsListFragment extends ListFragment implements
                         final Uri uri = Uri.withAppendedPath(
                                 Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsGroupQuery.ID)));
 
-                        mOnContactSelectedListener.onContactSelected(uri);
+                        mOnContactSelectedListener.onContactSelected(uri, mGroupID);
                         getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
                     } else {
                         // No results, clear selection.
@@ -717,7 +717,6 @@ public class ContactsListFragment extends ListFragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        //TODO: maybe need to save the group ID as part of the state
         if ((loader.getId() == ContactsQuery.QUERY_ID) ||
                 (loader.getId() == ContactsGroupQuery.QUERY_ID)) {
             // When the loader is being reset, clear the cursor from the adapter. This allows the
@@ -969,7 +968,6 @@ public class ContactsListFragment extends ListFragment implements
             // each detail type.
 
 
-            //TODO Fix the fact that the ID used here is the group ID
             // Generates the contact lookup Uri
             final Uri contactUri = Contacts.getLookupUri(
                     cursor.getLong(ContactsQuery.ID),
@@ -1067,7 +1065,7 @@ public class ContactsListFragment extends ListFragment implements
          *
          * @param contactUri The contact Uri.
          */
-        public void onContactSelected(Uri contactUri);
+        public void onContactSelected(Uri contactUri, int groupID);
 
         /**
          * Called when the ListView selection is cleared like when
@@ -1114,7 +1112,6 @@ public class ContactsListFragment extends ListFragment implements
 
                 // The contact's row id
                 Contacts._ID, //extra collumn is to make this projection match up with that of ContactsGroupQuery
-                //TODO: should probably make this above statement not a cludge
                 Contacts._ID,
 
                 // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
@@ -1216,15 +1213,21 @@ public class ContactsListFragment extends ListFragment implements
     }
 
 
+    /*
+    * Start an external app for picking a contact.
+     */
     private void addContactToGroup() {
 
         final Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
 
         startActivityForResult(intent, PICK_CONTACT_REQUEST);
-
-
     }
 
+
+    /*
+    *  When the contact choosing activity concludes, we grab the contact uri and make it a member
+    *  of the current group.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent data) {
