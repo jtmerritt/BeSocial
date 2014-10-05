@@ -386,11 +386,13 @@ public class EventEntryFragment extends Fragment implements
 
         mEventDate = date.getTime();
 
-        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
+        DateFormat formatDate =
+                new SimpleDateFormat(getResources().getString(R.string.date_format));
         String formattedDate = formatDate.format(date);
         mDateViewButton.setText(formattedDate);
 
-        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
+        DateFormat formatTime =
+                new SimpleDateFormat(getResources().getString(R.string.twelve_hour_time_format));
         String formattedTime = formatTime.format(date);
         mTimeViewButton.setText(formattedTime);
 
@@ -444,7 +446,7 @@ public class EventEntryFragment extends Fragment implements
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Entry Discarded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.entry_discarded, Toast.LENGTH_SHORT).show();
 
                 //Return to last activity
                 getActivity().finish();  // same as hitting back button
@@ -487,13 +489,13 @@ public class EventEntryFragment extends Fragment implements
         builder.setView(input);
 
 // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mEventNotes.setText(input.getText().toString());
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -586,7 +588,8 @@ public class EventEntryFragment extends Fragment implements
         mEditContactMenuItem.setVisible(mContactUri != null);
 
         // add the last settings menu to the end of the action bar
-        MenuItem settingsItem = menu.add("Settings");
+        MenuItem settingsItem =
+                menu.add(getResources().getString(R.string.action_bar_overflow_settings));
     }
 
 

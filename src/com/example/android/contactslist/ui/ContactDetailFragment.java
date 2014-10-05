@@ -337,6 +337,8 @@ public class ContactDetailFragment extends Fragment implements
         // Get the screen width
         screenWidth = ImageUtils.getScreenWidth(getActivity());
         getScreenHeight = ImageUtils.getScreenHeight(getActivity());
+
+
     }
 
     @Override
@@ -376,7 +378,7 @@ public class ContactDetailFragment extends Fragment implements
         // build buttons for the contact stats control
         buildContactStatsButtonLayout(detailView);
 
-        mDetailsSubtitleView = (TextView) detailView.findViewById(R.id.text_detailsSubtitle);
+        mDetailsSubtitleView = (TextView) detailView.findViewById(R.id.stats_subtitle);
 
 
 
@@ -401,7 +403,7 @@ public class ContactDetailFragment extends Fragment implements
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Maybe next version", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.next_version, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -632,7 +634,7 @@ public class ContactDetailFragment extends Fragment implements
         mEditContactMenuItem.setVisible(mContactUri != null);
 
         // add the last settings menu to the end of the action bar
-        MenuItem settingsItem = menu.add("Settings");
+        MenuItem settingsItem = menu.add(R.string.action_bar_overflow_settings);
     }
 
 
@@ -833,6 +835,8 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
+                    // if there is a two pane view then mContactNameView is null
+                    // and we should set the title of the activity in the action bar
                     if (mContactNameView != null) {
                         // In the two pane layout, there is a dedicated TextView
                         // that holds the contact name.
@@ -941,8 +945,6 @@ public class ContactDetailFragment extends Fragment implements
                 setContactStatsFromCursor(data);
                 if (mContactStats != null) {
 
-                    // put the stats up on display
-                    //displayContactStatsInfo();
                     setFractionView();
 
                     setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
@@ -998,28 +1000,25 @@ public class ContactDetailFragment extends Fragment implements
                     if(data.moveToFirst()){
                         tallyStatsFromEventCursor(data);
 
-                        // put the stats up on display
-                        displayContactStatsInfo();
-
-                        //set the subtitle of the view based on the number of months
-                        switch (mNumMonthsBackForMessageStats){
-                            case 1:
-                                mDetailsSubtitleView.setText(R.string.one_month_of_data);
-
-                                break;
-                            case 6:
-                                mDetailsSubtitleView.setText(R.string.six_months_of_data);
-
-                                break;
-                            default:
-                                mDetailsSubtitleView.setText(R.string.all_data);
-
-                        }
-
-
                     }else {
-                        Toast.makeText(getActivity(),
-                                R.string.no_data, Toast.LENGTH_SHORT).show();
+                        zeroContactStatFields();
+                    }
+
+                    // put the stats up on display
+                    displayContactStatsInfo();
+
+                    //set the subtitle of the view based on the number of months
+                    switch (mNumMonthsBackForMessageStats) {
+                        case 1:
+                            mDetailsSubtitleView.setText(R.string.one_month_of_data);
+
+                            break;
+                        case 6:
+                            mDetailsSubtitleView.setText(R.string.six_months_of_data);
+
+                            break;
+                        default:
+                            mDetailsSubtitleView.setText(R.string.all_data);
                     }
 
                 }
@@ -1165,34 +1164,7 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
 
             // Make the following get calculated on the fly
 
-            //so we first zero them out
-            mContactStats.setCallDurationTotal(0);
-            mContactStats.setCallDurationAvg(0);
-            mContactStats.setWordCountAvgIn(0);
-            mContactStats.setWordCountAvgOut(0);
-
-            mContactStats.setWordCountIn(0);
-            mContactStats.setWordCountOut(0);
-            mContactStats.setMessageCountIn(0);
-            mContactStats.setMessageCountOut(0);
-
-            mContactStats.setCallCountIn(0);
-            mContactStats.setCallCountOut(0);
-            mContactStats.setCallCountMissed(0);
-            mContactStats.setEventCount(0);
-
-            mContactStats.setTextSmileyCountIn(0);
-            mContactStats.setTextSmileyCountOut(0);
-            mContactStats.setTextHeartCountIn(0);
-            mContactStats.setTextHeartCountOut(0);
-
-            mContactStats.setTextQuestionCountIn(0);
-            mContactStats.setTextQuestionCountOut(0);
-
-            mContactStats.setFirstPersonWordCountIn(0);
-            mContactStats.setFirstPersonWordCountOut(0);
-            mContactStats.setSecondPersonWordCountIn(0);
-            mContactStats.setSecondPersonWordCountOut(0);
+            zeroContactStatFields();
 
 
             do {
@@ -1381,7 +1353,37 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
 
     }
 
+    private void zeroContactStatFields() {
 
+        //so we first zero them out
+        mContactStats.setCallDurationTotal(0);
+        mContactStats.setCallDurationAvg(0);
+        mContactStats.setWordCountAvgIn(0);
+        mContactStats.setWordCountAvgOut(0);
+
+        mContactStats.setWordCountIn(0);
+        mContactStats.setWordCountOut(0);
+        mContactStats.setMessageCountIn(0);
+        mContactStats.setMessageCountOut(0);
+
+        mContactStats.setCallCountIn(0);
+        mContactStats.setCallCountOut(0);
+        mContactStats.setCallCountMissed(0);
+        mContactStats.setEventCount(0);
+
+        mContactStats.setTextSmileyCountIn(0);
+        mContactStats.setTextSmileyCountOut(0);
+        mContactStats.setTextHeartCountIn(0);
+        mContactStats.setTextHeartCountOut(0);
+
+        mContactStats.setTextQuestionCountIn(0);
+        mContactStats.setTextQuestionCountOut(0);
+
+        mContactStats.setFirstPersonWordCountIn(0);
+        mContactStats.setFirstPersonWordCountOut(0);
+        mContactStats.setSecondPersonWordCountIn(0);
+        mContactStats.setSecondPersonWordCountOut(0);
+    }
 
 
     /**
@@ -1694,7 +1696,7 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         Intent implicitIntent = new Intent();
         implicitIntent.setAction(Intent.ACTION_VIEW);
         implicitIntent.setData(Uri.parse("smsto:" + mSMSNumber));
-        implicitIntent.putExtra("sms_body", "Hey!");
+        implicitIntent.putExtra("sms_body", R.string.default_sms_body_message);
         //TODO: AutoGenerate suggested message
 
         try {
@@ -1907,55 +1909,67 @@ Set the FractionView with appropriate time data
             mStatsLayoutContainer.removeAllViews();
 
             //TODO: Get all text into Strings Resource
-            view = buildContactStatsItemLayout("Call Count",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_call_count),
                     mContactStats.getCallCountOut(), mContactStats.getCallCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Messages",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_message_count),
                     mContactStats.getMessagesCountOut(), mContactStats.getMessagesCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Word Count",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_word_count),
                     mContactStats.getWordCountOut(), mContactStats.getWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Word Count Average",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_word_count_average),
                     mContactStats.getWordCountAvgOut(), mContactStats.getWordCountAvgIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Smileys",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_smiley_count),
                     mContactStats.getSmileyCountOut(), mContactStats.getSmileyCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Hearts/Kisses/Hugs",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_heart_count),
                     mContactStats.getHeartCountOut(), mContactStats.getHeartCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Question Marks",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_question_count),
                     mContactStats.getQuestionCountOut(), mContactStats.getQuestionCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Average Reply Time",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_average_reply_time),
                     -1, -1);
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("First Person Word Count",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_first_person_word_count),
                     mContactStats.getFirstPersonWordCountOut(),
                     mContactStats.getFirstPersonWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Second Person Word Count",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_second_person_work_count),
                     mContactStats.getSecondPersonWordCountOut(),
                     mContactStats.getSecondPersonWordCountIn());
             mStatsLayoutContainer.addView(view);
 
 
-            view = buildContactStatsItemLayout("Average Call Duration (min)",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_avg_call_duration),
                     // convert from seconds to minues
                     mContactStats.getCallDurationAvg()/60, -1);
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout("Accumulated Call Duration (min)",
+            view = buildContactStatsItemLayout(
+                    getResources().getString(R.string.stats_display_accumulated_call_duration),
                     // convert from seconds to minues
                     -1, mContactStats.getCallDurationTotal()/60);
             mStatsLayoutContainer.addView(view);

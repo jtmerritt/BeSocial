@@ -18,6 +18,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import com.example.android.contactslist.FractionViewCallback;
+import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.LoadContactStatsTask;
 import com.example.android.contactslist.contactStats.ContactInfo;
 
@@ -252,18 +253,19 @@ public class FractionView extends View implements FractionViewCallback {
        mDisplayString = String.valueOf(displayValue);
        */
 
-        mDisplayString_1 = String.valueOf(mDaysRemaining);
-        mDisplayString_1 += " day";
+        mDisplayString_1 = String.valueOf(mDaysRemaining) + " ";
 
-        if(mLargeCanvas){
+
+        if(mLargeCanvas) {
             textSize = 40;
             mTextPaint.setTextSize(textSize);
-        }/*else{
-            mDisplayString_1 += "  d a y ";
-        }*/
+        }
 
-        if(mDaysRemaining !=1){
-            mDisplayString_1 += "s";
+
+        if(mDaysRemaining ==1){
+            mDisplayString_1 += getResources().getString(R.string.Day);
+        }else {
+            mDisplayString_1 += getResources().getString(R.string.Days);
         }
 
         mDisplayString_2 = "t o  g o";

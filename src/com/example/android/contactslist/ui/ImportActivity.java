@@ -172,7 +172,8 @@ Methods for importing the XML file
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         Uri uri = Uri.parse(BASE_DIR);
         intent.setDataAndType(uri, "text/xml");
-        startActivityForResult(Intent.createChooser(intent, "Select XML file"), FILE_SELECT_CODE);
+        startActivityForResult(Intent.createChooser(intent,
+                getResources().getString(R.string.file_import_select_xml)), FILE_SELECT_CODE);
 
     }
 

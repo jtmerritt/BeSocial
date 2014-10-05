@@ -10,6 +10,8 @@ import java.text.DateFormat;
 import android.app.TimePickerDialog;
 import android.widget.TimePicker;
 
+import com.example.android.contactslist.R;
+
 public class TimePickerFragment extends DialogFragment  //example is static
         implements TimePickerDialog.OnTimeSetListener {
 
@@ -20,7 +22,8 @@ public class TimePickerFragment extends DialogFragment  //example is static
         int hour = c.get(Calendar.HOUR_OF_DAY);
         int minute = c.get(Calendar.MINUTE);
 
-        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
+        DateFormat formatTime = new SimpleDateFormat(
+                getResources().getString(R.string.twelve_hour_time_format));
         // Create a new instance of TimePickerDialog and return it
         return new TimePickerDialog(getActivity(), this, hour, minute,
                 false); //is 24 hour time

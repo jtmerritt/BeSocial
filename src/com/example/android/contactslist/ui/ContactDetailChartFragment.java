@@ -398,7 +398,8 @@ public class ContactDetailChartFragment extends Fragment implements
         mEditContactMenuItem.setVisible(mContactUri != null);
 
         // add the last settings menu to the end of the action bar
-        MenuItem settingsItem = menu.add("Settings");
+        MenuItem settingsItem =
+                menu.add(getResources().getString(R.string.action_bar_overflow_settings));
     }
 
 

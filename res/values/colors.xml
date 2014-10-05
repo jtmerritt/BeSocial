@@ -22,5 +22,7 @@
     <color name="holo_blue">#FF33B5E5</color>
     <color name="red">#FF0000</color>
     <color name="yellow">#CCCC00</color>
+    <color name="gray_background_1">#99333333</color>
+    <color name="off_white_1">#eee</color>
 
 </resources>

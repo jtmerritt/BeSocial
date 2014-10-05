@@ -20,7 +20,7 @@
          multiple views and changed from one central location. It also gives us the ability to
          provide alternate values for different device configurations using resource directory
          qualifiers. -->
-    <dimen name="padding">25dp</dimen>
+    <dimen name="padding">15dp</dimen>
     <dimen name="listview_item_padding">16dp</dimen>
 
 </resources>

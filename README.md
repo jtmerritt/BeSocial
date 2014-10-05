@@ -31,16 +31,14 @@ ___________________________________________________________________
     -
 - Figure out how to cluster events into a conversation
 - Figure out how to calculate average reply time
+- Fix the title and userpic display of the action bar
+    - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
+    - http://stackoverflow.com/questions/19292605/android-viewpager-actionbar-and-android-app-fragments
+    - Or just replace it with a custom menu bar with the frosted glass effect
 
 
 
 ***Large Tasks***
-
-+ Change UI to infinite tab interface (like photo viewing) for switcing between contacts
-    - http://developer.android.com/reference/android/support/v4/app/FragmentStatePagerAdapter.html
-    - https://github.com/xgc1986/ParallaxPagerTransformer
-    - http://stackoverflow.com/questions/23433027/onpagechangelistener-alpha-crossfading
-
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
     - make animation for welcome screen
@@ -72,7 +70,10 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
-
++ Change UI to infinite tab interface (like photo viewing) for switcing between contacts
+    - http://developer.android.com/reference/android/support/v4/app/FragmentStatePagerAdapter.html
+    - https://github.com/xgc1986/ParallaxPagerTransformer
+    - http://stackoverflow.com/questions/23433027/onpagechangelistener-alpha-crossfading
 + Use photo blur on contact detail image as user scrolls down
     - http://nicolaspomepuy.fr/blur-effect-for-android-design/
     - https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/res/layout/activity_main.xml

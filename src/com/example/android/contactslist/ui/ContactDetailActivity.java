@@ -78,7 +78,7 @@ public class ContactDetailActivity extends FragmentActivity
 
 
                 // Enables action bar "up" navigation
-                getActionBar().setDisplayHomeAsUpEnabled(true);
+                getActionBar().setDisplayHomeAsUpEnabled(false);
                 //getActionBar().setDisplayShowHomeEnabled(false);
                 //getActionBar().setDisplayUseLogoEnabled(false);
                 //getActionBar().setDisplayShowTitleEnabled(false);

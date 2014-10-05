@@ -190,12 +190,12 @@ public class chartMaker implements ChartMakerCallback {
         currentFunction = INITIALIZE;
 
         // Define chart
-        mDisplaySeries = new TimeSeries("SMS");
+        mDisplaySeries = new TimeSeries(mContext.getResources().getString(R.string.sms));
         //mSeriesSMS = new TimeSeries("SMS");
 
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
         dataset.addSeries(mDisplaySeries);
-        mDisplaySeries.setTitle("Durration (Min)");
+        mDisplaySeries.setTitle(mContext.getResources().getString(R.string.durration));
         //dataset.addSeries(mSeriesSMS);
         //mSeriesSMS.setTitle("SMS Word Count");
 
