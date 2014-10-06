@@ -16,7 +16,7 @@
 -->
 <resources>
 
-    <string name="app_name">Stacker</string>
+    <string name="app_name">BeSocial</string>
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>
@@ -122,8 +122,16 @@
     </string-array>
 
     <string name="duration_prompt">Choose best event duration</string>
-    <string name="class_prompt">Select Event Class</string>
-    <string name="event_notes">Event Notes</string>
+    <string name="event_class_prompt">Select Event Class</string>
+    <string name="event_class_title">Event Class</string>
+    <string name="event_type_title">Event Type</string>
+    <string name="event_address_title">Address</string>
+    <string name="event_address_title_alt_phone">Phone Number</string>
+    <string name="event_address_title_alt_handle">Handle</string>
+
+    <string name="event_duration_title">Duration</string>
+    <string name="event_word_count_title">Word Count</string>
+    <string name="event_notes_title">Event Notes</string>
 
 
 
@@ -226,10 +234,12 @@
 
 
     <!-- Event Classifications -->
-    <string name="incoming">Incoming</string>
-    <string name="outgoing">Outgoing</string>
+    <string name="incoming_title">Incoming</string>
+    <string name="outgoing_title">Outgoing</string>
     <string name="missed">Missed</string>
     <string name="draft">Draft</string>
+    <string name="incoming_title_alt">Invited</string>
+    <string name="outgoing_title_alt">Invite</string>
 
 
     <!-- Naming for groups -->

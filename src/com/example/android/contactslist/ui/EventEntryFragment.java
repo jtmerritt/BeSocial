@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,6 +61,8 @@ import android.widget.RadioGroup;
 import android.widget.RadioButton;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.content.DialogInterface;
 import android.text.InputType;
 
@@ -132,6 +135,8 @@ public class EventEntryFragment extends Fragment implements
     static Long mEventDate;
     private Long mDuration = (long)0;
     private int mWordCount = 0;
+    private final int MAX_SEEK_BAR_WORD_COUNT = 150;
+    private boolean mDurationViewIsDirty = false;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -142,11 +147,18 @@ public class EventEntryFragment extends Fragment implements
     //private LinearLayout mDetailsLayout;
     private TextView mEmptyView;
     private TextView mContactNameView;
+    private TextView mEventTypeTitle;
+    private TextView mWordCountTitle;
+    private TextView mEventDurationTitle;
+
+
+    private TextView mAddressTitle;
     static Button mDateViewButton;
     static Button mTimeViewButton;
     private Spinner mDurationView;
     private Spinner mClassSelectionSpinner;
     private Button mAddressViewButton;
+    private Button mWordCountViewButton;
     private TextView mEventNotes;
     private RadioGroup radioGroup;
     private RadioButton mIncomingButton;
@@ -154,6 +166,9 @@ public class EventEntryFragment extends Fragment implements
     private ImageButton mSubmitButton;
     private ImageButton mCancelButton;
     private LinearLayout mEventDurationLayout;
+    private LinearLayout mEventWordCountLayout;
+    private SeekBar mWordCountSeekBar;
+
 
     private MenuItem mEditContactMenuItem;
     private String mContactNameString;
@@ -337,13 +352,23 @@ public class EventEntryFragment extends Fragment implements
         mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
         mClassSelectionSpinner = (Spinner) detailView.findViewById(R.id.event_class_spinner);
         mEventNotes = (TextView) detailView.findViewById(R.id.event_notes);
+        mAddressTitle = (TextView) detailView.findViewById(R.id.address_title);
+        mEventTypeTitle = (TextView) detailView.findViewById(R.id.event_type_title);
+        mWordCountTitle = (TextView) detailView.findViewById(R.id.word_count_title);
+        mEventDurationTitle = (TextView) detailView.findViewById(R.id.event_duration_title);
+
+
         radioGroup = (RadioGroup) detailView.findViewById(R.id.raidioGroup_incoming_outgoing);
         mEventDurationLayout = (LinearLayout) detailView.findViewById(R.id.event_duration_layout);
+        mEventWordCountLayout = (LinearLayout) detailView.findViewById(R.id.event_word_count_layout);
+        mWordCountSeekBar = (SeekBar) detailView.findViewById(R.id.word_count_seek_bar);
+
 
         //bUTTONS
         mDateViewButton = (Button) detailView.findViewById(R.id.edit_date);
         mTimeViewButton = (Button) detailView.findViewById((R.id.edit_time));
         mAddressViewButton = (Button) detailView.findViewById(R.id.address);
+        mWordCountViewButton = (Button) detailView.findViewById(R.id.word_count_button);
         mIncomingButton = (RadioButton) detailView.findViewById(R.id.radio_incoming_event_type);
         mOutgoingButton = (RadioButton) detailView.findViewById(R.id.radio_outgoing_event_type);
         mSubmitButton = (ImageButton) detailView.findViewById(R.id.save_button);
@@ -386,8 +411,7 @@ public class EventEntryFragment extends Fragment implements
 
         mEventDate = date.getTime();
 
-        DateFormat formatDate =
-                new SimpleDateFormat(getResources().getString(R.string.date_format));
+        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
         String formattedDate = formatDate.format(date);
         mDateViewButton.setText(formattedDate);
 
@@ -422,21 +446,16 @@ public class EventEntryFragment extends Fragment implements
             @Override
             public void onClick(View v) {
 
-                mNewEventInfo = new EventInfo(mContactNameString, mContactLookupKey,
-                        mVoiceNumber,
-                        mEventClass,
-                        mEventType,
-                        mEventDate, "",
-                        mDuration,
-                        mWordCount,
-                        0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
-                //TODO: save everything to an eventInfo and send to the database
-                // TODO: make a preview screen for the data to be saved
 
 
-                //TODO: have some automatic checks for data completeness
+                // if the event is complete, save to the database and return
+                if(completenessCheck()){
+                    // create the new eventInfo based on this data
+                    generateNewEvent();
 
-                getActivity().finish();  // same as hitting back button
+                    getActivity().finish();  // same as hitting back button
+
+                }
                 //TODO: do other stuff for tablet
 
             }
@@ -459,30 +478,139 @@ public class EventEntryFragment extends Fragment implements
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                //action
+                editAddressTextDialog();
             }
         });
 
+        mWordCountViewButton.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                editWordCountTextDialog();
+            }
+        });
 
         mEventNotes.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                editTextDialog();
+                editEventNotesTextDialog();
             }
         });
+
+
+        mWordCountSeekBar.setMax(MAX_SEEK_BAR_WORD_COUNT);
+        mWordCountSeekBar.setProgress(mWordCount);
+
+        mWordCountSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                mWordCount = progress;
+                mWordCountViewButton.setText(Integer.toString(progress));
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+    }
+
+    /*
+    method to check that all relevant fields have been filled.
+    and to indicate incomplete fields in red
+     */
+    private boolean completenessCheck() {
+
+        boolean complete = true;
+        String address = mAddressViewButton.getText().toString();
+
+        mEventTypeTitle.setTextColor(Color.BLACK);
+        mAddressTitle.setTextColor(Color.BLACK);
+        mWordCountTitle.setTextColor(Color.BLACK);
+        mEventDurationTitle.setTextColor(Color.BLACK);
+
+        if(!mIncomingButton.isChecked() && !mOutgoingButton.isChecked()){
+            mEventTypeTitle.setTextColor(Color.RED);
+            complete =  false;
+        }
+
+
+        // the simplest of checks for address completeness
+        if(address.equals("") || address.equals(" ")){
+            mAddressTitle.setTextColor(Color.RED);
+            complete =  false;
+        }
+
+
+
+        if(eventClassIsText(mEventClass)){
+            if(mWordCount < 1 ){
+                mWordCountTitle.setTextColor(Color.RED);
+                complete =  false;
+
+            }
+        }else {
+
+            //This test is innefectual.
+            //TODO figure out a better duration test
+            if(!mDurationViewIsDirty){
+                mEventDurationTitle.setTextColor(Color.RED);
+                complete =  false;
+
+            }
+        }
+
+        return complete;
+    }
+
+    /*
+    *  method to generate the new event record
+    *  first checks for completeness
+     */
+    private void generateNewEvent() {
+
+        //TODO: have some automatic checks for data completeness
+
+
+        // set the word count to zero if there are no words
+        // set the duration to zero if there is only text
+        if(eventClassIsText(mEventClass)) {
+            mDuration = (long) 0;
+        }else {
+            mWordCount = 0;
+        }
+
+
+        mNewEventInfo = new EventInfo(
+                mContactNameString, mContactLookupKey,
+                mAddressViewButton.getText().toString(),  //Text content of the button
+                mEventClass,
+                mEventType,
+                mEventDate, "",
+                mDuration,
+                mWordCount,
+                0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
+        //TODO: save everything to an eventInfo and send to the database
+        // TODO: make a preview screen for the data to be saved
+
 
     }
 
 
-    private void editTextDialog(){
+    private void editEventNotesTextDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.event_notes);
+        builder.setTitle(R.string.event_notes_title);
 
 // Set up the input
         final EditText input = new EditText(getActivity());
 
         input.setText(mEventNotes.getText());
+        input.setMinHeight(100);
 
 // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
@@ -504,6 +632,100 @@ public class EventEntryFragment extends Fragment implements
 
         builder.show();
     }
+
+
+    private void editWordCountTextDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.event_word_count_title);
+
+// Set up the input
+        final EditText input = new EditText(getActivity());
+
+        input.setText(mWordCountViewButton.getText());
+        input.setSelected(true);
+
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mWordCountViewButton.setText(input.getText().toString());
+                mWordCount = Integer.parseInt(input.getText().toString());
+                mWordCountSeekBar.setProgress(mWordCount);
+
+            }
+        });
+
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void editAddressTextDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+// Set up the input
+        final EditText input = new EditText(getActivity());
+
+        input.setText(mAddressViewButton.getText());
+
+        input.setMinHeight(50);
+
+        // Specify the type of input expected for each of the communications classes
+        switch(mEventClass){
+
+            case EventInfo.EMAIL_CLASS:
+                builder.setTitle(R.string.event_address_title);
+                input.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                break;
+            case EventInfo.PHONE_CLASS:
+            case EventInfo.SMS_CLASS:
+                builder.setTitle(R.string.event_address_title_alt_phone);
+                input.setInputType(InputType.TYPE_CLASS_PHONE);
+                break;
+            case EventInfo.MEETING_CLASS:
+                builder.setTitle(R.string.event_address_title);
+                input.setInputType(InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
+                break;
+            case EventInfo.SKYPE:
+            case EventInfo.GOOGLE_HANGOUTS:
+            case EventInfo.FACEBOOK:
+
+            default:
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setTitle(R.string.event_address_title_alt_handle);
+
+
+        }
+
+
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mAddressViewButton.setText(input.getText().toString());
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
 
 
     private void setBasicContactInfo(){
@@ -1121,45 +1343,80 @@ public class EventEntryFragment extends Fragment implements
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
-                //TODO: do stuff
-                mEventClass = pos+1;
+                mEventClass = pos+1;  // set the event class for this java class
                 
                 switch(mEventClass){
                     case EventInfo.PHONE_CLASS:
                         mAddressViewButton.setText(mVoiceNumber);
                         mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
                         mEventDurationLayout.setVisibility(View.VISIBLE);
+                        mEventWordCountLayout.setVisibility(View.GONE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title_alt_phone);
 
                         break;
                     case EventInfo.EMAIL_CLASS:
                         mAddressViewButton.setText(mEmailAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                         mEventDurationLayout.setVisibility(View.GONE);
+                        mEventWordCountLayout.setVisibility(View.VISIBLE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title);
+
 
                         break;
                     case EventInfo.SMS_CLASS:
                         mAddressViewButton.setText(mVoiceNumber);
                         mAddressViewButton.setInputType(InputType.TYPE_CLASS_PHONE);
                         mEventDurationLayout.setVisibility(View.GONE);
+                        mEventWordCountLayout.setVisibility(View.VISIBLE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title_alt_phone);
+
                         break;
                     case EventInfo.MEETING_CLASS:
                         mAddressViewButton.setText(mStreetAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                         mEventDurationLayout.setVisibility(View.VISIBLE);
+                        mEventWordCountLayout.setVisibility(View.GONE);
+                        mIncomingButton.setText(R.string.incoming_title_alt);
+                        mOutgoingButton.setText(R.string.outgoing_title_alt);
+                        mAddressTitle.setText(R.string.event_address_title);
 
                         break;
                     case EventInfo.SKYPE:
                         mEventDurationLayout.setVisibility(View.VISIBLE);
+                        mEventWordCountLayout.setVisibility(View.GONE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title_alt_handle);
+
+
                         break;
                     case EventInfo.GOOGLE_HANGOUTS:
                         mAddressViewButton.setText(mEmailAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                         mEventDurationLayout.setVisibility(View.VISIBLE);
+                        mEventWordCountLayout.setVisibility(View.GONE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title_alt_handle);
+
+
                         break;
                     case EventInfo.FACEBOOK:
                         mAddressViewButton.setText(mEmailAddress);
                         mAddressViewButton.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                         mEventDurationLayout.setVisibility(View.GONE);
+                        mEventWordCountLayout.setVisibility(View.VISIBLE);
+                        mIncomingButton.setText(R.string.incoming_title);
+                        mOutgoingButton.setText(R.string.outgoing_title);
+                        mAddressTitle.setText(R.string.event_address_title_alt_handle);
+
+
                         break;
 
                     default:
@@ -1192,7 +1449,7 @@ public class EventEntryFragment extends Fragment implements
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 mDuration = (long) getResources()
                         .getIntArray(R.array.array_of_duration_value_integers)[pos];
-
+                mDurationViewIsDirty = true;
             }
 
             @Override
@@ -1246,6 +1503,16 @@ And displays that time.
 
     }
 
+    private boolean eventClassIsText(int event_class){
+        switch(event_class){
+            case EventInfo.EMAIL_CLASS:
+            case EventInfo.FACEBOOK:
+            case EventInfo.SMS_CLASS:
+                return true;
+            default:
+                return false;
+        }
+    }
 
 
 

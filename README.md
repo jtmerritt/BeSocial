@@ -2,8 +2,14 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-
-+ Make values persist with screen rotation in the event entry activity
++ Event Entry Fragment
+    - hook into event database
+    - flag for manually entered events
+    - add in human readable date
+    - figure out what to do with the event notes
+    - Make values persist with screen rotation
+    - Add a mapping interface button to pull a new address/place
+- get the hamburger menu working on the detail activity
 - Use ActionMode.callback to manually select multiple contacts to remove from a group
     - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
     - http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
@@ -39,6 +45,7 @@ ___________________________________________________________________
 
 
 ***Large Tasks***
+- Word cloud
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
     - make animation for welcome screen
@@ -48,6 +55,7 @@ ___________________________________________________________________
 - fix crash when setDisplayChartValues(true) for renderer_SMS
 - On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
 - Make the Cancel update button work.
+- interface for other applications to send text to this, and enter that text into the event database with full analysis
 
 
 

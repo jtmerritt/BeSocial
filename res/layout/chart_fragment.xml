@@ -15,7 +15,7 @@
             android:id="@+id/event_class_spinner"
             android:gravity="center"
             android:ellipsize="marquee"
-            android:prompt="@string/class_prompt"
+            android:prompt="@string/event_class_prompt"
             android:spinnerMode="dialog"
             android:layout_toLeftOf="@+id/contact_image" />
 
