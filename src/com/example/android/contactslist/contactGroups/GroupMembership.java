@@ -20,6 +20,11 @@ import android.content.ContentValues;
 import java.util.HashSet;
 import android.database.Cursor;
 import android.widget.Toast;
+import android.net.Uri;
+
+
+import com.example.android.contactslist.ContactsGroupQuery;
+import com.example.android.contactslist.contactStats.ContactInfo;
 
 
 /**
@@ -29,6 +34,8 @@ public class GroupMembership {
 
     private ContentResolver mContentResolver;
     private Context mContext;
+    private ArrayList<ContactInfo> mContacts;
+
 
     public GroupMembership(Context context){
         mContext = context;
@@ -246,4 +253,66 @@ public class GroupMembership {
 
         return result;  //Returns 0 if there's no com.google result
     }
+
+
+    public ArrayList<ContactInfo> getAllContactsInAppGroups(){
+        ContactGroupsList contactGroupsList = new ContactGroupsList();
+        ArrayList<ContactInfo> groups;
+        ContactInfo contact;
+
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        groups = contactGroupsList.loadGroups();
+
+        // query a list of contacts per group
+        Uri contentUri = ContactsGroupQuery.CONTENT_URI;
+        for(ContactInfo group: groups){
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    contentUri,
+                    ContactsGroupQuery.PROJECTION,
+                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + " = "
+                    + String.valueOf(group.getIDLong()),
+                    null,
+                    ContactsGroupQuery.SORT_ORDER);
+
+            if(cursor.moveToFirst())
+            {
+                //add each contact to the list if it is unique
+                do{
+                    // create a new temporary contactInfo based on the groups entry
+                    // to easily pass around this basic information
+                    contact = new ContactInfo(
+                            cursor.getString(ContactsGroupQuery.DISPLAY_NAME),
+                            cursor.getString(ContactsGroupQuery.LOOKUP_KEY),
+                            cursor.getLong(ContactsGroupQuery.ID));
+
+                    //Only add the contact to the list if it isn't already present
+                    if(!isContactAlreadyInList(contact)){
+                        mContacts.add(contact);
+                    }
+
+                }while(cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+
+        return mContacts;
+    }
+
+    /*
+    report whether the given contact is already in the mContacts list
+     */
+    private boolean isContactAlreadyInList(ContactInfo contactInfo) {
+
+        for(ContactInfo contact:mContacts){
+            if(contactInfo.getKeyString().equals(contact.getKeyString())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

@@ -11,6 +11,8 @@ import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.android.contactslist.ContactsGroupQuery;
+import com.example.android.contactslist.contactGroups.GroupMembership;
 import com.example.android.contactslist.contactGroups.GroupStatsHelper;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
@@ -76,84 +78,79 @@ public class Updates {
 
     public void localSourceRead(){
         // We're already in an async task
+        GroupMembership groupMembership = new GroupMembership(mContext);
+
+        List<ContactInfo> masterContactList = groupMembership.getAllContactsInAppGroups();
+
+        // only work with a non-empty list
+        if(!masterContactList.isEmpty()){
+
+            ImportLog importLog = new ImportLog(mContext);
+            Long lastUpdateTime = importLog.getImportTime(EventInfo.SMS_CLASS);
+
+            int contactCount = masterContactList.size();
 
 
-        if(getLargestGroup()){
-            List<ContactInfo> masterContactList = getGroupContactList();
+            // grab the SMS database for the master list of contacts
+            GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                    mContext, activity_progress_bar, updateNotification);
+
+            gatherSMSLog.openSMSLog(lastUpdateTime);
 
 
+            int i = 0;
+            for(ContactInfo contact:masterContactList){
 
-            // only work with a non-empty list
-            if(!masterContactList.isEmpty()){
+                // there is a chance that the contact is completely new to the db
+                // Contact groups are read fro/m google and may be updated on the website
+                addContactToDbIfNew(contact);
 
+                Log.d("LOCAL SOURCE READ: ", "Begin contact query");
 
-                ImportLog importLog = new ImportLog(mContext);
-                Long lastUpdateTime = importLog.getImportTime(EventInfo.SMS_CLASS);
+                if(continueDBRead == false){
+                    break;
+                }
 
-                int contactCount = masterContactList.size();
-
-
-                // grab the SMS database for the master list of contacts
-                GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
-                        mContext, activity_progress_bar, updateNotification);
-
-                gatherSMSLog.openSMSLog(lastUpdateTime);
-
-
-                int i = 0;
-                for(ContactInfo contact:masterContactList){
-
-                    // there is a chance that the contact is completely new to the db
-                    // Contact groups are read fro/m google and may be updated on the website
-                    addContactToDbIfNew(contact);
-
-                    Log.d("LOCAL SOURCE READ: ", "Begin contact query");
-
-                    if(continueDBRead == false){
-                        break;
-                    }
-
-                    // get list of SMS events for named contacts, if masterList is null, returns all SMS events
-                    mEventLog = gatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
+                // get list of SMS events for named contacts, if masterList is null, returns all SMS events
+                mEventLog = gatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
 
 
 
-                    // Only bother updates if the list has entries
-                    if(mEventLog.size() > 0) {
+                // Only bother updates if the list has entries
+                if(mEventLog.size() > 0) {
 
-                        // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(mEventLog, contact);
-                    }
+                    // feed the all events for contact to the local databases
+                    insertEventLogIntoDatabases(mEventLog, contact);
+                }
 
-                    //UPDATE the call data
+                //UPDATE the call data
 
-                    // initialize the localEventLog with the call log for the contact
-                    mEventLog = getAllCallLogsForContact(contact);
+                // initialize the localEventLog with the call log for the contact
+                mEventLog = getAllCallLogsForContact(contact);
 
-                    // Only bother updates if the list has entries
-                    if(mEventLog.size() > 0) {
+                // Only bother updates if the list has entries
+                if(mEventLog.size() > 0) {
 
-                        // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(mEventLog, contact);
-
-                    }
-
-                    //update the progress bar
-                    i++;
-                    updateProgress((int) (((float) i / (float) contactCount) * 100));
-
-                    Log.d("LOCAL SOURCE READ: ", "End contact query");
+                    // feed the all events for contact to the local databases
+                    insertEventLogIntoDatabases(mEventLog, contact);
 
                 }
 
-                //set the  time of this database update
-                // It's not quite right, since we're actually working with both phone and SMS
-                importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
-                importLog.setImportTimeRecord(EventInfo.SMS_CLASS);
+                //update the progress bar
+                i++;
+                updateProgress((int) (((float) i / (float) contactCount) * 100));
 
-                // close out the SMS log cursor
-                gatherSMSLog.closeSMSLog();
+                Log.d("LOCAL SOURCE READ: ", "End contact query");
+
             }
+
+            //set the  time of this database update
+            // It's not quite right, since we're actually working with both phone and SMS
+            importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
+            importLog.setImportTimeRecord(EventInfo.SMS_CLASS);
+
+            // close out the SMS log cursor
+            gatherSMSLog.closeSMSLog();
         }
     }
 
@@ -168,65 +165,64 @@ public class Updates {
             return;
         }
 
+        GroupMembership groupMembership = new GroupMembership(mContext);
+        List<ContactInfo> masterContactList = groupMembership.getAllContactsInAppGroups();
 
-        if(getLargestGroup()){
-            List<ContactInfo> masterContactList = getGroupContactList();
-            CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList,
-                    mContext.getContentResolver(), activity_progress_bar, updateNotification);
-            FileInputStream fileStream;
+        CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList,
+                mContext.getContentResolver(), activity_progress_bar, updateNotification);
+        FileInputStream fileStream;
 
-            int contactCount = masterContactList.size();
+        int contactCount = masterContactList.size();
 
-            // only work with a non-empty list
-            if(!masterContactList.isEmpty()){
+        // only work with a non-empty list
+        if(!masterContactList.isEmpty()){
 
-                Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
+            Log.d("LOCAL SOURCE READ: ", "Begin SMS log acquisition");
 
-                // grab the SMS database for the master list of contacts
-                try {
-                    File file = new File(mXMLFilePath);
-                    if(file.exists()) {
-                        fileStream = new FileInputStream(file);
+            // grab the SMS database for the master list of contacts
+            try {
+                File file = new File(mXMLFilePath);
+                if(file.exists()) {
+                    fileStream = new FileInputStream(file);
 
-                        //update progress bar
-                        updateProgress(1);
-                        mXMLEventLog = callLogXmlParser.parse(fileStream);
-                        fileStream.close();
-                    }else{
-                        Toast.makeText(mContext, "File Doesn't Exist", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (XmlPullParserException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    //update progress bar
+                    updateProgress(1);
+                    mXMLEventLog = callLogXmlParser.parse(fileStream);
+                    fileStream.close();
+                }else{
+                    Toast.makeText(mContext, "File Doesn't Exist", Toast.LENGTH_SHORT).show();
+                }
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            int i =0;
+            for(ContactInfo contact:masterContactList){
+                if(continueXMLRead == false){
+                    break;
                 }
 
-                int i =0;
-                for(ContactInfo contact:masterContactList){
-                    if(continueXMLRead == false){
-                        break;
-                    }
+                i++;
 
-                    i++;
+                //Only update the database if okayed by the preferences
+                if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
+                    // there is a chance that the contact is completely new to the db
+                    // Contact groups are read from google and may be updated on the website
+                    addContactToDbIfNew(contact);
 
-                    //Only update the database if okayed by the preferences
-                    if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
-                        // there is a chance that the contact is completely new to the db
-                        // Contact groups are read from google and may be updated on the website
-                        addContactToDbIfNew(contact);
+                    // feed the all events for contact to the local databases
+                    insertEventLogIntoDatabases(getAllXMLLogsForContact(contact), contact);
+                }else{
+                    getAllXMLLogsForContact(contact);
 
-                        // feed the all events for contact to the local databases
-                        insertEventLogIntoDatabases(getAllXMLLogsForContact(contact), contact);
-                    }else{
-                        getAllXMLLogsForContact(contact);
-
-                    }
-
-
-
-
-                    updateProgress((int)(((float)i/(float)contactCount)*100));
                 }
+
+
+
+
+                updateProgress((int)(((float)i/(float)contactCount)*100));
             }
         }
     }
@@ -275,6 +271,8 @@ public class Updates {
     }
 
     /*
+    No longer used
+
     Load the group contact list and step through the listed contacts...
     1) adding them to the database if they aren't there
     2) gathering all the event data on the phone and placeint that in the event database
@@ -285,13 +283,13 @@ public class Updates {
 
         if(largestGroup.getIDLong() != -1){
 
-            contentUri = localContactsGroupQuery.CONTENT_URI;
+            contentUri = ContactsGroupQuery.CONTENT_URI;
 
             final String parameters[] = {String.valueOf(largestGroup.getIDLong())};
 
             Cursor cursor =  mContext.getContentResolver().query(
                     contentUri,
-                    localContactsGroupQuery.PROJECTION,
+                    ContactsGroupQuery.PROJECTION,
                     ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
                     parameters,
                     null);
@@ -303,9 +301,9 @@ public class Updates {
                     // create a new temporary contactInfo based on the groups entry
                     // to easily pass around this basic information
                     ContactInfo contact = new ContactInfo(
-                            cursor.getString(localContactsGroupQuery.DISPLAY_NAME),
-                            cursor.getString(localContactsGroupQuery.LOOKUP_KEY),
-                            cursor.getLong(localContactsGroupQuery.ID));
+                            cursor.getString(ContactsGroupQuery.DISPLAY_NAME),
+                            cursor.getString(ContactsGroupQuery.LOOKUP_KEY),
+                            cursor.getLong(ContactsGroupQuery.ID));
 
                     masterContactList.add(contact);
 
@@ -540,55 +538,6 @@ public class Updates {
 
     }
 
-
-
-    /**
-     * Taken from ContactsListFragment.java
-     * This interface defines constants for the Cursor and CursorLoader, based on constants defined
-     * in the {@link android.provider.ContactsContract.Contacts} class.
-     */
-    private interface localContactsGroupQuery {
-
-        // A content URI for the Contacts table
-        final static Uri CONTENT_URI = ContactsContract.Data.CONTENT_URI;
-
-        // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
-        // sort key allows for localization. In earlier versions. use the display name as the sort
-        // key.
-        @SuppressLint("InlinedApi")
-        final static String SORT_ORDER = null;
-
-        // The projection for the CursorLoader query. This is a list of columns that the Contacts
-        // Provider should return in the Cursor.
-        @SuppressLint("InlinedApi")
-        final static String[] PROJECTION = {
-
-                ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID ,
-
-                // The contact's row id
-                ContactsContract.Contacts._ID,
-
-                // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
-                // a contact's current _ID value and LOOKUP_KEY, the Contacts Provider can generate
-                // a "permanent" contact URI.
-                ContactsContract.Contacts.LOOKUP_KEY,
-
-                // In platform version 3.0 and later, the Contacts table contains
-                // DISPLAY_NAME_PRIMARY, which either contains the contact's displayable name or
-                // some other useful identifier such as an email address. This column isn't
-                // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
-                // instead.
-                Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
-                        ContactsContract.Contacts.DISPLAY_NAME,
-
-        };
-
-        // The query column numbers which map to each value in the projection
-        final static int GROUP_ID = 0;
-        final static int ID = 1;
-        final static int LOOKUP_KEY = 2;
-        final static int DISPLAY_NAME = 3;
-    }
 
 
 /*

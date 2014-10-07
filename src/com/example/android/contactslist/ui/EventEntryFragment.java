@@ -39,6 +39,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -74,7 +75,9 @@ import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
+import com.example.android.contactslist.contactStats.ContactStatsHelper;
 import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 import android.app.AlertDialog;
@@ -109,8 +112,17 @@ public class EventEntryFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
 {
 
+
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
+
+    private final String BUNDLE_CONTACT_ADDRESS =
+            "com.example.android.contactslist.ui.BUNDLE_CONTACT_ADDRESS";
+    private final String BUNDLE_EVENT_DATE_TIME =
+            "com.example.android.contactslist.ui.BUNDLE_EVENT_DATE_TIME";
+    private final String BUNDLE_EVENT_NOTES =
+            "com.example.android.contactslist.ui.BUNDLE_EVENT_NOTES";
+
 
     // Defines a tag for identifying log entries
     private static final String TAG = "EventEntryFragment";
@@ -383,42 +395,12 @@ public class EventEntryFragment extends Fragment implements
         }
 
 
-        return detailView;
-    }
-
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        // If not being created from a previous state
-        if (savedInstanceState == null) {
-            // Sets the argument extra as the currently displayed contact
-            setContact(getArguments() != null ?
-                    (Uri) getArguments().getParcelable(EXTRA_CONTACT_URI) : null);
-        } else {
-            // If being recreated from a saved state, sets the contact from the incoming
-            // savedInstanceState Bundle
-            setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
-        }
-
-
         addItemsToClassSpinner();
         addItemsToDurationSpinner();
 
 
         //Display the current date
-        Date date = new Date();
-
-        mEventDate = date.getTime();
-
-        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
-        String formattedDate = formatDate.format(date);
-        mDateViewButton.setText(formattedDate);
-
-        DateFormat formatTime =
-                new SimpleDateFormat(getResources().getString(R.string.twelve_hour_time_format));
-        String formattedTime = formatTime.format(date);
-        mTimeViewButton.setText(formattedTime);
+        setDateAndTimeViews((long) 0);
 
         //Take care of the radio button selection of Event Type
         radioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -453,7 +435,36 @@ public class EventEntryFragment extends Fragment implements
                     // create the new eventInfo based on this data
                     generateNewEvent();
 
-                    getActivity().finish();  // same as hitting back button
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            SocialEventsContract eventDb = new SocialEventsContract(mContext);
+                            ContactStatsHelper csh = new ContactStatsHelper(mContext);
+
+                            final Boolean insertComplete =
+                                    insertEventIntoDatabaseIfNew(mNewEventInfo, eventDb);
+
+                            if(insertComplete){
+                                // Process its data into the contact_stats for the contact
+                                csh.updateContactStatsFromEvent(mNewEventInfo, null);
+                            }
+                            eventDb.close();
+                            csh.close();
+
+
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    // end by running the final method of the activity
+                                    finishActivity(insertComplete);
+                                }
+                            });
+
+                        }
+                    }).start();
 
                 }
                 //TODO: do other stuff for tablet
@@ -494,7 +505,9 @@ public class EventEntryFragment extends Fragment implements
             // perform function when pressed
             @Override
             public void onClick(View v) {
-                editEventNotesTextDialog();
+                Toast.makeText(getActivity(), R.string.next_version, Toast.LENGTH_SHORT).show();
+                //TODO Figure out what to do with event notes and tags
+                //editEventNotesTextDialog();
             }
         });
 
@@ -518,6 +531,69 @@ public class EventEntryFragment extends Fragment implements
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        return detailView;
+    }
+
+    private void finishActivity(Boolean insertComplete) {
+        if(insertComplete){
+            getActivity().finish();  // same as hitting back button
+        }else {
+            Toast.makeText(getActivity(),
+                    R.string.event_db_entry_clash, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        // If not being created from a previous state
+        if (savedInstanceState == null) {
+            // Sets the argument extra as the currently displayed contact
+            setContact(getArguments() != null ?
+                    (Uri) getArguments().getParcelable(EXTRA_CONTACT_URI) : null);
+        } else {
+            // If being recreated from a saved state, sets the contact from the incoming
+            // savedInstanceState Bundle
+            setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
+
+            //retrieve the saved contact address
+            mAddressViewButton.setText(savedInstanceState.getString(BUNDLE_CONTACT_ADDRESS));
+
+            //retrieve the saved event notes
+            mEventNotes.setText(savedInstanceState.getString(BUNDLE_EVENT_NOTES));
+
+            //retrieve the saved date
+            mEventDate = savedInstanceState.getLong(BUNDLE_EVENT_DATE_TIME);
+            // set the display to the event date and time
+            setDateAndTimeViews(mEventDate);
+        }
+
+
+
+    }
+
+    private void setDateAndTimeViews(Long timeInMills) {
+
+        // set the default time to now
+        Date date = new Date();
+
+        // if the time is not 0, then we should set the date to it
+        if(timeInMills != 0){
+            date.setTime(timeInMills);
+        }
+
+        mEventDate = date.getTime();
+
+        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
+        String formattedDate = formatDate.format(date);
+        mDateViewButton.setText(formattedDate);
+
+        DateFormat formatTime =
+                new SimpleDateFormat(getResources().getString(R.string.twelve_hour_time_format));
+        String formattedTime = formatTime.format(date);
+        mTimeViewButton.setText(formattedTime);
     }
 
     /*
@@ -574,9 +650,6 @@ public class EventEntryFragment extends Fragment implements
      */
     private void generateNewEvent() {
 
-        //TODO: have some automatic checks for data completeness
-
-
         // set the word count to zero if there are no words
         // set the duration to zero if there is only text
         if(eventClassIsText(mEventClass)) {
@@ -586,17 +659,23 @@ public class EventEntryFragment extends Fragment implements
         }
 
 
+        // format date string
+        DateFormat formatMonth = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date(mEventDate);
+        String time  = formatMonth.format(date);
+
+
         mNewEventInfo = new EventInfo(
                 mContactNameString, mContactLookupKey,
                 mAddressViewButton.getText().toString(),  //Text content of the button
                 mEventClass,
                 mEventType,
-                mEventDate, "",
+                mEventDate,
+                time,
                 mDuration,
                 mWordCount,
                 0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
         //TODO: save everything to an eventInfo and send to the database
-        // TODO: make a preview screen for the data to be saved
 
 
     }
@@ -764,6 +843,16 @@ public class EventEntryFragment extends Fragment implements
         super.onSaveInstanceState(outState);
         // Saves the contact Uri
         outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
+
+        //save the displayed address
+        outState.putString(BUNDLE_CONTACT_ADDRESS, mAddressViewButton.getText().toString());
+
+        //save the event notes
+        outState.putString(BUNDLE_EVENT_NOTES, mEventNotes.getText().toString());
+
+        //save the event date/time
+        outState.putLong(BUNDLE_EVENT_DATE_TIME, mEventDate);
+
     }
 
     @Override
@@ -1461,6 +1550,59 @@ public class EventEntryFragment extends Fragment implements
         mDurationView.setAdapter(feedSelectionAdapter);
     }
 
+
+
+    private boolean insertEventIntoDatabaseIfNew(EventInfo event, SocialEventsContract eventDb){
+        // long dbRowID = (long)0;
+
+        //proceed if the event is likely new
+        if(eventDb.checkEventExists(event) == -1) {
+            //TODO: what todo about the error state, 0;
+
+            //insert event into database
+            eventDb.addEvent(event);
+            //Log.d("Insert: ", "Row ID: " + dbRowID);
+
+            //String log = "Date: "+event.getDate()+" ,Name: " + event.getContactName()
+            //        + " ,Class: " + event.getEventClass();
+            // Writing Contacts to log
+            //Log.d("db Read: ", log);
+
+            //action taken
+            return true;
+        }else{
+            // no action taken
+            return false;
+        }
+    }
+
+
+
+    /*
+Sets the time of day of the event, preserving the calendar date that was previously set
+And displays that time.
+ */
+    static void setTime(int hourOfDay, int minute){ //TODO Can this be private?
+
+        final Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(mEventDate);
+        c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        c.set(Calendar.MINUTE, minute);
+
+        // set the seconds and milliseconds to 0
+        // as there is little use for them in human time setting
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        Date date = c.getTime();
+
+        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
+        String formattedDate = formatTime.format(date);
+        mTimeViewButton.setText(formattedDate);
+        mEventDate = date.getTime();
+
+    }
+
     /*
     Sets the calendar date of the event, preserving the time that was previously set
     And displays that date.
@@ -1474,6 +1616,11 @@ public class EventEntryFragment extends Fragment implements
         c.set(Calendar.MONTH, monthOfYear);
         c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
+        // set the seconds and milliseconds to 0
+        // as there is little use for them in human time setting
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
         Date date = c.getTime();
 
         DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
@@ -1482,27 +1629,6 @@ public class EventEntryFragment extends Fragment implements
         mEventDate = date.getTime();
 
     }
-
-    /*
-Sets the time of day of the event, preserving the calendar date that was previously set
-And displays that time.
- */
-    static void setTime(int hourOfDay, int minute){ //TODO Can this be private?
-
-        final Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(mEventDate);
-        c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        c.set(Calendar.MINUTE, minute);
-
-        Date date = c.getTime();
-
-        DateFormat formatTime = new SimpleDateFormat("HH:mm a");
-        String formattedDate = formatTime.format(date);
-        mTimeViewButton.setText(formattedDate);
-        mEventDate = date.getTime();
-
-    }
-
     private boolean eventClassIsText(int event_class){
         switch(event_class){
             case EventInfo.EMAIL_CLASS:

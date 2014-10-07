@@ -1057,7 +1057,6 @@ public class ContactDetailFragment extends Fragment implements
                                     (int) (newImg.getHeight()
                                     * ((float) screenWidth) / (float) newImg.getWidth()), false);
 
-                            //ImageUtils.storeImage(newImg, blurredImage);
                             getActivity().runOnUiThread(new Runnable() {
 
                                 @Override

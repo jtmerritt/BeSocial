@@ -21,6 +21,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
     public ArrayList<ContactInfo> mGroups;
 
 
+
     //When making the info card for this group use the lookupKey "GROUP" for easy distintion
 
     private ContentResolver mContentResolver;
@@ -46,23 +47,8 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
     public ArrayList<ContactInfo> getGroupList(){
         return mGroups;
     }
-/*
-    public class GroupInfo {
-        public String id;
-        public String title;
-        public int count;
 
-        @Override
-        public String toString() {
-            return title + "("+count+")";
-        }
 
-        public Long getGroupId(){return Long.parseLong(id); }
-        public int getId() {
-            return Integer.parseInt(id);
-        }
-    }
-*/
 
     /*
     Method takes a contact ID and returns a group list for the contact.

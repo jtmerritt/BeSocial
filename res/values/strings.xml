@@ -132,6 +132,8 @@
     <string name="event_duration_title">Duration</string>
     <string name="event_word_count_title">Word Count</string>
     <string name="event_notes_title">Event Notes</string>
+    <string name="event_db_entry_clash">Clash with existing DB entry.  Try a different time.</string>
+
 
 
 

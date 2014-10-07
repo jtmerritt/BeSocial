@@ -3,11 +3,11 @@ ___________________________________________________________________
 
 ***Small Tasks***
 + Event Entry Fragment
-    - hook into event database
-    - flag for manually entered events
-    - add in human readable date
+    - [done] hook into event database
+    - flag for manually entered events?
+    - [done] add in human readable date
     - figure out what to do with the event notes
-    - Make values persist with screen rotation
+    - [done but for address] Make values persist with screen rotation
     - Add a mapping interface button to pull a new address/place
 - get the hamburger menu working on the detail activity
 - Use ActionMode.callback to manually select multiple contacts to remove from a group
@@ -23,7 +23,6 @@ ___________________________________________________________________
 - have a feature to display the library of tags
 
 ***Medium Tasks***
-+ performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 + Create routine for producing the long duration statistics:
     - average time
     - score over time
@@ -46,6 +45,7 @@ ___________________________________________________________________
 
 ***Large Tasks***
 - Word cloud
+- Social event viewer
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
     - make animation for welcome screen
@@ -78,6 +78,7 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
++ performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 + Change UI to infinite tab interface (like photo viewing) for switcing between contacts
     - http://developer.android.com/reference/android/support/v4/app/FragmentStatePagerAdapter.html
     - https://github.com/xgc1986/ParallaxPagerTransformer
