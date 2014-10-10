@@ -138,8 +138,8 @@ Method to update the notification window and the activity progress bar, if avail
         now.setToNow();
         Long date_now = now.toMillis(true);
 
-        // subtracting an hour just to give a margine of error. messages could come in during update
-        lastUpdateTime -= ONE_HOUR;
+        // subtracting 10 milliseconds just to give a margine of error. messages could come in during update
+        lastUpdateTime -= 10;
         // Select All Query
 
         /*

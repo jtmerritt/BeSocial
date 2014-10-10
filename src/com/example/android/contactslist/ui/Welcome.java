@@ -2,10 +2,12 @@ package com.example.android.contactslist.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -48,8 +50,23 @@ public class Welcome extends FragmentActivity {
         alarm.setAutoUpdate(mContext);
         alarm.setContactStatusCheck(mContext);
 
-        startNextActivity();
 
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //get the default behavior for startup updates
+        Boolean updateDb = sharedPref.getBoolean("update_db_at_startup_checkbox_preference_key",
+                false);
+
+        if(updateDb) {
+            // setup an async task to read local and web data sources into the database
+            final AsyncTask<Void, Integer, String> dbImport =
+                    new Imports(null, 1/*Imports.IMPORT_LOCAL_DB*/, "", mContext);
+            dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
+
+
+        startNextActivity();
     }
 
     private void startNextActivity(){

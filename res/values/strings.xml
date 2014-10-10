@@ -186,8 +186,10 @@
     <string name="Hangouts_web_sources_preference_summary"
         >Gather communications data from Hangouts?</string>
 
-
-
+    <string name="update_db_at_startup_preference_title"
+        >Starts-up Update</string>
+    <string name="update_db_at_startup_preference_summary"
+        >Update communications data when app starts up?</string>
 
     <!--Default group -->
     <string name="choose_source_group_list_preference_title"

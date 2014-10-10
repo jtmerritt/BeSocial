@@ -15,6 +15,12 @@
         android:defaultValue="true" />
 
     <CheckBoxPreference
+        android:key="update_db_at_startup_checkbox_preference_key"
+        android:title="@string/update_db_at_startup_preference_title"
+        android:summary="@string/update_db_at_startup_preference_summary"
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
         android:dependency="update_db_checkbox_preference_key"
 
         android:key="sync_only_with_power_checkbox_preference_key"

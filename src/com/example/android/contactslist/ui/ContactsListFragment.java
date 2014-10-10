@@ -79,6 +79,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -683,8 +684,6 @@ public class ContactsListFragment extends ListFragment implements
                 mAdapter.swapCursor(data);
 
 
-
-
                 // If this is a two-pane layout and there is a search query then
                 // there is some additional work to do around default selected
                 // search item.
@@ -709,6 +708,7 @@ public class ContactsListFragment extends ListFragment implements
                     // then the currently selected item will once again be saved.
                     mPreviouslySelectedSearchItem = 0;
                     mSearchQueryChanged = false;
+
                 }
                 break;
             default:

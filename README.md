@@ -2,7 +2,6 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
-- having an overlap time for the update can lead to duplicate data getting added into stats
 + Event Entry Fragment
     - [done] hook into event database
     - flag for manually entered events?
@@ -17,18 +16,12 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
-- Make static plot for recent history of contact
 - group stats must be collected just like contact stats
 - Have a nightly database maintenance routine
 - Fix bug: The user should not be able to delete contacts from the search results in the Contact List
-- have a feature to display the library of tags
 
 ***Medium Tasks***
-+ app should add and remove contact from Misses You group automatically at the appropriate times
-    - [done] can add/remove contacts from group at time of update
-    - [done] can add/remove contacts from group at time of manual event entry
-    - can add/remove contacts if all contacts are updated, before a notification
-    - can remove contacts when examining the content of the group, assuming all are updated.
+- Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
@@ -42,12 +35,15 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
     - http://stackoverflow.com/questions/19292605/android-viewpager-actionbar-and-android-app-fragments
     - Or just replace it with a custom menu bar with the frosted glass effect
+- Make the welcome screen update skip if the last update was very recent
 
 
 
 ***Large Tasks***
-- Word cloud
++ Make static plot for recent history of contact
++ Word cloud
 - Social event viewer
+    - have a feature to display the library of tags
 - Need to have some kind of happy chime and message after making contact with a friend
 - Create a first-time startup UI
     - make animation for welcome screen
@@ -81,6 +77,12 @@ Get library for a chartengine: https://code.google.com/p/achartengine/
 
 Done
 ___________________________________________________________________
+- having an overlap time for the update can lead to duplicate data getting added into stats
+
++ app should add and remove contact from Misses You group automatically at the appropriate times
+    - [done] can add/remove contacts from group at time of update
+    - [done] can add/remove contacts from group at time of manual event entry
+    - [done] set updates to happen through the welcome screen with a preference activation
 + performing db updates based on the contacts in the largest group assumes that everyone is in the largest group.  Bad assumption
 + Change UI to infinite tab interface (like photo viewing) for switcing between contacts
     - http://developer.android.com/reference/android/support/v4/app/FragmentStatePagerAdapter.html

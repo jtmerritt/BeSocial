@@ -78,15 +78,19 @@ public class Imports extends AsyncTask<Void, Integer, String>
         // TODO Auto-generated method stub
         super.onPreExecute();
         updateNotification.setNotification();
-        progressBar.setVisibility(View.VISIBLE);
+        if(progressBar != null){
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
     }
 
     protected void onProgressUpdate(Integer... progress) {
         // do something
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.setProgress(progress[0]);
 
+        if(progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(progress[0]);
+        }
         updateNotification.updateNotification(progress[0]);
     }
 
@@ -96,7 +100,9 @@ public class Imports extends AsyncTask<Void, Integer, String>
         // TODO Auto-generated method stub
         super.onPostExecute(result);
         updateNotification.cancelNotification();
-        progressBar.setVisibility(View.INVISIBLE);
+        if(progressBar != null) {
+            progressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
 
@@ -120,7 +126,9 @@ public class Imports extends AsyncTask<Void, Integer, String>
 
 
         updateNotification.cancelNotification();
-        progressBar.setVisibility(View.INVISIBLE);
+        if(progressBar != null) {
+            progressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
 
