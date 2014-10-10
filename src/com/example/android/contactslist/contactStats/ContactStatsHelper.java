@@ -1,8 +1,6 @@
 package com.example.android.contactslist.contactStats;
 
 import android.content.Context;
-import android.util.Log;
-import java.util.Random;
 
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.eventLogs.EventInfo;
@@ -15,74 +13,69 @@ import com.example.android.contactslist.eventLogs.EventInfo;
  */
 public class ContactStatsHelper {
     Context mContext;
-    ContactStatsContract statsDb;
-    ContactInfo mContact = null;
-    final long ONE_DAY = 86400000;
+    ContactInfo mContact;
     int count;
     long date_millis;
-    Long newInterval;
-    String where;
-    String whereArg;
-    ContactGroupsList contactList = new ContactGroupsList();
-
 
 
     // constructor
-    public ContactStatsHelper(Context context){
-        mContext = context;
-        statsDb = new ContactStatsContract(mContext);
+    public ContactStatsHelper(ContactInfo contactInfo) {
+        mContact = contactInfo;
     }
 
-    public void close(){
-        statsDb.close();
+
+    public ContactInfo getUpdatedContactStats(){
+        return mContact;
     }
 
-    public ContactInfo basicEventIntoStat(EventInfo event, ContactInfo stats){
+    public ContactInfo addEventIntoStat(EventInfo event) {
+
+        if((mContact != null)) {
 
 
-        if(event.getContactKey().equals(stats.getKeyString())){
-            // add into the data set
+            if (event.getContactKey().equals(mContact.getKeyString())) {
+                // add into the data set
 
-            //increment the total event count
-            count = stats.getEventCount();
-            count++;
-            stats.setEventCount(count);
+                //increment the total event count
+                count = mContact.getEventCount();
+                count++;
+                mContact.setEventCount(count);
 
             /*switch(event.getEventClass()){
                 //TODO think more about how to incorporate services like skype
                 case EventInfo.PHONE_CLASS:
                     // tally up all the call durations
                     //TODO: need checks for negative values
-                    count = stats.getCallDurationTotal(); //seconds
+                    count = mContact.getCallDurationTotal(); //seconds
                     count += event.getCallDuration();
-                    stats.setCallDurationTotal(count);
+                    mContact.setCallDurationTotal(count);
                     // continue to the combined case
                 case EventInfo.SKYPE:
                     // tally up all the number of calls
                     if(event.getEventType() == EventInfo.INCOMING_TYPE) {
-                        count = stats.getCallCountIn();
+                        count = mContact.getCallCountIn();
                         count++;
-                        stats.setCallCountIn(count);
+                        mContact.setCallCountIn(count);
                     }
                     if(event.getEventType() == EventInfo.OUTGOING_TYPE) {
-                        count = stats.getCallCountOut();
+                        count = mContact.getCallCountOut();
                         count++;
-                        stats.setCallCountOut(count);
+                        mContact.setCallCountOut(count);
                     }
                     if(event.getEventType() == EventInfo.MISSED_DRAFT) {
                         //increment number of missed phone calls
-                        count = stats.getCallCountMissed();
+                        count = mContact.getCallCountMissed();
                         count++;
-                        stats.setCallCountMissed(count);
+                        mContact.setCallCountMissed(count);
                     }
 
                     //set all time call duration average
-                    count = stats.getCallCountIn()+stats.getCallCountOut();
+                    count = mContact.getCallCountIn()+mContact.getCallCountOut();
                     if(count>0){
-                        stats.setCallDurationAvg((int)((float)stats.getCallDurationTotal()/
+                        mContact.setCallDurationAvg((int)((float)mContact.getCallDurationTotal()/
                                 (float)count));
                     }else{
-                        stats.setCallDurationAvg(0);
+                        mContact.setCallDurationAvg(0);
                     }
 
                     break;
@@ -94,53 +87,53 @@ public class ContactStatsHelper {
 
                     if(event.getEventType() == EventInfo.INCOMING_TYPE){
                         //increment the message count
-                        count = stats.getMessagesCountIn();
+                        count = mContact.getMessagesCountIn();
                         count++;
-                        stats.setMessageCountIn(count);
+                        mContact.setMessageCountIn(count);
 
                         //increment the word count
-                        count = stats.getWordCountIn();
+                        count = mContact.getWordCountIn();
                         count += event.getWordCount();
-                        stats.setWordCountIn(count);
+                        mContact.setWordCountIn(count);
 
-                        stats.setWordCountAvgIn((int)((float)stats.getWordCountIn()/
-                                (float)stats.getMessagesCountIn()));
+                        mContact.setWordCountAvgIn((int)((float)mContact.getWordCountIn()/
+                                (float)mContact.getMessagesCountIn()));
 
-                        count = stats.getSmileyCountIn();
+                        count = mContact.getSmileyCountIn();
                         count += event.getSmileyCount();
-                        stats.setTextSmileyCountIn(count);
+                        mContact.setTextSmileyCountIn(count);
 
-                        count = stats.getHeartCountIn();
+                        count = mContact.getHeartCountIn();
                         count += event.getHeartCount();
-                        stats.setTextHeartCountIn(count);
+                        mContact.setTextHeartCountIn(count);
 
-                        count = stats.getQuestionCountIn();
+                        count = mContact.getQuestionCountIn();
                         count += event.getQuestionCount();
-                        stats.setTextQuestionCountIn(count);
+                        mContact.setTextQuestionCountIn(count);
                     }
                     if(event.getEventType() == EventInfo.OUTGOING_TYPE){
-                        count = stats.getMessagesCountOut();
+                        count = mContact.getMessagesCountOut();
                         count++;
-                        stats.setMessageCountOut(count);
+                        mContact.setMessageCountOut(count);
 
-                        count = stats.getWordCountOut();
+                        count = mContact.getWordCountOut();
                         count += event.getWordCount();
-                        stats.setWordCountOut(count);
+                        mContact.setWordCountOut(count);
 
-                        stats.setWordCountAvgOut((int)((float)stats.getWordCountOut()/
-                                (float)stats.getMessagesCountOut()));
+                        mContact.setWordCountAvgOut((int)((float)mContact.getWordCountOut()/
+                                (float)mContact.getMessagesCountOut()));
 
-                        count = stats.getSmileyCountOut();
+                        count = mContact.getSmileyCountOut();
                         count += event.getSmileyCount();
-                        stats.setTextSmileyCountOut(count);
+                        mContact.setTextSmileyCountOut(count);
 
-                        count = stats.getHeartCountOut();
+                        count = mContact.getHeartCountOut();
                         count += event.getHeartCount();
-                        stats.setTextHeartCountOut(count);
+                        mContact.setTextHeartCountOut(count);
 
-                        count = stats.getQuestionCountOut();
+                        count = mContact.getQuestionCountOut();
                         count += event.getQuestionCount();
-                        stats.setTextQuestionCountOut(count);
+                        mContact.setTextQuestionCountOut(count);
                     }
 
 
@@ -150,140 +143,33 @@ public class ContactStatsHelper {
 
             }*/
 
-            // generalized recording of event dates
-            switch (event.getEventType()){
-                // missed calls should totally count as incoming
-                case EventInfo.MISSED_DRAFT:
-                    if(event.getEventClass() != EventInfo.PHONE_CLASS){
+                // generalized recording of event dates
+                switch (event.getEventType()) {
+                    // missed calls should totally count as incoming
+                    case EventInfo.MISSED_DRAFT:
+                        if (event.getEventClass() != EventInfo.PHONE_CLASS) {
+                            break;
+                        }
+                    case EventInfo.INCOMING_TYPE:
+                        date_millis = event.getDate();
+                        if (date_millis > mContact.getDateLastEventIn()) {
+                            mContact.setDateLastEventIn(date_millis);
+                        }
+
                         break;
-                    }
-                case EventInfo.INCOMING_TYPE:
-                    date_millis = event.getDate();
-                    if(date_millis > stats.getDateLastEventIn()){
-                        stats.setDateLastEventIn(date_millis);
-                    }
+                    case EventInfo.OUTGOING_TYPE:
+                        date_millis = event.getDate();
+                        if (date_millis > mContact.getDateLastEventOut()) {
+                            mContact.setDateLastEventOut(date_millis);
+                        }
+                        break;
 
-                    break;
-                case EventInfo.OUTGOING_TYPE:
-                    date_millis = event.getDate();
-                    if(date_millis > stats.getDateLastEventOut()){
-                        stats.setDateLastEventOut(date_millis);
-                    }
-                    break;
+                    default:
+                        // This should never happen
+                }
 
-                default:
-                    // This should never happen
             }
-
-
-
-            // after the last event dates have been set, set the due date
-            newInterval = ONE_DAY;
-
-            switch (stats.getBehavior()){
-                case ContactInfo.COUNTDOWN_BEHAVIOR:
-                    //pull the set interval out of the stats
-                    newInterval = (long) stats.getEventIntervalLimit()*ONE_DAY;
-                    break;
-                case ContactInfo.AUTOMATIC_BEHAVIOR:
-                    //calculate the time to decay from current score
-                    break;
-                case ContactInfo.RANDOM_BEHAVIOR:
-                    //pick a random number in the range [1:365]
-                    Random r = new Random();
-                    newInterval = ONE_DAY * (long)r.nextInt(366);	// nextInt returns random int >= 0 and < n
-                    break;
-                default:
-            }
-            // take the new time interval and add it to the last event out and set it as the due date
-            stats.setDateContactDue(stats.getDateLastEventOut() + newInterval);
-
-            return stats;
-
-        }else{
-            //something went terribly wrong and we should probably abort
         }
-        return null;
+        return mContact;
     }
-
-
-    public ContactInfo getContactStatsFromEvent(EventInfo event) {
-
-        // Select All Query
-        where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
-        whereArg = event.getContactKey();
-
-        // since the contact key might not be set, we could fall back on ID
-        if(whereArg == null){
-            where = ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
-            whereArg = Long.toString(event.getContactID());
-            if(whereArg ==null){
-                Log.d("CONTACT STATS HELPER ", "MISSING CONTACT IDENTIFIERS");
-            }
-
-        }
-
-        return statsDb.getContactStats(where, whereArg);
-    }
-
-
-    private ContactInfo setStrictestGroupAffiliation(ContactInfo contact){
-
-        if(contact == null){
-            return null;
-        }
-
-        // collect list of applicable gmail contact groups
-        contactList.setGroupsContentResolver(mContext.getContentResolver());
-
-        contactList.loadGroupsFromContactID(contact.getKeyString());
-
-        if(contactList.mGroups != null){
-            contactList.getShortestTermGroup();
-
-            contact.setPrimaryGroupMembership(contactList.shortestTermGroup.getIDLong());
-            contact.setPrimaryGroupBehavior(contactList.shortestTermGroup.getBehavior());
-            contact.setEventIntervalLimit(contactList.shortestTermGroup.getEventIntervalLimit());
-
-            return contact;
-        }
-
-        return null;
-    }
-
-
-
-    /*
-    contact can be null, this method will pull the contact info from the database
-     */
-    public boolean updateContactStatsFromEvent(EventInfo event, ContactInfo contactInfo){
-
-        // if we're passed in a contact, use it, otherwise get the contact from the database
-        if(contactInfo == null){
-
-            // but only update the mContact if the mContact isn't set.
-            if(mContact == null) {
-                mContact = getContactStatsFromEvent(event);
-                //this function returns null if the event holds a contact not in the database
-
-                //Let's make sure that this contact's primary group affiliation is up to date
-                // might return null
-                mContact = setStrictestGroupAffiliation(mContact);
-            }
-        }else {
-            mContact = contactInfo;
-        }
-
-        //stats could be null, which could mean the contact does not exist in the local db
-        if(mContact != null){
-
-            // call function which parses the entire event into the correct stats
-            statsDb.updateContact(basicEventIntoStat(event, mContact));
-
-            return true;
-        }
-
-        return false;
-    }
-
 }

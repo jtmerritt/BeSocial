@@ -2,7 +2,7 @@ package com.example.android.contactslist.contactStats;
 
 
 public class ContactInfo {
-    private long rowId; //fot contact_stats
+    private long rowId = NEW_CONTACT_ROW_ID; //default value for easy detection of new contacts in Updates.java
     private long ContactID; // for android contact list
     private String ContactName;
     private String ContactKey;
@@ -70,7 +70,7 @@ public class ContactInfo {
     final public static int AUTOMATIC_BEHAVIOR = 3;
     static public String group_lookup_key = "GROUP";
 
-
+    final public static long NEW_CONTACT_ROW_ID = 100000;
 
     //constructor
     public ContactInfo(String name, String key, long id){

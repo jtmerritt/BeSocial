@@ -51,6 +51,7 @@ public class Imports extends AsyncTask<Void, Integer, String>
             case IMPORT_LOCAL_DB:
                 //TODO: figure out how to return progress from the read method
                 dbUpdates.localSourceRead();
+
                 break;
             default:
                 //for testing
@@ -67,6 +68,8 @@ public class Imports extends AsyncTask<Void, Integer, String>
                     e.printStackTrace();
                 }
         }
+
+        dbUpdates.close();
         return "done";
     }
 

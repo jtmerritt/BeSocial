@@ -102,7 +102,9 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
 
     public void closeSMSLog(){
             /*Close the cursor  for this iteration of the loop*/
-        mSMSLogCursor.close();
+        if(mSMSLogCursor != null){
+            mSMSLogCursor.close();
+        }
     }
 
     public List<EventInfo> getSMSLogsForContact(ContactInfo contact) {

@@ -372,6 +372,7 @@ preferred contact method
         return id;  //return -1 for existing contact
     }
 
+    // returns null if there is no matching contact
     public ContactInfo getContactStats(String selection,   String selection_arg ){
     // selection needs to be a string from TableEntry.class
     // selection_arg needs to be the string value of the item filtering for.  String.valueOf(long_number)
@@ -402,7 +403,7 @@ preferred contact method
 
 
         // organize the contact info and pass it back
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
 
             contact = getContactInfoFromCursor(cursor);
 
@@ -420,7 +421,7 @@ preferred contact method
         int count = 0;
 
         // Only bother if the contact record update flag is set to true.
-        if(contact.getUpdatedFlag() == true){
+        if((contact != null) && (contact.getUpdatedFlag() == true)){
 
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -550,8 +551,11 @@ preferred contact method
         return values;
     }
 
-
-    private ContactInfo getContactInfoFromCursor(Cursor cursor){
+    /*
+    Take the cursor containing all the available data columns
+    and pace it in a contactInfo for easy access
+    */
+    public ContactInfo getContactInfoFromCursor(Cursor cursor){
 
 
         ContactInfo contact = new ContactInfo(cursor.getString(TableEntry.CONTACT_NAME),

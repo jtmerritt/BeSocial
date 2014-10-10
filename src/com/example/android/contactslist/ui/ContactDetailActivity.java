@@ -35,6 +35,7 @@ import android.view.View;
 
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.ContactsGroupQuery;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.util.ParallaxPagerTransformer;
 import com.example.android.contactslist.util.Utils;
@@ -106,7 +107,7 @@ public class ContactDetailActivity extends FragmentActivity
 
 
                 getLoaderManager().restartLoader(
-                        ContactsListFragment.ContactsGroupQuery.QUERY_ID,
+                        ContactsGroupQuery.QUERY_ID,
                         null,
                         ContactDetailActivity.this);
 
@@ -169,22 +170,22 @@ public class ContactDetailActivity extends FragmentActivity
         // switch between search query and a group query
         switch (id) {
 
-            case ContactsListFragment.ContactsGroupQuery.QUERY_ID:
+            case ContactsGroupQuery.QUERY_ID:
                 if (mGroupID != -1) {
-                    contentUri = ContactsListFragment.ContactsGroupQuery.CONTENT_URI;
+                    contentUri = ContactsGroupQuery.CONTENT_URI;
 
                     final String parameters[] = {String.valueOf(mGroupID)};
 
                     return new CursorLoader(this,
                             contentUri,
-                            ContactsListFragment.ContactsGroupQuery.PROJECTION,
+                            ContactsGroupQuery.PROJECTION,
 
                             // The result is a very rough interface
                             ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
 
                             parameters,
 
-                            ContactsListFragment.ContactsGroupQuery.SORT_ORDER);
+                            ContactsGroupQuery.SORT_ORDER);
                 }
 
             default:
@@ -206,7 +207,7 @@ public class ContactDetailActivity extends FragmentActivity
 
         // This swaps the new cursor into the adapter.
         switch (loader.getId()) {
-            case ContactsListFragment.ContactsGroupQuery.QUERY_ID:
+            case ContactsGroupQuery.QUERY_ID:
 
                 if((data != null) && (data.moveToFirst())) {
 
@@ -235,7 +236,7 @@ public class ContactDetailActivity extends FragmentActivity
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if ((loader.getId() == ContactsListFragment.ContactsGroupQuery.QUERY_ID)) {
+        if ((loader.getId() == ContactsGroupQuery.QUERY_ID)) {
             // When the loader is being reset, clear the cursor from the adapter. This allows the
             // cursor resources to be freed.
             mContactDetailAdapter.swapCursor(null);

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.text.format.Time;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Tyson Macdonald on 1/24/14.
@@ -45,6 +47,8 @@ import java.util.List;
     //the page has more info on updating and removing notifications in code
 public class Updates {
 
+    final long ONE_DAY = 86400000;
+
     private Context mContext;
     private String mXMLFilePath;
     private ContactGroupsList contactGroupsList = new ContactGroupsList();
@@ -56,6 +60,13 @@ public class Updates {
     private Boolean continueDBRead = true;
     private Boolean continueXMLRead = true;
     private SharedPreferences sharedPref;
+    private final Boolean GET_COMPLETE_CONTACT_DATA_IF_AVAILABLE = true;
+    private GatherSMSLog mGatherSMSLog;
+    private ContactGroupsList groupList;
+    private ContactStatsHelper mContactStatsHelper;
+
+
+
 
 
 
@@ -64,6 +75,15 @@ public class Updates {
         activity_progress_bar = null;
         updateNotification = null;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        // grab the SMS database for the master list of contacts
+        // without the progressbar feed
+        mGatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                mContext, activity_progress_bar, updateNotification);
+
+        // collect list of applicable gmail contact groups
+        groupList = new ContactGroupsList();
+        groupList.setGroupsContentResolver(mContext.getContentResolver());
     }
 
     public Updates(Context context, ProgressBar activity_progress_bar,
@@ -73,14 +93,39 @@ public class Updates {
         this.updateNotification = updateNotification;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
 
+        // grab the SMS database for the master list of contacts
+        // with the progress bar feed
+        mGatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                mContext, activity_progress_bar, updateNotification);
+
+        // collect list of applicable gmail contact groups
+        groupList = new ContactGroupsList();
+        groupList.setGroupsContentResolver(mContext.getContentResolver());
+
     }
 
+    public void cancelReadDB(){
+        continueDBRead = false;
+    }
+
+    public void cancelReadXML(){
+        continueXMLRead = false;
+    }
+
+    public void close(){
+        // close out the SMS log cursor
+        if(mGatherSMSLog != null){
+            mGatherSMSLog.closeSMSLog();
+        }
+    }
 
     public void localSourceRead(){
+
         // We're already in an async task
         GroupMembership groupMembership = new GroupMembership(mContext);
 
-        List<ContactInfo> masterContactList = groupMembership.getAllContactsInAppGroups();
+        List<ContactInfo> masterContactList =
+                groupMembership.getAllContactsInAppGroups(GET_COMPLETE_CONTACT_DATA_IF_AVAILABLE);
 
         // only work with a non-empty list
         if(!masterContactList.isEmpty()){
@@ -91,50 +136,23 @@ public class Updates {
             int contactCount = masterContactList.size();
 
 
-            // grab the SMS database for the master list of contacts
-            GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
-                    mContext, activity_progress_bar, updateNotification);
-
-            gatherSMSLog.openSMSLog(lastUpdateTime);
+            mGatherSMSLog.openSMSLog(lastUpdateTime);
 
 
             int i = 0;
             for(ContactInfo contact:masterContactList){
 
-                // there is a chance that the contact is completely new to the db
-                // Contact groups are read fro/m google and may be updated on the website
-                addContactToDbIfNew(contact);
+                // when the call is given, break the loop and exit
+                if(continueDBRead == false){
+                    return;
+                }
 
                 Log.d("LOCAL SOURCE READ: ", "Begin contact query");
 
-                if(continueDBRead == false){
-                    break;
-                }
 
-                // get list of SMS events for named contacts, if masterList is null, returns all SMS events
-                mEventLog = gatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
-
-
-
-                // Only bother updates if the list has entries
-                if(mEventLog.size() > 0) {
-
-                    // feed the all events for contact to the local databases
-                    insertEventLogIntoDatabases(mEventLog, contact);
-                }
-
-                //UPDATE the call data
-
-                // initialize the localEventLog with the call log for the contact
-                mEventLog = getAllCallLogsForContact(contact);
-
-                // Only bother updates if the list has entries
-                if(mEventLog.size() > 0) {
-
-                    // feed the all events for contact to the local databases
-                    insertEventLogIntoDatabases(mEventLog, contact);
-
-                }
+                //replace the current contact element of masterContactList
+                // with the new version updated from the local events
+                masterContactList.set(i, updateContactWithLocalEvents(contact));
 
                 //update the progress bar
                 i++;
@@ -145,28 +163,292 @@ public class Updates {
             }
 
             //set the  time of this database update
-            // It's not quite right, since we're actually working with both phone and SMS
-            importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
             importLog.setImportTimeRecord(EventInfo.SMS_CLASS);
+            //set the  time of this database update
+            importLog.setImportTimeRecord(EventInfo.PHONE_CLASS);
 
-            // close out the SMS log cursor
-            gatherSMSLog.closeSMSLog();
         }
+
     }
 
-    public void cancelReadDB(){
-        continueDBRead = false;
+    public ContactInfo updateContactWithLocalEvents(ContactInfo contact) {
+
+        Long newInterval;
+        long newRowID;
+        int eventCount = 0;
+        Time now = new Time();
+
+
+        ContactStatsContract contactStatsContract = new ContactStatsContract(mContext);
+
+        // there is a chance that the contact is completely new to the db
+        // Contact groups are read fro/m google and may be updated on the website
+        newRowID = addContactToDbIfNew(contact); //return -1 for existing contact
+
+        // if the contact is not already existing,
+        // add info for completeness, including the rowID and primary group behavior
+        if(newRowID != -1){
+            contact.setRowId(newRowID);
+        }
+
+
+        //set primary group behavior for the contact
+        groupList.loadGroupsFromContactID(contact.getKeyString());
+
+
+        if(groupList.mGroups != null){
+            groupList.getShortestTermGroup();
+
+            contact.setPrimaryGroupMembership(groupList.shortestTermGroup.getIDLong());
+            contact.setPrimaryGroupBehavior(groupList.shortestTermGroup.getBehavior());
+            contact.setEventIntervalLimit(groupList.shortestTermGroup.getEventIntervalLimit());
+        }
+
+
+        //initialize the contactStatsHelper for keeping tallies of the contact stats
+        mContactStatsHelper = new ContactStatsHelper(contact);
+
+        //process the local sources for the contact
+
+        //sms logs
+        eventCount += smsSourceRead(contact);
+
+        //call logs
+        eventCount += callSourceRead(contact);
+
+        //Only update contactMasterList and the contact due date if there was a new event.
+        if(eventCount > 0) {
+
+            //replace the current contact with the updated version
+            contact = mContactStatsHelper.getUpdatedContactStats();
+
+            // after the last event dates have been set, set the due date
+            // as dictated by the last outgoing contact date and the set behavior
+            newInterval = ONE_DAY;
+
+            switch (contact.getBehavior()) {
+                case ContactInfo.COUNTDOWN_BEHAVIOR:
+                    //pull the set interval out of the stats
+                    newInterval = (long) contact.getEventIntervalLimit() * ONE_DAY;
+                    break;
+                case ContactInfo.AUTOMATIC_BEHAVIOR:
+                    //calculate the time to decay from current score
+                    break;
+                case ContactInfo.RANDOM_BEHAVIOR:
+                    //pick a random number in the range [1:365]
+                    Random r = new Random();
+                    newInterval = ONE_DAY * (long) r.nextInt(366);    // nextInt returns random int >= 0 and < n
+                    break;
+                default:
+            }
+            // take the new time interval and add it to the last event out and set it as the due date
+            contact.setDateContactDue(contact.getDateLastEventOut() + newInterval);
+        }
+
+        //Update the contacts database with the contact stats
+        contactStatsContract.updateContact(contact);
+
+        now.setToNow();
+
+        GroupMembership groupMembership = new GroupMembership(mContext);
+
+        //if the due date for this contact was in the past,
+        // set membership to misses you group
+        if(contact.getDateEventDue() < now.toMillis(true)){
+            groupMembership.setContactGroupMembership_flag(contact,
+                    GroupMembership.MISSES_YOU_GROUP);
+        }else {
+            //if the date is in the future, remove membership to the misses you group
+            groupMembership.removeContactFromGroup_flag(contact,
+                    GroupMembership.MISSES_YOU_GROUP);
+        }
+
+        contactStatsContract.close();
+
+        return contact;
     }
+
+
+    public int updateContactWithEvents(ContactInfo contact, ArrayList<EventInfo> eventList) {
+
+        Long newInterval;
+        long newRowID;
+        int eventCount = 0;
+        Time now = new Time();
+
+
+        ContactStatsContract contactStatsContract = new ContactStatsContract(mContext);
+
+        // there is a chance that the contact is completely new to the db
+        // Contact groups are read fro/m google and may be updated on the website
+        newRowID = addContactToDbIfNew(contact); //return -1 for existing contact
+
+        // if the contact is not already existing,
+        // add info for completeness, including the rowID and primary group behavior
+        if(newRowID != -1){
+            contact.setRowId(newRowID);
+        }
+
+
+        //set primary group behavior for the contact
+        groupList.loadGroupsFromContactID(contact.getKeyString());
+
+
+        if(groupList.mGroups != null){
+            groupList.getShortestTermGroup();
+
+            contact.setPrimaryGroupMembership(groupList.shortestTermGroup.getIDLong());
+            contact.setPrimaryGroupBehavior(groupList.shortestTermGroup.getBehavior());
+            contact.setEventIntervalLimit(groupList.shortestTermGroup.getEventIntervalLimit());
+        }
+
+
+        //initialize the contactStatsHelper for keeping tallies of the contact stats
+        mContactStatsHelper = new ContactStatsHelper(contact);
+
+        //process the local sources for the contact
+
+        //enter events into event database
+        eventCount += insertEventLogIntoEventDatabase(eventList);
+
+
+
+        //Only update contactMasterList and the contact due date if there was a new event.
+        if(eventCount > 0) {
+
+            //replace the current contact with the updated version
+            contact = mContactStatsHelper.getUpdatedContactStats();
+
+            // after the last event dates have been set, set the due date
+            // as dictated by the last outgoing contact date and the set behavior
+            newInterval = ONE_DAY;
+
+            switch (contact.getBehavior()) {
+                case ContactInfo.COUNTDOWN_BEHAVIOR:
+                    //pull the set interval out of the stats
+                    newInterval = (long) contact.getEventIntervalLimit() * ONE_DAY;
+                    break;
+                case ContactInfo.AUTOMATIC_BEHAVIOR:
+                    //calculate the time to decay from current score
+                    break;
+                case ContactInfo.RANDOM_BEHAVIOR:
+                    //pick a random number in the range [1:365]
+                    Random r = new Random();
+                    newInterval = ONE_DAY * (long) r.nextInt(366);    // nextInt returns random int >= 0 and < n
+                    break;
+                default:
+            }
+            // take the new time interval and add it to the last event out and set it as the due date
+            contact.setDateContactDue(contact.getDateLastEventOut() + newInterval);
+        }
+
+        //Update the contacts database with the contact stats
+        contactStatsContract.updateContact(contact);
+
+        now.setToNow();
+
+        GroupMembership groupMembership = new GroupMembership(mContext);
+
+        //if the due date for this contact was in the past,
+        // set membership to misses you group
+        if(contact.getDateEventDue() < now.toMillis(true)){
+            groupMembership.setContactGroupMembership_flag(contact,
+                    GroupMembership.MISSES_YOU_GROUP);
+        }else {
+            //if the date is in the future, remove membership to the misses you group
+            groupMembership.removeContactFromGroup_flag(contact,
+                    GroupMembership.MISSES_YOU_GROUP);
+        }
+
+        contactStatsContract.close();
+
+        return eventCount;
+    }
+
+
+    /*
+    returns the number of sms records entered into the database
+     */
+    public int smsSourceRead(ContactInfo contact) {
+        Long newRowID;
+        int event_count = 0;
+
+        // if the sms gathering class isn't initialized, then we can't do anything
+        if(mGatherSMSLog == null){
+            return event_count;
+        }
+
+        // there is a chance that the contact is completely new to the db
+        // Contact groups are read fro/m google and may be updated on the website
+        newRowID = addContactToDbIfNew(contact); //return -1 for existing contact
+
+        // if the contact is not already existing,
+        // add info for completeness, including the rowID and primary group behavior
+        if(newRowID != -1){
+            contact.setRowId(newRowID);
+        }
+
+        // get list of SMS events for named contacts, if masterList is null, returns all SMS events
+        mEventLog = mGatherSMSLog.getSMSLogsForContact(contact); // gather up event data from phone logs
+
+
+
+        // Only bother updates if the list has entries
+        if(mEventLog.size() > 0) {
+
+            // feed the all events for contact to the local databases
+            event_count += insertEventLogIntoEventDatabase(mEventLog);
+        }
+
+        return event_count;
+    }
+
+
+    /*
+    returns the number of events entered into the database
+     */
+    public int callSourceRead(ContactInfo contact) {
+        Long newRowID;
+        int event_count = 0;
+
+
+        // there is a chance that the contact is completely new to the db
+        // Contact groups are read fro/m google and may be updated on the website
+        newRowID = addContactToDbIfNew(contact); //return -1 for existing contact
+
+        // if the contact is not already existing,
+        // add the new row id to the contact info for completeness
+        if(newRowID != -1){
+            contact.setRowId(newRowID);
+        }
+
+        //UPDATE the call data
+
+        // initialize the localEventLog with the call log for the contact
+        mEventLog = getAllCallLogsForContact(contact);
+
+        // Only bother updates if the list has entries
+        if(mEventLog.size() > 0) {
+
+            // feed the all events for contact to the local databases
+            event_count += insertEventLogIntoEventDatabase(mEventLog);
+
+        }
+        return event_count;
+    }
+
 
     public void localXMLRead(String XMLFilePath){
         mXMLFilePath = XMLFilePath;
+        Long newRowID;
 
         if(mXMLFilePath == null){
             return;
         }
 
         GroupMembership groupMembership = new GroupMembership(mContext);
-        List<ContactInfo> masterContactList = groupMembership.getAllContactsInAppGroups();
+        List<ContactInfo> masterContactList =
+                groupMembership.getAllContactsInAppGroups(GET_COMPLETE_CONTACT_DATA_IF_AVAILABLE);
 
         CallLogXmlParser callLogXmlParser = new CallLogXmlParser(masterContactList,
                 mContext.getContentResolver(), activity_progress_bar, updateNotification);
@@ -210,10 +492,16 @@ public class Updates {
                 if(sharedPref.getBoolean("update_db_checkbox_preference_key", false)){
                     // there is a chance that the contact is completely new to the db
                     // Contact groups are read from google and may be updated on the website
-                    addContactToDbIfNew(contact);
+                    newRowID = addContactToDbIfNew(contact); //return -1 for existing contact
+
+                    // if the contact is not already existing,
+                    // add the new row id to the contact info for completeness
+                    if(newRowID != -1){
+                        contact.setRowId(newRowID);
+                    }
 
                     // feed the all events for contact to the local databases
-                    insertEventLogIntoDatabases(getAllXMLLogsForContact(contact), contact);
+                    insertEventLogIntoEventDatabase(getAllXMLLogsForContact(contact));
                 }else{
                     getAllXMLLogsForContact(contact);
 
@@ -225,10 +513,6 @@ public class Updates {
                 updateProgress((int)(((float)i/(float)contactCount)*100));
             }
         }
-    }
-
-    public void cancelReadXML(){
-        continueXMLRead = false;
     }
 
 
@@ -322,16 +606,24 @@ public class Updates {
     }
 
 
-    private void addContactToDbIfNew(ContactInfo contact){
+    private long addContactToDbIfNew(ContactInfo contact){
 
-        Log.d("LOCAL SOURCE READ: ", "Begin contact addIfNew");
+        long newRowID = -1; //return -1 for existing contact
 
-        ContactStatsContract statsDb = new ContactStatsContract(mContext);
-        statsDb.addIfNewContact(contact);
+        // if the contact has the default rowID, then it's probably new
+        if(contact.getRowId() == ContactInfo.NEW_CONTACT_ROW_ID) {
 
-        statsDb.close();
-        Log.d("LOCAL SOURCE READ: ", "End contact addIfNew");
 
+            Log.d("LOCAL SOURCE READ: ", "Begin contact addIfNew");
+
+            ContactStatsContract statsDb = new ContactStatsContract(mContext);
+            newRowID = statsDb.addIfNewContact(contact);
+
+            statsDb.close();
+            Log.d("LOCAL SOURCE READ: ", "End contact addIfNew");
+        }
+
+        return newRowID;
     }
 
     private void testContact(ContactInfo testContact){
@@ -471,15 +763,18 @@ public class Updates {
     }
 
 
+
     /*
-    Method takes an eventLog and inserts it into the event database and submits the event to
-    ContactStatsHelper to update the contact implicated by the each event.
+    Method takes an eventLog and inserts it into the event database,
+    and help with contact stats accumulation
 
     All events need to be for valid contacts of the group defined for the application.
+
+    returns the number of events entered into the database
      */
-    public void insertEventLogIntoDatabases(List<EventInfo> eventLog, ContactInfo contact){
+    public int insertEventLogIntoEventDatabase(List<EventInfo> eventLog){
         SocialEventsContract eventDb = new SocialEventsContract(mContext);
-        ContactStatsHelper csh = new ContactStatsHelper(mContext);
+        int event_count = 0;
 
         Log.d("LOCAL SOURCE READ: ", "Begin eventLog DB entry");
 
@@ -489,15 +784,17 @@ public class Updates {
                 // if event is new...
                 // Process its data into the contact_stats for the contact
                 // assuming the contact is not new
-                csh.updateContactStatsFromEvent(event, null);
+                mContactStatsHelper.addEventIntoStat(event);
                 // method returns false if the event does not have a corresponding contact in the db
+
+                event_count++;
             }
         }
 
-        csh.close();
         eventDb.close();
         Log.d("LOCAL SOURCE READ: ", "End eventLog DB entry");
 
+        return event_count;
     }
 
 

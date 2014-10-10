@@ -24,7 +24,9 @@ import android.net.Uri;
 
 
 import com.example.android.contactslist.ContactsGroupQuery;
+import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.contactStats.ContactStatsContract;
 
 
 /**
@@ -35,15 +37,79 @@ public class GroupMembership {
     private ContentResolver mContentResolver;
     private Context mContext;
     private ArrayList<ContactInfo> mContacts;
+    ContactStatsContract statsDb;
+    String where;
+    String whereArg;
+    ArrayList<ContactInfo> mGroups;
 
+
+    final static public  int BASE_GROUP = 1;
+    final static public  int STAR_GROUP = 2;
+    final static public  int MISSES_YOU_GROUP = 3;
 
     public GroupMembership(Context context){
         mContext = context;
         mContentResolver = context.getContentResolver();
+
     }
 
-    public boolean setContactGroupMembership(int groupId, String contactID){
-        int rawContactId = getRawIdFromContactId(contactID);
+/*
+    Set the contact to be a member of the flagged group
+ */
+    public boolean setContactGroupMembership_flag(ContactInfo contact, int group_flag) {
+        long groupId = (long) getGroupIDFromFlag(group_flag);
+
+        return setContactGroupMembership((int) groupId, contact);
+    }
+
+    private int getGroupIDFromFlag(int group_flag) {
+        int groupId = 0;
+        String groupName;
+
+        // one of the other methods may have retrieved the list of groups
+        if(mGroups == null){
+            ContactGroupsList contactGroupsList = new ContactGroupsList();
+            // collect list of applicable gmail contact groups
+            contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+            mGroups = contactGroupsList.loadGroups();
+        }
+
+        // match the group flag to the group name
+        switch (group_flag){
+            case STAR_GROUP:
+                groupName = mContext.getResources().getString(R.string.Starred);
+                break;
+            case MISSES_YOU_GROUP:
+                groupName = mContext.getResources().getString(R.string.misses_you);
+                break;
+            case BASE_GROUP:
+            default:
+                groupName = mContext.getResources().getString(R.string.app_name);
+        }
+
+
+        // find the group wih a matching name and grab the id to pass on
+        for(ContactInfo group:mGroups){
+            if(group.getName().equals(groupName)){
+                groupId = (int) group.getIDLong();
+                break;
+            }
+        }
+
+        return groupId;
+    }
+
+
+    /*
+    Set membership to the identified group, if not already a member
+     */
+    public boolean setContactGroupMembership(int groupId, ContactInfo contact){
+        int rawContactId = getRawIdFromContactId(contact.getIDString());
+
+        //check membership
+        if(isGroupMember(contact, groupId)){
+            return false;  //return indication of non-action
+        }
 
         //Add if it's a valid contact, 0 is the user
         if(rawContactId != 0) {
@@ -153,20 +219,39 @@ public class GroupMembership {
     taken from http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
 
  */
-
     public void removeContactFromGroup(int groupId, String contactLookupKey)
     {
-        Long contactId;
+        long contactId = getContactIDFromLookupKey(contactLookupKey);
+
+        if (contactId != -1)
+        {
+            removeContactFromGroup(groupId, contactId);
+        }
+    }
+
+
+
+
+    private long getContactIDFromLookupKey(String contactLookupKey)
+    {
         Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI,
                 new String[]{ContactsContract.Contacts._ID},
                 Contacts.LOOKUP_KEY + "=?",
                 new String[]{contactLookupKey}, null);
 
-        if (cursor.moveToFirst())
+        if (cursor != null && cursor.moveToFirst())
         {
-            contactId = cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            removeContactFromGroup(groupId, contactId);
+            return cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID));
         }
+
+        return -1;
+    }
+
+
+    public void removeContactFromGroup_flag(ContactInfo contact, int group_flag){
+        int groupId = getGroupIDFromFlag(group_flag);
+
+        removeContactFromGroup(groupId, contact.getIDLong());
     }
 
 
@@ -255,18 +340,81 @@ public class GroupMembership {
     }
 
 
-    public ArrayList<ContactInfo> getAllContactsInAppGroups(){
-        ContactGroupsList contactGroupsList = new ContactGroupsList();
-        ArrayList<ContactInfo> groups;
-        ContactInfo contact;
+    /*
+    Report whether a contact is a member of the group
+     */
+    public boolean isGroupMember(ContactInfo contactInfo, long groupID)
+    {
+        return isContactInList(contactInfo, getAllContactsInGroup(groupID));
+    }
 
-        // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
-        groups = contactGroupsList.loadGroups();
+    /*
+    Get a list of all the contacts in a single group
+     */
+    public ArrayList<ContactInfo> getAllContactsInGroup(long groupID){
+        ContactInfo contact;
+        ArrayList<ContactInfo> contacts = new ArrayList<ContactInfo>();
+
 
         // query a list of contacts per group
         Uri contentUri = ContactsGroupQuery.CONTENT_URI;
-        for(ContactInfo group: groups){
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    contentUri,
+                    ContactsGroupQuery.PROJECTION,
+                    ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + " = "
+                            + String.valueOf(groupID),
+                    null,
+                    ContactsGroupQuery.SORT_ORDER);
+
+            if(cursor != null && cursor.moveToFirst())
+            {
+
+                //add each contact to the list if it is unique
+                do{
+                    // create a new temporary contactInfo based on the groups entry
+                    // to easily pass around this basic information
+                    contact = new ContactInfo(
+                            cursor.getString(ContactsGroupQuery.DISPLAY_NAME),
+                            cursor.getString(ContactsGroupQuery.LOOKUP_KEY),
+                            cursor.getLong(ContactsGroupQuery.ID));
+
+                    contacts.add(contact);
+
+                }while(cursor.moveToNext());
+            }
+            cursor.close();
+
+        return contacts;
+    }
+
+
+/*
+Method to create the full list of contacts represented by the groups used in this app
+ */
+    public ArrayList<ContactInfo> getAllContactsInAppGroups(Boolean getCompleteInfo){
+        ContactInfo contact;
+        ContactInfo temp;
+        mContacts = new ArrayList<ContactInfo>();
+
+
+        // one of the other methods may have retrieved the list of groups
+        if(mGroups == null) {
+            ContactGroupsList contactGroupsList = new ContactGroupsList();
+            // collect list of applicable gmail contact groups
+            contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+            mGroups = contactGroupsList.loadGroups();
+        }
+
+        // initialize the database, if its going to be used
+        if(getCompleteInfo){
+            statsDb = new ContactStatsContract(mContext);
+        }
+
+
+        // query a list of contacts per group
+        Uri contentUri = ContactsGroupQuery.CONTENT_URI;
+        for(ContactInfo group: mGroups){
 
             Cursor cursor = mContext.getContentResolver().query(
                     contentUri,
@@ -276,8 +424,9 @@ public class GroupMembership {
                     null,
                     ContactsGroupQuery.SORT_ORDER);
 
-            if(cursor.moveToFirst())
+            if(cursor != null && cursor.moveToFirst())
             {
+
                 //add each contact to the list if it is unique
                 do{
                     // create a new temporary contactInfo based on the groups entry
@@ -288,7 +437,22 @@ public class GroupMembership {
                             cursor.getLong(ContactsGroupQuery.ID));
 
                     //Only add the contact to the list if it isn't already present
-                    if(!isContactAlreadyInList(contact)){
+                    if(!isContactAlreadyInMasterList(contact)){
+
+                        // get the complete contact info from the database, if desired
+                        if(getCompleteInfo){
+                            temp = getContactStatsFromBasic(contact);
+
+                            //IF there is a matching contact from the database, substitute it into the list
+                            if(temp != null){
+                                contact = temp;
+                            }
+                        }
+
+                        //TODO Solve the problem of where the weird IDs are coming from
+                        //grab the real contactID from the contactsProvider
+                        contact.setIDLong(getContactIDFromLookupKey(contact.getKeyString()));
+
                         mContacts.add(contact);
                     }
 
@@ -298,15 +462,30 @@ public class GroupMembership {
         }
 
 
+        // make sure to close the database, if it was initialized
+        if(getCompleteInfo){
+            statsDb.close();
+        }
+
         return mContacts;
     }
 
     /*
     report whether the given contact is already in the mContacts list
      */
-    private boolean isContactAlreadyInList(ContactInfo contactInfo) {
+    private boolean isContactAlreadyInMasterList(ContactInfo contactInfo) {
 
-        for(ContactInfo contact:mContacts){
+        return isContactInList(contactInfo, mContacts);
+    }
+
+
+/*
+    method to report if a particular contact is listed
+ */
+    private boolean isContactInList(ContactInfo contactInfo,
+                                           ArrayList<ContactInfo> contacts) {
+
+        for(ContactInfo contact:contacts){
             if(contactInfo.getKeyString().equals(contact.getKeyString())){
                 return true;
             }
@@ -314,5 +493,24 @@ public class GroupMembership {
         return false;
     }
 
+    public ContactInfo getContactStatsFromBasic(ContactInfo contactInfo) {
+
+        // Select All Query
+        where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";
+        whereArg = contactInfo.getKeyString();
+
+        // since the contact key might not be set, we could fall back on ID
+        if(whereArg == null){
+            where = ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
+            //TODO there is potentially a problem with the contact IDs
+            whereArg = Long.toString(contactInfo.getIDLong());
+            if(whereArg ==null){
+                Log.d("CONTACT STATS HELPER ", "MISSING CONTACT IDENTIFIERS");
+            }
+
+        }
+
+        return statsDb.getContactStats(where, whereArg);
+    }
 
 }

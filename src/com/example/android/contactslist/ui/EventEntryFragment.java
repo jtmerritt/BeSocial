@@ -72,10 +72,12 @@ import android.text.InputType;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.GroupMembership;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.ContactStatsHelper;
+import com.example.android.contactslist.dataImport.Updates;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.util.ImageLoader;
@@ -271,7 +273,7 @@ public class EventEntryFragment extends Fragment implements
             getVoiceNumber();
             getEmailAddress();
             getStreetAddress();
-            //getContactStats();
+            getContactStats();  //grab the full contact data
 
 
 
@@ -439,20 +441,17 @@ public class EventEntryFragment extends Fragment implements
 
                         @Override
                         public void run() {
+                            int updateCount = 0;
 
-                            SocialEventsContract eventDb = new SocialEventsContract(mContext);
-                            ContactStatsHelper csh = new ContactStatsHelper(mContext);
+                            Updates contactUpdate = new Updates(mContext);
+                            ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+                            eventList.add(mNewEventInfo);
 
-                            final Boolean insertComplete =
-                                    insertEventIntoDatabaseIfNew(mNewEventInfo, eventDb);
+                            // add event to the database and update the contact
+                            updateCount = contactUpdate.updateContactWithEvents(mContactStats, eventList);
+                            contactUpdate.close();
 
-                            if(insertComplete){
-                                // Process its data into the contact_stats for the contact
-                                csh.updateContactStatsFromEvent(mNewEventInfo, null);
-                            }
-                            eventDb.close();
-                            csh.close();
-
+                            final boolean insertComplete = updateCount > 0;
 
                             getActivity().runOnUiThread(new Runnable() {
 
@@ -924,18 +923,7 @@ public class EventEntryFragment extends Fragment implements
                         ContactAddressQuery.PROJECTION,
                         ContactAddressQuery.SELECTION,
                         null, null);
-/*
-            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
-            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
-                */
+
             case ContactStatsQuery.QUERY_ID:
                 // This query loads data from ContactStatsContentProvider.
 
@@ -959,15 +947,6 @@ public class EventEntryFragment extends Fragment implements
                         new String[] { mContactLookupKey },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
-            /*
-            https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
-                return new CursorLoader(getActivity(),
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                    new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER },
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + contactId,
-                        null,
-                    ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
-                    */
             case ContactSMSNumberQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
 
@@ -1021,6 +1000,7 @@ public class EventEntryFragment extends Fragment implements
                         // the ActionBar title text.
                         getActivity().setTitle(mContactNameString);
                     }
+
                 }
                 break;
             case ContactAddressQuery.QUERY_ID:
@@ -1053,7 +1033,13 @@ public class EventEntryFragment extends Fragment implements
 
             case ContactStatsQuery.QUERY_ID:
 
-                setContactStatsFromCursor(data);
+                // get the contact info from the cursor
+                ContactStatsContract contactStatsContract = new ContactStatsContract(mContext);
+                if(data != null && data.moveToFirst()) {
+                    mContactStats = contactStatsContract.getContactInfoFromCursor(data);
+                }
+                contactStatsContract.close();
+
                 if (mContactStats != null) {
 
                     // put the stats up on display
@@ -1094,74 +1080,8 @@ public class EventEntryFragment extends Fragment implements
     }
 
 
-    /*
-    Take the cursor containing all the available data columns from the ContactStatsContentProvider
-    and pace it in a contactInfo for easy access
-    */
-    private void setContactStatsFromCursor(Cursor cursor){
-        if (cursor.moveToFirst()) {
-            mContactStats = new ContactInfo(
-                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_NAME)),
-                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_KEY)),
-                    cursor.getLong(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_ID)));
 
-            mContactStats.setRowId(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry._ID)));
 
-            mContactStats.setDateLastEventIn(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_IN)));
-            mContactStats.setDateLastEventOut(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_OUT)));
-            mContactStats.setDateLastEvent(cursor.getString(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT)));
-            mContactStats.setDateContactDue(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_CONTACT_DUE)));
-
-            mContactStats.setDateRecordLastUpdated(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_RECORD_LAST_UPDATED)));
-            mContactStats.setEventIntervalLimit(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LIMIT)));
-            mContactStats.setEventIntervalLongest(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST)));
-            mContactStats.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
-
-            /*mContactStats.setCallDurationTotal(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_DURATION_TOTAL)));
-            mContactStats.setCallDurationAvg(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_DURATION_AVG)));
-            mContactStats.setWordCountAvgIn(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_IN)));
-            mContactStats.setWordCountAvgOut(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_AVG_OUT)));
-
-            mContactStats.setWordCountIn(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_IN)));
-            mContactStats.setWordCountOut(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_WORD_COUNT_OUT)));
-            mContactStats.setMessageCountIn(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_IN)));
-            mContactStats.setMessageCountOut(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_MESSAGE_COUNT_OUT)));
-
-            mContactStats.setCallCountIn(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_IN)));
-            mContactStats.setCallCountOut(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_OUT)));
-            mContactStats.setCallCountMissed(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_CALL_COUNT_MISSED)));*/
-
-            mContactStats.setEventCount(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));
-            mContactStats.setStanding(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_STANDING)));
-
-            mContactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
-
-            mContactStats.resetUpdateFlag(); //because this is just reporting on the database content
-        }
-    }
 
     /**
      * Fetches the width or height of the screen in pixels, whichever is larger. This is used to

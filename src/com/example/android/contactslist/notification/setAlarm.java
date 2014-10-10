@@ -158,7 +158,7 @@ Class for asynchronously importing data
         protected String doInBackground(Void... v1) {
 
             dbUpdates.localSourceRead();
-
+            dbUpdates.close();
             /*
             //for testing
             int i;

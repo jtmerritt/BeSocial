@@ -2,6 +2,7 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Small Tasks***
+- having an overlap time for the update can lead to duplicate data getting added into stats
 + Event Entry Fragment
     - [done] hook into event database
     - flag for manually entered events?
@@ -23,14 +24,15 @@ ___________________________________________________________________
 - have a feature to display the library of tags
 
 ***Medium Tasks***
++ app should add and remove contact from Misses You group automatically at the appropriate times
+    - [done] can add/remove contacts from group at time of update
+    - [done] can add/remove contacts from group at time of manual event entry
+    - can add/remove contacts if all contacts are updated, before a notification
+    - can remove contacts when examining the content of the group, assuming all are updated.
++ Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
     - score over time
-+ Create class to estimate contact due date
-+ app should add and remove contact from Misses You group automatically at the appropriate times
-    - can remove contacts from group at time of update
-    - can add/remove contacts if all contacts are updated, before a notification
-    - can remove contacts when examining the content of the group, assuming all are updated.
 - add another option to the CAB:
     - Move selection to another group
     -
@@ -56,8 +58,9 @@ ___________________________________________________________________
 - On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
 - Make the Cancel update button work.
 - interface for other applications to send text to this, and enter that text into the event database with full analysis
-
-
+- For periodic database updates, it may be faster just to do it by message, rather than contact
+- Is it a problem that the method that creates the master contact list for the update, is also
+    reading from the Misses You list?
 
 ***Not Sure if Needed***
 - Is it possible to monitor when communication happens from a different app?

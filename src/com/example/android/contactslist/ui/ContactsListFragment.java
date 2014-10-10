@@ -66,6 +66,7 @@ import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactsGroupQuery;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.GroupMembership;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.notification.SetAlarm;
 import com.example.android.contactslist.notification.FileIO;
 import com.example.android.contactslist.util.ImageLoader;
@@ -1177,18 +1178,21 @@ public class ContactsListFragment extends ListFragment implements
                 Uri uri = data.getData();
 
                 // get the contact lookupKey
-                //List<String> path = uri.getPathSegments();
-                //String contactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
+                List<String> path = uri.getPathSegments();
+                String contactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
 
                 String contactID = uri.getLastPathSegment();
+
+                ContactInfo contactInfo = new ContactInfo("",contactLookupKey,
+                        Long.parseLong(contactID) );
 
                 // remove the contact from the group
                 GroupMembership groupMembership = new GroupMembership(getActivity());
 
                 // if the remove action fails, throw out a Toast for the user
-                if (!groupMembership.setContactGroupMembership(mGroupID, contactID)) {
+                if (groupMembership.setContactGroupMembership(mGroupID, contactInfo)) {
                     // notify user of the bad contact
-                    Toast.makeText(getActivity(), "Error with contact selection",
+                    Toast.makeText(getActivity(), R.string.menu_accept,
                             Toast.LENGTH_SHORT).show();
                 }
 

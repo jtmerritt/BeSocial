@@ -135,6 +135,7 @@ public class ImportActivity extends FragmentActivity {
         final AsyncTask<Void, Integer, String> dbImport =
                 new Imports(mPhoneProgressBar, 1/*Imports.IMPORT_LOCAL_DB*/,
                         xml_file_path, mContext);
+
         mGetLocalDb =(Button) findViewById(R.id.phone_sms_import);
         mGetLocalDb.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
