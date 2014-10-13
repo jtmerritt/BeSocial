@@ -29,6 +29,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="CWAC-LoaderEx" level="project" />
+    <orderEntry type="library" name="mpandroidchartlibrary" level="project" />
   </component>
 </module>
 

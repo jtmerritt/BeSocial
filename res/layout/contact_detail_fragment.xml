@@ -307,12 +307,11 @@
                         android:layout_alignParentRight="true"
                         android:layout_alignParentEnd="true" />
 
-                    <LinearLayout
+
+                    <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/tiny_chart"
-                        android:orientation="vertical"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:focusableInTouchMode="false"></LinearLayout>
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp" />
                 </LinearLayout>
 
                 <LinearLayout

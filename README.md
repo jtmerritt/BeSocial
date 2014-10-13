@@ -73,6 +73,7 @@ ___________________________________________________________________
 Notes
 ___________________________________________________________________
 Get library for a chartengine: https://code.google.com/p/achartengine/
+Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 
 Done

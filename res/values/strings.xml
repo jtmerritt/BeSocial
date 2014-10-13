@@ -25,6 +25,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="date_format">MM-dd-yyyy</string>
+    <string name="point_units"> ツ</string>
 
 
     <!-- Contact List Fragment Strings -->

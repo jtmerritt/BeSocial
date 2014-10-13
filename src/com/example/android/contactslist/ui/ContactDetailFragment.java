@@ -82,8 +82,7 @@ import com.example.android.contactslist.util.ImageUtils;
 import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
 import com.example.android.contactslist.contactStats.ContactInfo;
-
-
+import com.github.mikephil.charting.charts.LineChart;
 
 
 
@@ -170,6 +169,8 @@ public class ContactDetailFragment extends Fragment implements
     private ObservableScrollView mScrollView;
 
     private ContactDetailAdapter mContactDetailAdapter;
+
+    private ContactDetailChartView contactDetailChartView;
 
 
 
@@ -479,8 +480,14 @@ public class ContactDetailFragment extends Fragment implements
             }
         }) ;
 
+
+        contactDetailChartView = new ContactDetailChartView(mContext, detailView);
+        contactDetailChartView.makeLineChart(R.id.tiny_chart);
+
         return detailView;
     }
+
+
 
 
     @Override
@@ -997,7 +1004,7 @@ public class ContactDetailFragment extends Fragment implements
 
                 if (mContactStats != null) {
 
-                    if(data.moveToFirst()){
+                    if(data != null && data.moveToFirst()){
                         tallyStatsFromEventCursor(data);
 
                     }else {
@@ -1006,6 +1013,9 @@ public class ContactDetailFragment extends Fragment implements
 
                     // put the stats up on display
                     displayContactStatsInfo();
+
+                    contactDetailChartView.addDataFromEventCursor(data);
+
 
                     //set the subtitle of the view based on the number of months
                     switch (mNumMonthsBackForMessageStats) {
