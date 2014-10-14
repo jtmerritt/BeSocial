@@ -354,14 +354,13 @@ public class chartMaker implements ChartMakerCallback {
 
         //clear the series
         mDisplaySeries.clear();
-        //mSeriesSMS.clear();
-
 
         // open the EventCondenser to render event data to buckets of weeks, months, etc.
         EventCondenser eventCondenser = new EventCondenser();
 
         eventCondenser.setData(mEventLog);
         eventCondenser.setFirstDayOfWeek(preferred_first_day_of_week);
+        eventCondenser.setEventClass(mDataFeedClass);
         mBarChartEventLog = eventCondenser.condenseData(mChartRange);
 
 

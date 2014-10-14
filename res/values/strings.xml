@@ -287,7 +287,7 @@
 
     <!-- contact detail chart activity -->
     <string name="contact_detail_chart_activity_label">Chart Activity</string>
-    <string name="chart_date_format">MMM \'yy</string>
+    <string name="chart_date_format">MMM \'\'yy</string>
     <string name="Month">Month</string>
     <string name="Year">Year</string>
 

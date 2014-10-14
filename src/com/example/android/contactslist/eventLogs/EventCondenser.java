@@ -14,6 +14,7 @@ public class EventCondenser {
     private List<EventInfo> mOutputEventLog  = new ArrayList<EventInfo>();
     private List<EventInfo> mEventLog;
     Calendar cal = Calendar.getInstance();
+    int preferred_event_class = EventInfo.ALL_CLASS;
 
 
 
@@ -32,6 +33,14 @@ public class EventCondenser {
 
         cal.setFirstDayOfWeek(start_of_week);
     }
+
+
+    public void setEventClass(int eventClass){
+
+        // TODO check value against the set of allowed values
+        preferred_event_class = eventClass;
+    }
+
 
     public List<EventInfo> condenseData(int bucket_size)
     {
@@ -91,13 +100,20 @@ public class EventCondenser {
     {
         boolean newElement = true;
 
+
+        // filter new events for the desired class
+        if(!(info.getEventClass() == preferred_event_class
+            || preferred_event_class == EventInfo.ALL_CLASS)){
+            return;
+        }
+
         // TODO cycling through the full list of accumulated events is wildly inefficient
         if(!mOutputEventLog.isEmpty())
         {
             for(EventInfo eventRecord:mOutputEventLog){
+
+                // filter for events of the desired event date bucket
                 if(eventRecord.eventDate == info.eventDate
-                        && eventRecord.getEventClass() == info.getEventClass()
-                    //&& Log.get(j).getEventType() == info.getEventType()
                         )
 
                 {

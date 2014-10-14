@@ -544,6 +544,9 @@ public class ContactDetailFragment extends Fragment implements
     private void getContactMessageStats(){
         getLoaderManager().restartLoader(ContactEventLogQuery.QUERY_ID, null, this);
     }
+    private void getContactDetailChart(){
+        getLoaderManager().restartLoader(ContactChartEventLogQuery.QUERY_ID, null, this);
+    }
     private void getContactDetailImage(){
         getLoaderManager().restartLoader(ContactDetailPhotoQuery.QUERY_ID, null, this);
     }
@@ -811,6 +814,35 @@ public class ContactDetailFragment extends Fragment implements
                         where4, whereArgs4,
                         MediaStore.Images.ImageColumns.DATE_TAKEN+" DESC");
 
+            case ContactChartEventLogQuery.QUERY_ID:
+                // This query loads data from SocialEventsContentPRovider.
+
+                    // specify the date range to query
+                    Long start_date;
+                    Long end_date;
+                    Calendar cal5 = Calendar.getInstance();
+                    end_date = cal5.getTimeInMillis();
+
+                    // lets look one year back
+                    cal5.roll(Calendar.YEAR, -1);
+
+                    start_date = cal5.getTimeInMillis();
+
+
+                    //prepare the shere and args clause for the contact lookup key
+                    final String where5 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                            + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
+
+                    String[] whereArgs5 ={ mContactLookupKey,
+                            Long.toString(start_date), Long.toString(end_date)};
+
+                    return new CursorLoader(getActivity(),
+                            SocialEventsContentProvider.SOCIAL_EVENTS_URI,
+                            null,
+                            where5, whereArgs5,
+                            SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
+
+
         }
         return null;
 
@@ -1014,9 +1046,6 @@ public class ContactDetailFragment extends Fragment implements
                     // put the stats up on display
                     displayContactStatsInfo();
 
-                    contactDetailChartView.addDataFromEventCursor(data);
-
-
                     //set the subtitle of the view based on the number of months
                     switch (mNumMonthsBackForMessageStats) {
                         case 1:
@@ -1032,6 +1061,8 @@ public class ContactDetailFragment extends Fragment implements
                     }
 
                 }
+
+                getContactDetailChart();
                 break;
 
             case ContactDetailPhotoQuery.QUERY_ID:
@@ -1095,6 +1126,31 @@ public class ContactDetailFragment extends Fragment implements
 
                 }
 
+                break;
+
+            case ContactChartEventLogQuery.QUERY_ID:
+
+                if (mContactStats != null &&
+                        data != null &&
+                        data.moveToFirst() ){
+                    // create an instance of the Events Contract for proper cursor interpretation
+                    SocialEventsContract sec = new SocialEventsContract(mContext);
+                    EventInfo event = null;
+                    ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+
+                    do{
+
+                        //populate the event from the cursor
+                        event = sec.setEventInfoFromCursor(event, data);
+                        eventList.add(event);
+
+                    }while(data.moveToNext());
+
+
+
+                    contactDetailChartView.addDataFromEventList(eventList);
+                    sec.close();
+                }
                 break;
         }
     }
@@ -1630,6 +1686,11 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     // for getting a MMS photo
     public interface ContactDetailPhotoQuery{
         final static int QUERY_ID = 11;
+    }
+
+    // for getting the event Log for the detail chart
+    public interface ContactChartEventLogQuery{
+        final static int QUERY_ID = 12;
     }
 
 /*

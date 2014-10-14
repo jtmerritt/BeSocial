@@ -385,7 +385,7 @@ public class SocialEventsContract {
     /*
     load the cursor information into the eventInfo
      */
-    private EventInfo setEventInfoFromCursor(EventInfo event, Cursor cursor) {
+    public EventInfo setEventInfoFromCursor(EventInfo event, Cursor cursor) {
         event = new EventInfo(cursor.getString(TableEntry.CONTACT_NAME),
                 cursor.getString(TableEntry.CONTACT_KEY),
                 cursor.getString(TableEntry.CONTACT_ADDRESS),
