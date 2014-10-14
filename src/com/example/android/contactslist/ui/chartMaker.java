@@ -2,14 +2,17 @@ package com.example.android.contactslist.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.example.android.contactslist.ChartMakerCallback;
 import com.example.android.contactslist.ContactDetailChartFragmentCallback;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.eventLogs.EventCondenser;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.LoadEventLogTask;
 
@@ -32,6 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import static com.example.android.contactslist.eventLogs.EventCondenser.BucketSize.DAILY;
+import static com.example.android.contactslist.eventLogs.EventCondenser.BucketSize.MONTHLY;
+import static com.example.android.contactslist.eventLogs.EventCondenser.BucketSize.WEEKLY;
+import static com.example.android.contactslist.eventLogs.EventCondenser.BucketSize.YEARLY;
 
 
 /**
@@ -42,7 +49,6 @@ public class chartMaker implements ChartMakerCallback {
     // create data set for the charts
     private List<EventInfo> mBarChartEventLog;
     List<EventInfo> mEventLog = new ArrayList<EventInfo>();
-    private Long contactID;
     private String mContactLookupKey;
     private ContentResolver mContentResolver;
     private ContactDetailChartFragmentCallback mContactDetailFragmentCallback;
@@ -86,7 +92,7 @@ public class chartMaker implements ChartMakerCallback {
         mDateMax = mDateNow;
         mDateMin = mDateNow - (double)ONE_YEAR;
 
-        mChartRange = 2;
+        mChartRange = MONTHLY;
 
         //set default data feed class
         mDataFeedClass = 0; //all data
@@ -323,26 +329,22 @@ public class chartMaker implements ChartMakerCallback {
 
     private boolean setNewDataSet(){
 
-        long bucket_time;
+        Date date;
         long eventDuration;
         long wordCount;
         mBarChartEventLog = new ArrayList<EventInfo>();
-        final int conversion_ratio = mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
+        final int conversion_ratio =
+                mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
 
-        //Calendar http://developer.android.com/reference/java/util/Calendar.html
-        Calendar cal = Calendar.getInstance();
-        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        int preferred_first_day_of_week =
+                sharedPref.getInt("first_day_of_week_preference_key",
+                        EventCondenser.DayOfWeek.MONDAY);
 
         // format date string
-        DateFormat formatMonth = new SimpleDateFormat("MMM''yy");
+        DateFormat formatMonth =
+                new SimpleDateFormat(mContext.getResources().getString(R.string.chart_date_format));
         String formattedDate1 = null;
-
-        //grab contact relevant event data from db
-        /*
-        moved to async task
-        SocialEventsContract db = new SocialEventsContract(mContext);
-        mEventLog = db.getEventsInDateRange(mContactName, mDataFeedClass, (long)mDateMin, (long)mDateMax);
-        db.closeSocialEventsContract(); */
 
         //exit if there is no data
         if(mEventLog.size() == 0){
@@ -354,30 +356,31 @@ public class chartMaker implements ChartMakerCallback {
         mDisplaySeries.clear();
         //mSeriesSMS.clear();
 
-        cookChartData(mChartRange);
+
+        // open the EventCondenser to render event data to buckets of weeks, months, etc.
+        EventCondenser eventCondenser = new EventCondenser();
+
+        eventCondenser.setData(mEventLog);
+        eventCondenser.setFirstDayOfWeek(preferred_first_day_of_week);
+        mBarChartEventLog = eventCondenser.condenseData(mChartRange);
 
 
 
         // transfer the eventLog to the dataset
         int j=mBarChartEventLog.size();
 
-        if(j == 0){
+        if(mBarChartEventLog == null || mBarChartEventLog.isEmpty()){
             return false;
             //do not clear the data logs that are already displayed
-        }
-
-        do {
-            // Implentation reverses the display order of the call log.
-            j--;
-            if (j >= 0)
-            {
+        }else {
+            for(EventInfo bucketEvent:mBarChartEventLog){
 
                 // add into the data set
                 switch(mDataFeedClass){
                     case EventInfo.PHONE_CLASS:
                     case EventInfo.SKYPE:
-                        eventDuration = mBarChartEventLog.get(j).getDuration();
-                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                        eventDuration = bucketEvent.getDuration();
+                        mDisplaySeries.add(bucketEvent.getDate(), /*date of call. Time of day?*/
                                 secondsToDecimalMinutes(eventDuration) /*Length of the call in Minutes*/
                         );
                         break;
@@ -385,67 +388,47 @@ public class chartMaker implements ChartMakerCallback {
                     case EventInfo.GOOGLE_HANGOUTS:
                     case EventInfo.EMAIL_CLASS:
                     case EventInfo.FACEBOOK:
-                        wordCount = mBarChartEventLog.get(j).getWordCount();
-                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                        wordCount = bucketEvent.getWordCount();
+                        mDisplaySeries.add(bucketEvent.getDate(), /*date of call. Time of day?*/
                                 (double)wordCount /*Length of messages*/
                         );
                         break;
-                    default:
-                        eventDuration = mBarChartEventLog.get(j).getDuration();
-                        wordCount = mBarChartEventLog.get(j).getWordCount();
-                        mDisplaySeries.add(mBarChartEventLog.get(j).getDate(), /*date of call. Time of day?*/
+                    //
+                    default:// event score
+                        eventDuration = bucketEvent.getDuration();
+                        wordCount = bucketEvent.getWordCount();
+                        mDisplaySeries.add(bucketEvent.getDate(), /*date of call. Time of day?*/
                                 (double)wordCount/(double)conversion_ratio +secondsToDecimalMinutes(eventDuration) /*Length of event*/
                                 // normalized combined data
                         );
                 }
 
-                //Collect the bucket date depending on the preference
-                cal.setTimeInMillis(mBarChartEventLog.get(j).getDate());
-
-                // adding text lables for the x-axis
-                switch(mChartRange){
-                    case 1:
-                        cal.set(Calendar.DAY_OF_WEEK, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    case 2:  //This is done differently
-                        cal.set(Calendar.DAY_OF_MONTH, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    case 3:
-                        cal.set(Calendar.DAY_OF_YEAR, 1);
-                        bucket_time = cal.getTimeInMillis();
-                        break;
-
-                    default:
-                        bucket_time = mBarChartEventLog.get(j).getDate();
-                        mRenderer.addXTextLabel(bucket_time, "!");
-                }
-                Date date = new Date(bucket_time);
+                date = new Date(bucketEvent.getDate());
                 formattedDate1 = formatMonth.format(date);
-                mRenderer.addXTextLabel(bucket_time, formattedDate1);
-
+                mRenderer.addXTextLabel(bucketEvent.getDate(), formattedDate1);
             }
-        } while (j>0);
+        }
+
+
+
 
 
         switch(mChartRange){
-            case 1:
-                mRenderer.setXTitle("Week");
+            case WEEKLY:
+                mRenderer.setXTitle(mContext.getResources().getString(R.string.Week));
 
                 break;
-            case 2:
-                mRenderer.setXTitle("Time");
+            case MONTHLY:
+                mRenderer.setXTitle(mContext.getResources().getString(R.string.Month));
 
                 break;
-            case 3:
-                mRenderer.setXTitle("Year");
+            case YEARLY:
+                mRenderer.setXTitle(mContext.getResources().getString(R.string.Year));
 
                 break;
+            case DAILY:
             default:
-                mRenderer.setXTitle("Time");
+                mRenderer.setXTitle(mContext.getResources().getString(R.string.Day));
         }
 
         return true;
@@ -483,107 +466,6 @@ public class chartMaker implements ChartMakerCallback {
 
         mDataFeedClass = pos;
         loadContactEventLogs();
-    }
-   
-    
-    private void cookChartData(int bucket_size)
-    {
-        //Calendar http://developer.android.com/reference/java/util/Calendar.html
-        Calendar cal = Calendar.getInstance();
-        cal.setFirstDayOfWeek(Calendar.MONDAY);  //TODO: make first day of the week into a setting
-        EventInfo ChartEventInfo;
-
-        int j=mEventLog.size();
-        do {
-            // Implentation reverses the display order of the call log.
-            j--;
-            if (j >= 0)
-            {
-                //set eventDate back to the start of the bucket depending on the preference
-                cal.setTimeInMillis(mEventLog.get(j).getDate());
-                switch(bucket_size){
-                    case 1:
-                        cal.set(Calendar.DAY_OF_WEEK, 1);
-                        break;
-                    case 2:
-                        cal.set(Calendar.DAY_OF_MONTH, 1);
-                        break;
-                    case 3:
-                        cal.set(Calendar.DAY_OF_YEAR, 1);
-                        break;
-                    default:
-
-                }
-
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-
-                ChartEventInfo = new EventInfo("", "", "",
-                        mEventLog.get(j).getEventClass(), mEventLog.get(j).getEventType(),
-                        cal.getTimeInMillis(), "",
-                        0,0,0,  //set all counts to zero
-                        EventInfo.NOT_SENT_TO_CONTACT_STATS);
-
-                ChartEventInfo.eventID = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US);
-
-
-                // add into the correct data set
-                switch(ChartEventInfo.eventClass){
-                    case EventInfo.PHONE_CLASS:
-                    case EventInfo.SKYPE:
-                        ChartEventInfo.eventDuration = mEventLog.get(j).getDuration(); /*Length of the call in seconds*/
-                        break;
-                    case EventInfo.SMS_CLASS:
-                    case EventInfo.GOOGLE_HANGOUTS:
-                    case EventInfo.EMAIL_CLASS:
-                    case EventInfo.FACEBOOK:
-                        ChartEventInfo.eventWordCount = mEventLog.get(j).getWordCount(); /*Length of the call in Minutes*/
-                        ChartEventInfo.eventCharCount = mEventLog.get(j).getCharCount();
-                        break;
-                    default:
-                }
-
-                bucketEventInfoByDate(ChartEventInfo, mBarChartEventLog);
-            }
-
-        } while (j>0);
-    }
-
-
-    private void bucketEventInfoByDate(EventInfo info, List<EventInfo> Log)
-    {
-        int j;
-        boolean newElement = true;
-
-        if(!Log.isEmpty())
-        {
-            j=Log.size();
-
-            do{
-                j--;
-                if(Log.get(j).eventDate == info.eventDate
-                        && Log.get(j).getEventClass() == info.getEventClass()
-                    //&& Log.get(j).getEventType() == info.getEventType()
-                        )
-
-                {
-                    Log.get(j).eventDuration += info.getDuration();
-                    Log.get(j).eventCharCount += info.getCharCount();
-                    Log.get(j).eventWordCount += info.getWordCount();
-
-                    newElement = false;
-
-                    break;
-                }
-            }while(j>0);
-        }
-
-        if(newElement){
-            Log.add(info);
-        }
-
     }
 
 

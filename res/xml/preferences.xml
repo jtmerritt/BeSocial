@@ -76,4 +76,13 @@
         android:entries="@array/string_array_list_of_contact_groups"
         android:entryValues="@array/string_array_list_of_contact_groups"
         android:defaultValue="@string/contact_group_preference_default" />
+
+    <ListPreference
+        android:key="first_day_of_week_preference_key"
+        android:title="@string/choose_first_day_of_week_preference_title"
+        android:dialogTitle="@string/choose_first_day_of_week_preference_title"
+        android:entries="@array/string_array_list_of_days_of_week"
+        android:entryValues="@array/int_array_list_of_days_of_week"
+        android:defaultValue="@string/first_day_of_week_preference_default" />
+
 </PreferenceScreen>

@@ -211,6 +211,32 @@
     </string-array>
 
 
+    <!-- Default First Day of Week -->
+        <string name="choose_first_day_of_week_preference_title"
+            >First Day of the Week</string>
+    <string name="first_day_of_week_preference_default"
+        >Monday</string>
+    <string-array name="string_array_list_of_days_of_week">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+    <!-- We use an integer array to correspond with the Calendar() Days of the Week -->
+    <integer-array name="int_array_list_of_days_of_week">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </integer-array>
+
+
 
     <!-- Strings for Navigation Drawer -->
     <string name="drawer_open">Open navigation drawer</string>
@@ -261,6 +287,11 @@
 
     <!-- contact detail chart activity -->
     <string name="contact_detail_chart_activity_label">Chart Activity</string>
+    <string name="chart_date_format">MMM \'yy</string>
+    <string name="Month">Month</string>
+    <string name="Year">Year</string>
+
+
 
 
     <!-- Chart Maker -->
