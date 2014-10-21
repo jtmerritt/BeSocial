@@ -10,10 +10,12 @@ import android.widget.ProgressBar;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 
+import com.example.android.contactslist.ContactSMSLogQuery;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.language.LanguageAnalysis;
 import com.example.android.contactslist.notification.UpdateNotification;
+import com.example.android.contactslist.ui.ContactDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +54,11 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
 
     }
 
+    public void insertEventLog(Cursor newCursor){
+        mSMSLogCursor = newCursor;
+
+        mCursorCount = mSMSLogCursor.getCount();
+    }
 
     public void openSMSLog(Long lastUpdateTime){
         Time now = new Time();
@@ -69,7 +76,7 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
         http://stackoverflow.com/questions/15130280/how-to-count-last-date-inbox-sms-in-android
         http://www.sqlite.org/lang_datefunc.html
          */
-        String where = "date BETWEEN ? AND ? ";  // all comparrisons in milliseconds
+        String where = ContactSMSLogQuery.WHERE;
         String[] whereArgs = {Long.toString(lastUpdateTime), Long.toString(date_now)};
 
         //but if the date is less than 1, it means there has been no previous update
@@ -262,6 +269,8 @@ Method to update the notification window and the activity progress bar, if avail
                     eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
                     //Log.d("GatherSMSLog: ", "End language count");
 
+                    // This is a temporary record of the smsBody, not sent to the event DB
+                    eventInfo.eventNotes = smsBody;
 
                     eventInfo.setContactID(contact.getIDLong());  //use the ID of the first contact
                     eventInfo.setEventID(eventID);
@@ -406,6 +415,9 @@ Method to update the notification window and the activity progress bar, if avail
                         eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
                         eventInfo.setEventID(eventID);
 
+                        // This is a temporary record of the smsBody, not sent to the event DB
+                        eventInfo.eventNotes = smsBody;
+
                         //Add the new event to the ArrayList
                         mEventLog.add(eventInfo);
                     }
@@ -433,6 +445,9 @@ Method to update the notification window and the activity progress bar, if avail
 
                         eventInfo.setContactID(reverseLookupContacts.get(0).getIDLong());  //use the ID of the first contact
                         eventInfo.setEventID(eventID);
+
+                        // This is a temporary record of the smsBody, not sent to the event DB
+                        eventInfo.eventNotes = smsBody;
 
                         //Add the new event to the ArrayList
                         mEventLog.add(eventInfo);
@@ -481,52 +496,6 @@ Method to update the notification window and the activity progress bar, if avail
         return null;
     }
 
-
-
-
-
-    private interface ContactSMSLogQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 4;
-
-        //create URI for the SMS query
-        final String contentParsePhrase = "content://sms/";  //for all messages
-        final static Uri SMSLogURI= Uri.parse(contentParsePhrase);
-
-        // The query projection (columns to fetch from the provider)
-        // FROM http://stackoverflow.com/questions/16771636/where-clause-in-contentproviders-query-in-android
-        final static String[] PROJECTION = {
-                "_id",      //message ID
-                "date",     //date of message long
-                "address", // phone number long
-                "person", //contact ID - kinda useless
-                "body", //body of message
-                "status", //see what delivery status reports (for both MMS and SMS) have not been delivered to the user.
-                "type" //  Inbox, Sent, Draft
-        };
-        /*
-        { "address", "body", "person", "reply_path_present",
-              "service_center", "status", "subject", "type", "error_code" };
-         */
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        // Except they never quite worked in this context.
-        final static String SELECTION =
-                "person LIKE ?" ; //"address IN (" + phoneNumbers + ")";  // "address LIKE ?"
-
-        final String SORT_ORDER = null;   //example: "DATE desc"
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int DATE = 1;
-        final static int ADDRESS = 2;
-        final static int CONTACT_ID = 3;  //kinda useless
-        final static int BODY = 4;
-        final static int STATUS = 5;
-        final static int TYPE = 6;
-    }
 
 
 }

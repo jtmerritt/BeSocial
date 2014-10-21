@@ -23,5 +23,8 @@
 
     <integer name="conversion_text_over_voice">20</integer>
 
+    <integer name="detail_chart_animation_time">5000</integer>
+
+
 
 </resources>

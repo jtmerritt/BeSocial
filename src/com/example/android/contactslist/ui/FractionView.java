@@ -16,19 +16,15 @@ import android.graphics.RectF;
 
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 import com.example.android.contactslist.FractionViewCallback;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.LoadContactStatsTask;
 import com.example.android.contactslist.contactStats.ContactInfo;
 
 
-import java.util.List;
-
 public class FractionView extends View implements FractionViewCallback {
 
     private String TAG = "FractionView";
-    private Paint mCirclePaint;
     private Paint mRedPaint;
     private RectF mSectorOval;
     private Paint mGreenPaint;
@@ -44,7 +40,6 @@ public class FractionView extends View implements FractionViewCallback {
     private int cy = 0;
     private int radius = 0;
     private int touchCount = 0;
-    private TranslateAnimation translateAnimation;
     private int textSize = 25;
     private boolean mLargeCanvas = false;
     private Context mContext;
@@ -159,7 +154,7 @@ public class FractionView extends View implements FractionViewCallback {
 
         // set a default display until the data loads
         mfraction = (float)0;
-        invalidate();
+        //invalidate();
     }
 
 
@@ -244,7 +239,6 @@ public class FractionView extends View implements FractionViewCallback {
     }
 
     private void setDisplayStrings(){
-        //TODO: Add to strings.xml
         //for reasons unknown, breaking this operation into several lines was essential for operation
         /*
        float displayValue = mfraction*100;

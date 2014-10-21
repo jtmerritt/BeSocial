@@ -52,4 +52,10 @@
         android:icon="@drawable/ic_action_statistics"
         android:showAsAction="ifRoom"/>
 
+
+    <item
+        android:id="@+id/run_test"
+        android:title="Test"
+        android:icon="@drawable/ic_action_accept"
+        android:showAsAction="ifRoom"/>
 </menu>

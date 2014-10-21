@@ -338,8 +338,8 @@ public class chartMaker implements ChartMakerCallback {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         int preferred_first_day_of_week =
-                sharedPref.getInt("first_day_of_week_preference_key",
-                        EventCondenser.DayOfWeek.MONDAY);
+                Integer.parseInt(
+                        sharedPref.getString("first_day_of_week_preference_key", "2"));
 
         // format date string
         DateFormat formatMonth =

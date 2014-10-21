@@ -68,21 +68,23 @@ import android.widget.ListView;
 
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.ContactSMSLogQuery;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ScrollViewListener;
 import com.example.android.contactslist.contactStats.IntervalStats;
+import com.example.android.contactslist.dataImport.GatherSMSLog;
 import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
+import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
 import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
 import com.example.android.contactslist.contactStats.ContactInfo;
-import com.github.mikephil.charting.charts.LineChart;
 
 
 
@@ -162,6 +164,7 @@ public class ContactDetailFragment extends Fragment implements
     private String mContactNameString;
 
     private FractionView fractionView = null;
+    private WordCloudView wordCloudView = null;
     private Context mContext;
     private ImageButton mOpenFullScreenChartButton;
     private LinearLayout mDetailFillerSpace;
@@ -171,6 +174,7 @@ public class ContactDetailFragment extends Fragment implements
     private ContactDetailAdapter mContactDetailAdapter;
 
     private ContactDetailChartView contactDetailChartView;
+    private boolean chart_loaded = false;
 
 
 
@@ -364,9 +368,9 @@ public class ContactDetailFragment extends Fragment implements
         //Populate items in content list
 
         //Fraction View
-
-                //addView(detailFractionViewLayout);
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
+
+        wordCloudView = (WordCloudView) detailView.findViewById(R.id.word_cloud);
 
 
 
@@ -477,6 +481,13 @@ public class ContactDetailFragment extends Fragment implements
                 mContactDetailImage.setAlpha(alpha);
                 mContactDetailImage.setTop(parallax);
                 mBlurredContactDetailImage.setTop(parallax);
+
+
+                // chart loading
+                if(!chart_loaded && y > 1400){
+                    getContactDetailChart();
+                    chart_loaded = true;
+                }
             }
         }) ;
 
@@ -521,8 +532,8 @@ public class ContactDetailFragment extends Fragment implements
     }
 
 
-    private void displayAddressLog(){
-        getLoaderManager().restartLoader(ContactAddressQuery.QUERY_ID, null, this);
+    private void displayWordCloud(){
+        getLoaderManager().restartLoader(ContactSMSLogQuery.QUERY_ID, null, this);
     }
 
     private void getContactStats(){
@@ -610,6 +621,9 @@ public class ContactDetailFragment extends Fragment implements
             case R.id.run_interval_stats:
                 runIntervalStats();
                 break;
+            case R.id.run_test:
+                displayWordCloud();
+                break;
             default:
                 // Display the fragment as the main content.
                 Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
@@ -651,6 +665,11 @@ public class ContactDetailFragment extends Fragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Long start_date;
+        Long end_date;
+        Calendar cal;
+        String where;
+
         switch (id) {
             // main queries to load the required information
             case ContactDetailQuery.QUERY_ID:
@@ -675,17 +694,36 @@ public class ContactDetailFragment extends Fragment implements
                 return new CursorLoader(getActivity(), mContactUri,
                         ContactDetailQuery.PROJECTION,
                         null, null, null);
-            case LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
-                */
+
+                        */
+            case ContactSMSLogQuery.QUERY_ID:
+                // This query loads SMS logs
+
+                // specify the date range to query
+                cal = Calendar.getInstance();
+                end_date = cal.getTimeInMillis();
+
+                // lets look one year back
+                cal.add(Calendar.YEAR, -1);
+
+                start_date = cal.getTimeInMillis();
+
+                String[] whereArgsSMS = {Long.toString(start_date), Long.toString(end_date)};
+
+
+                return new CursorLoader(getActivity(),
+                        ContactSMSLogQuery.SMSLogURI,
+                        ContactSMSLogQuery.PROJECTION,
+                        ContactSMSLogQuery.WHERE,
+                        whereArgsSMS,
+                        ContactSMSLogQuery.SORT_ORDER);
+
+
             case ContactStatsQuery.QUERY_ID:
                 // This query loads data from ContactStatsContentProvider.
 
                 //prepare the shere and args clause for the contact lookup key
-                final String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+                where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
                 String[] whereArgs ={ mContactLookupKey };
 
                 return new CursorLoader(getActivity(),
@@ -697,10 +735,12 @@ public class ContactDetailFragment extends Fragment implements
             case ContactVoiceNumberQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
                 // https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
+
+                where = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?";
                 return new CursorLoader(getActivity(),
                         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ?",
+                        where,
                         new String[] { mContactLookupKey },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
@@ -716,21 +756,25 @@ public class ContactDetailFragment extends Fragment implements
             case ContactSMSNumberQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
 
+                where = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
+                        + ContactsContract.CommonDataKinds.Phone.TYPE + " = ?";
+
                 return new CursorLoader(getActivity(),
                         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         new String[] { ContactsContract.CommonDataKinds.Phone.NUMBER }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
-                        + ContactsContract.CommonDataKinds.Phone.TYPE + " = ?",
+                        where,
                         new String[] { mContactLookupKey, Integer.toString(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
             case ContactEmailAddressQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
 
+                where = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? ";
+
                 return new CursorLoader(getActivity(),
                         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                         new String[] { ContactsContract.CommonDataKinds.Email.ADDRESS }, //null
-                        ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? ",
+                        where,
                         new String[] { mContactLookupKey },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
@@ -738,7 +782,7 @@ public class ContactDetailFragment extends Fragment implements
                 // get all the phone numbers for this contact, sorted by whether it is super primary
                 // http://stackoverflow.com/questions/12524621/how-to-get-note-value-from-contact-book-in-android
 
-                String noteWhere = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
+                where = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY + " = ? AND "
                         + ContactsContract.Data.MIMETYPE + " = ?";
                 String[] noteWhereParams = new String[]{mContactLookupKey,
                         ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
@@ -747,7 +791,7 @@ public class ContactDetailFragment extends Fragment implements
                         ContactsContract.Data.CONTENT_URI,
                         new String[] { ContactsContract.CommonDataKinds.Note.NOTE }, //null
 
-                        noteWhere,
+                        where,
                         noteWhereParams,
                         null);
 
@@ -757,40 +801,38 @@ public class ContactDetailFragment extends Fragment implements
                 // If there is a call to retrieve all the data, then use only the contactKey in the query
                 if(mNumMonthsBackForMessageStats >= 500){
                     //prepare the shere and args clause for the contact lookup key
-                    final String where2 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+                    where = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
 
                     String[] whereArgs2 ={ mContactLookupKey};
 
                     return new CursorLoader(getActivity(),
                             SocialEventsContentProvider.SOCIAL_EVENTS_URI,
                             null,
-                            where2, whereArgs2,
+                            where, whereArgs2,
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
 
                 }else {
                     // If there is a call to retrieve data for a small number of months of data,
                     // then perform the query for the specified time range back from the current date
-                    Long startDate;
-                    Long endDate;
-                    Calendar cal = Calendar.getInstance();
-                    endDate = cal.getTimeInMillis();
+                    cal = Calendar.getInstance();
+                    end_date = cal.getTimeInMillis();
 
-                    cal.roll(Calendar.MONTH, -mNumMonthsBackForMessageStats);
+                    cal.add(Calendar.MONTH, -mNumMonthsBackForMessageStats);
 
-                    startDate = cal.getTimeInMillis();
+                    start_date = cal.getTimeInMillis();
 
 
                     //prepare the shere and args clause for the contact lookup key
-                    final String where3 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                    where = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
                             + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
 
                     String[] whereArgs3 ={ mContactLookupKey,
-                            Long.toString(startDate), Long.toString(endDate)};
+                            Long.toString(start_date), Long.toString(end_date)};
 
                     return new CursorLoader(getActivity(),
                             SocialEventsContentProvider.SOCIAL_EVENTS_URI,
                             null,
-                            where3, whereArgs3,
+                            where, whereArgs3,
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
                 }
             case ContactDetailPhotoQuery.QUERY_ID:
@@ -800,7 +842,7 @@ public class ContactDetailFragment extends Fragment implements
                         MediaStore.Images.ImageColumns.DATE_TAKEN};
 
                 //prepare the shere and args clause for the contact lookup key
-                final String where4 = MediaStore.Images.ImageColumns.TITLE + " Like ?";
+                where = MediaStore.Images.ImageColumns.TITLE + " Like ?";
 
                 // TODO replace with query of other photo sources
                 StringTokenizer stringTokenizer= new StringTokenizer(mContactNameString);
@@ -811,26 +853,24 @@ public class ContactDetailFragment extends Fragment implements
                 return new CursorLoader(getActivity(),
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                         projection,
-                        where4, whereArgs4,
+                        where, whereArgs4,
                         MediaStore.Images.ImageColumns.DATE_TAKEN+" DESC");
 
             case ContactChartEventLogQuery.QUERY_ID:
                 // This query loads data from SocialEventsContentPRovider.
 
                     // specify the date range to query
-                    Long start_date;
-                    Long end_date;
-                    Calendar cal5 = Calendar.getInstance();
-                    end_date = cal5.getTimeInMillis();
+                    cal = Calendar.getInstance();
+                    end_date = cal.getTimeInMillis();
 
                     // lets look one year back
-                    cal5.roll(Calendar.YEAR, -1);
+                    cal.add(Calendar.YEAR, -1);
 
-                    start_date = cal5.getTimeInMillis();
+                    start_date = cal.getTimeInMillis();
 
 
                     //prepare the shere and args clause for the contact lookup key
-                    final String where5 = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                    where = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
                             + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
 
                     String[] whereArgs5 ={ mContactLookupKey,
@@ -839,7 +879,7 @@ public class ContactDetailFragment extends Fragment implements
                     return new CursorLoader(getActivity(),
                             SocialEventsContentProvider.SOCIAL_EVENTS_URI,
                             null,
-                            where5, whereArgs5,
+                            where, whereArgs5,
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
 
 
@@ -933,50 +973,36 @@ public class ContactDetailFragment extends Fragment implements
                     // be scrolled by the user.
                 }
                 break;
-            case 99://LoadContactLogsTask.ContactSMSLogQuery.QUERY_ID:
-                if (data.moveToFirst()) {
-                    // This query loads the contact SMS log details for the contact. More than
-                    // one log is possible, so move each one to a
-                    // LinearLayout in a Scrollview so multiple addresses can
-                    // be scrolled by the user.
+            case ContactSMSLogQuery.QUERY_ID:
+                // check to see if the cursor contains any entries
+                if (data != null && data.moveToFirst()) {
+                    // use the GatherSMSLog class to process the cursor
 
-                    // Each LinearLayout has the same LayoutParams so this can
-                    // be created once and used for each address.
-                    final LinearLayout.LayoutParams CallLoglayoutParams =
-                            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                    GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                            mContext, null, null);
 
-                    // Clears out the details layout first in case the details
-                    // layout has CallLogs from a previous data load still
-                    // added as children.
+                    gatherSMSLog.insertEventLog(data);
 
-                    // Loops through all the rows in the Cursor
-                    if (!mEventLog.isEmpty()) {
+                    //grab only those events which match the current contact
+                    ArrayList<EventInfo> eventList =
+                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(mContactStats);
 
-                        int j=mEventLog.size();
-                        do {
-                            // Implentation reverses the display order of the call log.
-                            j--;
+                    gatherSMSLog.closeSMSLog();
 
-                            // If the item in the event log is for phone calls, display it.
-                            if(mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
-                                // Builds the address layout
-                                final LinearLayout layout = buildCallLogLayout(
-                                        mContactNameString,  /*name of caller, if available.*/
-                                        mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                                        mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                                        mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
+                    String[] words_to_ignore =
+                            getResources().getStringArray(R.array.array_of_prepositions);
 
+                    //tally word counts
+                    GatherWordCounts gatherWordCounts = new GatherWordCounts();
+                    gatherWordCounts.addEventList(eventList);
 
-                                // Adds the new address layout to the details layout
-                                mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-                            }
-                        } while (j>0);
+                    //get the sorted list of words
+                    ArrayList<Map.Entry<String,Integer>> word_list =
+                            gatherWordCounts.getWordList(words_to_ignore);
 
-                    } else {
-                        // If nothing found, adds an empty address layout
-                        mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
-                    }
+                    //Now send the list to the word cloud generator
+                    wordCloudView.setWordList(word_list);
+
                 }
                 break;
             case ContactStatsQuery.QUERY_ID:
@@ -987,6 +1013,7 @@ public class ContactDetailFragment extends Fragment implements
                     setFractionView();
 
                     setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
+
                 }
                     break;
             case ContactVoiceNumberQuery.QUERY_ID:
@@ -1062,7 +1089,6 @@ public class ContactDetailFragment extends Fragment implements
 
                 }
 
-                getContactDetailChart();
                 break;
 
             case ContactDetailPhotoQuery.QUERY_ID:
@@ -1147,9 +1173,10 @@ public class ContactDetailFragment extends Fragment implements
                     }while(data.moveToNext());
 
 
-
-                    contactDetailChartView.addDataFromEventList(eventList);
                     sec.close();
+
+                    // send the data to the chart class for processing
+                    contactDetailChartView.addDataFromEventList(eventList);
                 }
                 break;
         }

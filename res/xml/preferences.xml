@@ -85,4 +85,10 @@
         android:entryValues="@array/int_array_list_of_days_of_week"
         android:defaultValue="@string/first_day_of_week_preference_default" />
 
+    <CheckBoxPreference
+        android:key="animate_detail_chart_checkbox_preference_key"
+        android:title="@string/animate_detail_chart_preference_title"
+        android:summary="@string/animate_detail_chart_preference_summary"
+        android:defaultValue="true" />
+
 </PreferenceScreen>

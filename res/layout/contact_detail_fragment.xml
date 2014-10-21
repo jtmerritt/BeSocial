@@ -112,13 +112,12 @@
                         android:gravity="center"
                         android:textColor="@color/off_white_1" />
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/word_cloud_image"
-                        android:layout_margin="10dp"
-                        android:layout_gravity="center_horizontal"
-                        android:minWidth="150dp" />
+                    <com.example.android.contactslist.ui.WordCloudView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:id="@+id/word_cloud"
+                        android:padding="@dimen/padding"
+                        android:orientation="vertical" />
 
                 </LinearLayout>
 

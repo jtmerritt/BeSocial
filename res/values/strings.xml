@@ -215,7 +215,7 @@
         <string name="choose_first_day_of_week_preference_title"
             >First Day of the Week</string>
     <string name="first_day_of_week_preference_default"
-        >Monday</string>
+        >2</string>
     <string-array name="string_array_list_of_days_of_week">
         <item>Sunday</item>
         <item>Monday</item>
@@ -226,7 +226,7 @@
         <item>Saturday</item>
     </string-array>
     <!-- We use an integer array to correspond with the Calendar() Days of the Week -->
-    <integer-array name="int_array_list_of_days_of_week">
+    <string-array name="int_array_list_of_days_of_week">
         <item>1</item>
         <item>2</item>
         <item>3</item>
@@ -234,7 +234,14 @@
         <item>5</item>
         <item>6</item>
         <item>7</item>
-    </integer-array>
+    </string-array>
+
+
+    <!-- detail chart preference -->
+    <string name="animate_detail_chart_preference_title"
+            >Detail Chart Animation</string>
+    <string name="animate_detail_chart_preference_summary"
+                >Enable the animation?</string>
 
 
 
@@ -297,5 +304,30 @@
     <!-- Chart Maker -->
     <string name="sms">SMS</string>
     <string name="durration">Duration (min)</string>
+
+
+
+    <!--List of prepositions to remove from the word cloud -->
+    <string-array name="array_of_prepositions">
+        <item></item>
+        <item>a</item>
+        <item>an</item>
+        <item>as</item>
+        <item>at</item>
+        <item>be</item>
+        <item>by</item>
+        <item>do</item>
+        <item>in</item>
+        <item>is</item>
+        <item>it</item>
+        <item>of</item>
+        <item>or</item>
+        <item>on</item>
+        <item>to</item>
+        <item>and</item>
+        <item>for</item>
+        <item>the</item>
+
+    </string-array>
 
 </resources>

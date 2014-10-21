@@ -40,12 +40,18 @@ ___________________________________________________________________
 
 
 ***Large Tasks***
-+ Make static plot for recent history of contact
++ [bug] the scroll position for the current detail view affects the chart loading for the next page
+    - premature loading of the chart
 + Word cloud
+    - words you use with someone
+    - words you use with others but don't use with the current contact
 - Social event viewer
     - have a feature to display the library of tags
 - Need to have some kind of happy chime and message after making contact with a friend
-- Create a first-time startup UI
+- Create cards viewer for special data
+    - Create a first-time startup UI
+    - infrequent charts
+    - feature notifications
     - make animation for welcome screen
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Access hangouts data: ?
@@ -78,6 +84,10 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
++ [done] Make static plot for recent history of contact
+    - make it load when user scrolls down
+    - there needs to be a datapoint for every month/week, in range, even if zero
+
 - having an overlap time for the update can lead to duplicate data getting added into stats
 
 + app should add and remove contact from Misses You group automatically at the appropriate times

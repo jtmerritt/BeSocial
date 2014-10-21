@@ -234,6 +234,7 @@ public class GroupMembership {
 
     private long getContactIDFromLookupKey(String contactLookupKey)
     {
+        long id = -1;
         Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI,
                 new String[]{ContactsContract.Contacts._ID},
                 Contacts.LOOKUP_KEY + "=?",
@@ -241,10 +242,11 @@ public class GroupMembership {
 
         if (cursor != null && cursor.moveToFirst())
         {
-            return cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            id = cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID));
         }
 
-        return -1;
+        cursor.close();
+        return id;
     }
 
 

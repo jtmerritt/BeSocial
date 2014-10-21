@@ -32,16 +32,33 @@ public class ContactDetailChartView {
     private LineChart mChart;
     private Context mContext;
 
+    private int conversion_ratio;
+    private int preferred_first_day_of_week;
+    private boolean animate = true;
+
 
     public ContactDetailChartView(Context context, View detailView){
         mParantView = detailView;
         mContext = context;
+
+        conversion_ratio = mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        preferred_first_day_of_week = Integer.parseInt(
+                sharedPref.getString("first_day_of_week_preference_key", "2"));
+        //default: 2 = Monday
+
+        animate = sharedPref.getBoolean("animate_detail_chart_checkbox_preference_key", true);
+
+
     }
 
     public LineChart getLineChartView(){
         return mChart;
     }
 
+    public void redraw(){
+        mChart.invalidate();
+    }
 
     public LineChart makeLineChart(int view_id) {
 
@@ -54,7 +71,7 @@ public class ContactDetailChartView {
 
         // enable/disable highlight indicators (the lines that indicate the
         // highlighted Entry)
-        mChart.setHighlightIndicatorEnabled(false);
+        mChart.setHighlightIndicatorEnabled(true);
 
         mChart.setValueTextColor(mContext.getResources().getColor(R.color.off_white_1));
         mChart.setDrawGridBackground(false);
@@ -71,7 +88,8 @@ public class ContactDetailChartView {
         });
 
         // no description text
-        mChart.setContentDescription("");
+        mChart.setDescription("");
+        //mChart.setContentDescription("");
         mChart.setNoDataTextDescription(mContext.getString(R.string.no_data));
 
 
@@ -79,17 +97,22 @@ public class ContactDetailChartView {
         YLabels y = mChart.getYLabels();
         y.setTextColor(mContext.getResources().getColor(R.color.off_white_1));
         //y.setTypeface(mTf);
+        y.setPosition(YLabels.YLabelPosition.BOTH_SIDED);
+
 
         XLabels x = mChart.getXLabels();
         x.setTextColor(mContext.getResources().getColor(R.color.off_white_1));
         //x.setTypeface(mTf);
-        x.setCenterXLabelText(true);
+        x.setCenterXLabelText(false); // setting to false causes the labels to be center on the point
         x.setPosition(XLabels.XLabelPosition.BOTTOM);
+        x.setAdjustXLabels(true);
 
 
         mChart.setUnit(mContext.getString(R.string.point_units));
 
-        mChart.animateY(5000);
+        if(animate){
+            mChart.animateY(mContext.getResources().getInteger(R.integer.detail_chart_animation_time));
+        }
 
         return mChart;
     }
@@ -100,19 +123,13 @@ public class ContactDetailChartView {
         ArrayList<String> xVals = new ArrayList<String>();
         int i = 0;
 
-        final int conversion_ratio =
-                mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        int preferred_first_day_of_week =
-                sharedPref.getInt("first_day_of_week_preference_key",
-                        EventCondenser.DayOfWeek.MONDAY);
-
 
         if(eventList != null && !eventList.isEmpty()){
             EventCondenser eventCondenser = new EventCondenser();
             eventCondenser.setData(eventList);
             eventCondenser.setFirstDayOfWeek(preferred_first_day_of_week);
             eventCondenser.setEventClass(EventInfo.ALL_CLASS);
+            eventCondenser.setDateFiller(true);
 
             for(EventInfo event:eventCondenser.condenseData(EventCondenser.BucketSize.MONTHLY)){
                 c1e1 = new Entry((float)event.getWordCount()/(float)conversion_ratio +
@@ -128,9 +145,9 @@ public class ContactDetailChartView {
             }
 
 
-            LineDataSet setComp1 = new LineDataSet(valsComp1, "Cycle");
+            LineDataSet setComp1 = new LineDataSet(valsComp1, "Points per Month");
             setComp1.setColor(mContext.getResources().getColor(R.color.holo_blue));
-            setComp1.setLineWidth(0.5f);
+            setComp1.setLineWidth(2.5f);
             setComp1.setDrawCubic(true);
             setComp1.setCubicIntensity(0.13f);  //default is 0.2f -- lower makes more straight lines
             setComp1.setDrawFilled(true);
@@ -148,18 +165,20 @@ public class ContactDetailChartView {
             mChart.setData(data);
 
 
+            mChart.invalidate();
+
+
+
             // get the legend (only possible after setting data)
             Legend l = mChart.getLegend();
 
             // modify the legend ...
             // l.setPosition(LegendPosition.LEFT_OF_CHART);
             l.setForm(Legend.LegendForm.LINE);
-            l.setFormSize(6f);
+            l.setFormSize(10f);
             l.setTextColor(mContext.getResources().getColor(R.color.off_white_1));
             //l.setTypeface(mTf);
         }
-
-
 
     }
 

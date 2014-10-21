@@ -87,6 +87,8 @@ public class EventInfo {
         this.eventWordCount = wordCount;
         this.eventCharCount = charCount;
         this.eventEnteredInContactStats = eventEnteredInContactStats;
+
+        //TODO do something with date_string
     }
 
 
