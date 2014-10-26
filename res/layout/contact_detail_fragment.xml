@@ -114,7 +114,7 @@
 
                     <com.example.android.contactslist.ui.WordCloudView
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="300dp"
                         android:id="@+id/word_cloud"
                         android:padding="@dimen/padding"
                         android:orientation="vertical" />

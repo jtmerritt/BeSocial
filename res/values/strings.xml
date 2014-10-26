@@ -310,7 +310,21 @@
     <!--List of prepositions to remove from the word cloud -->
     <string-array name="array_of_prepositions">
         <item></item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+
+        <item>p</item>
         <item>a</item>
+        <item>d</item>
         <item>an</item>
         <item>as</item>
         <item>at</item>
@@ -320,13 +334,43 @@
         <item>in</item>
         <item>is</item>
         <item>it</item>
+        <item>its</item>
+        <item>it\'s</item>
         <item>of</item>
+        <item>oh</item>
+
         <item>or</item>
         <item>on</item>
+        <item>so</item>
         <item>to</item>
         <item>and</item>
+        <item>are</item>
         <item>for</item>
         <item>the</item>
+        <item>there</item>
+        <item>they</item>
+        <item>their</item>
+        <item>that</item>
+        <item>with</item>
+        <item>the</item>
+        <item>have</item>
+        <item>haven\'t</item>
+        <item>was</item>
+        <item>out</item>
+
+
+
+        <item>i</item>
+        <item>i\'m</item>
+        <item>i\'ve</item>
+        <item>am</item>
+        <item>me</item>
+        <item>you</item>
+        <item>you\'re</item>
+        <item>your</item>
+        <item>i\'ll</item>
+        <item>my</item>
+
 
     </string-array>
 

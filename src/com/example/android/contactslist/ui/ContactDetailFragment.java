@@ -175,6 +175,8 @@ public class ContactDetailFragment extends Fragment implements
 
     private ContactDetailChartView contactDetailChartView;
     private boolean chart_loaded = false;
+    private boolean word_cloud_loaded = false;
+    private boolean message_stats_loaded = false;
 
 
 
@@ -488,6 +490,20 @@ public class ContactDetailFragment extends Fragment implements
                     getContactDetailChart();
                     chart_loaded = true;
                 }
+
+                //wordCloud Loading
+                if(!word_cloud_loaded && y > 50){
+                    displayWordCloud();
+                    word_cloud_loaded = true;
+                }
+
+                //wordCloud Loading
+                if(!message_stats_loaded && y > 450){
+                    Log.d(TAG, "Loading message stats");
+                    setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
+                    message_stats_loaded = true;
+                }
+
             }
         }) ;
 
@@ -976,32 +992,7 @@ public class ContactDetailFragment extends Fragment implements
             case ContactSMSLogQuery.QUERY_ID:
                 // check to see if the cursor contains any entries
                 if (data != null && data.moveToFirst()) {
-                    // use the GatherSMSLog class to process the cursor
-
-                    GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
-                            mContext, null, null);
-
-                    gatherSMSLog.insertEventLog(data);
-
-                    //grab only those events which match the current contact
-                    ArrayList<EventInfo> eventList =
-                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(mContactStats);
-
-                    gatherSMSLog.closeSMSLog();
-
-                    String[] words_to_ignore =
-                            getResources().getStringArray(R.array.array_of_prepositions);
-
-                    //tally word counts
-                    GatherWordCounts gatherWordCounts = new GatherWordCounts();
-                    gatherWordCounts.addEventList(eventList);
-
-                    //get the sorted list of words
-                    ArrayList<Map.Entry<String,Integer>> word_list =
-                            gatherWordCounts.getWordList(words_to_ignore);
-
-                    //Now send the list to the word cloud generator
-                    wordCloudView.setWordList(word_list);
+                    makeWordCloud(data);
 
                 }
                 break;
@@ -1011,9 +1002,6 @@ public class ContactDetailFragment extends Fragment implements
                 if (mContactStats != null) {
 
                     setFractionView();
-
-                    setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
-
                 }
                     break;
             case ContactVoiceNumberQuery.QUERY_ID:
@@ -1179,6 +1167,51 @@ public class ContactDetailFragment extends Fragment implements
                     contactDetailChartView.addDataFromEventList(eventList);
                 }
                 break;
+        }
+    }
+
+    private void makeWordCloud(Cursor data) {
+
+        if (data != null && data.moveToFirst()) {
+            final GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
+                    mContext, null, null);
+
+            gatherSMSLog.insertEventLog(data);
+
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // use the GatherSMSLog class to process the cursor
+
+
+                    //grab only those events which match the current contact
+                    ArrayList<EventInfo> eventList =
+                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(mContactStats);
+
+                    gatherSMSLog.closeSMSLog();
+
+                    String[] words_to_ignore =
+                            getResources().getStringArray(R.array.array_of_prepositions);
+
+                    //tally word counts
+                    GatherWordCounts gatherWordCounts = new GatherWordCounts();
+                    gatherWordCounts.addEventList(eventList);
+
+                    //get the sorted list of words
+                    final ArrayList<Map.Entry<String, Integer>> word_list =
+                            gatherWordCounts.getWordList(words_to_ignore);
+                    getActivity().runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            // end by running the final method of the activity
+                            //Now send the list to the word cloud generator
+                            wordCloudView.setWordList(word_list);
+                        }
+                    });
+                }
+            }).start();
         }
     }
 

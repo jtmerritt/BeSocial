@@ -25,4 +25,11 @@
     <color name="gray_background_1">#99333333</color>
     <color name="off_white_1">#eee</color>
 
+    <color name="pasty_1">#93CBFF</color>
+    <color name="pasty_2">#FFA795</color>
+    <color name="pasty_3">#D88EFF</color>
+    <color name="pasty_4">#528426</color>
+    <color name="pasty_5">#FFF2A5</color>
+
+
 </resources>

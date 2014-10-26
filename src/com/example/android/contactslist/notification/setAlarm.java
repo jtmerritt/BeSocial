@@ -29,6 +29,7 @@ import com.example.android.contactslist.util.Utils;
 
 /**
  * Created by Tyson Macdonald on 1/27/14.
+ * set up for each of the broadcast receivers
  */
 public class SetAlarm {
 
@@ -159,21 +160,7 @@ Class for asynchronously importing data
 
             dbUpdates.localSourceRead();
             dbUpdates.close();
-            /*
-            //for testing
-            int i;
 
-            try {
-                for (i = 0; i < 10; i++) {
-                    Thread.sleep(1000);
-
-                    publishProgress(i * 10);
-                    if (isCancelled()) break;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            */
             return "done";
         }
 

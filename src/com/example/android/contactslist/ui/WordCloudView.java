@@ -35,13 +35,15 @@ public class WordCloudView extends View {
     private ArrayList<Word> wordList;
     private Word word;
     private int largest_number_of_uses = 0;
-    final private static int LARGEST_TEXT_SIZE = 150;
+    final private static int MAX_TEXT_SIZE = 150;
     final private static int SMALLEST_TEXT_SIZE = 25;
+    private int largest_text_size;
     private int size;
     private int width;
     private int height;
-    private Rect tempBox = new Rect();
     final private static int NUM_WORDS_DISPLAY = 15;
+    final private static int MAX_PLACEMENT_ITERATIONS = 150;
+    private int primary_display = 0;
 
 
 
@@ -105,20 +107,25 @@ public class WordCloudView extends View {
 
     public void setWordList(ArrayList<Map.Entry<String,Integer>> word_list){
 
+        int[] colors = {R.color.pasty_1, R.color.pasty_2, R.color.pasty_3,
+                R.color.pasty_4, R.color.pasty_5};
 
         width = getWidth();
         height = getHeight();
         size = Math.min(width, height);
         cx = width / 2;
         cy = height / 2;
-        mLargeCanvas = size > 199; // define a large canvase as greater than 199p on the shortest dimension
+
+        largest_text_size = height/4;
+
+        largest_text_size = (largest_text_size < MAX_TEXT_SIZE ? largest_text_size : MAX_TEXT_SIZE);
 
         int i = 0;
 
         for(Map.Entry<String,Integer> entry:word_list){
             Log.d(TAG, "Setting word");
 
-            setWord(entry.getKey(), entry.getValue());
+            setWord(entry.getKey(), entry.getValue(), colors[i%5]);
 
             i++;
             // only list 10 words for now
@@ -131,7 +138,7 @@ public class WordCloudView extends View {
     }
 
 
-    private void setWord(String string, int number_of_uses) {
+    private void setWord(String string, int number_of_uses, int color) {
 
         // we should already be in sorted descending order
         if(number_of_uses > largest_number_of_uses){
@@ -145,18 +152,19 @@ public class WordCloudView extends View {
         word.box = new Rect();
         word.path = new Path();
 
+        word.color = getResources().getColor(color);
 
         word.string = string;
         word.number_of_uses = number_of_uses;
 
         // scale the text size
-        word.textSize = (int)((float)(LARGEST_TEXT_SIZE - SMALLEST_TEXT_SIZE)*(float)number_of_uses/
+        word.textSize = (int)((float)(largest_text_size - SMALLEST_TEXT_SIZE)*(float)number_of_uses/
                         (float)largest_number_of_uses) + SMALLEST_TEXT_SIZE;
 
         int word_graphic_length = (int)((float)string_length*(float)word.textSize*0.6f);
 
-        word.xLocation = cx;
-        word.yLocation = cy;
+        word.xLocation = (int)(Math.random()*(width));
+        word.yLocation = (int)(Math.random()*(height));
 
         do {
 
@@ -195,7 +203,7 @@ public class WordCloudView extends View {
 
             i++;
 
-        }while((i < 100) && (collidesWithWordList(word)));
+        }while((i < MAX_PLACEMENT_ITERATIONS) && (collidesWithWordList(word)));
 
         Log.d(TAG, "Word moves: " + Integer.toString(i));
 
@@ -216,7 +224,8 @@ public class WordCloudView extends View {
     }
 
     private boolean collidesWithWordList(Word word) {
-        boolean collision = true;
+        boolean collision = false;
+
 
         // if the list is empty, then there can be no collision
         if(wordList.isEmpty()){
@@ -237,25 +246,85 @@ public class WordCloudView extends View {
     protected void onDraw(Canvas canvas) {
 
        Log.d(TAG, "On Draw");
+        int i, y_pos;
 
        setPadding(7, 7, 7, 7);
 
-        canvas.drawLine(0,0,width, 0,mRedPaint);
-        canvas.drawLine(0,height-5,width, height-5,mRedPaint);
+        //canvas.drawLine(0,0,width, 0,mRedPaint);
+        //canvas.drawLine(0,height-5,width, height-5,mRedPaint);
 
 
-        for(Word entry:wordList){
-           //canvas.drawRect(entry.box, mRedPaint);
+        switch(primary_display%2){
+            case 0:
+            default:
+                for(Word entry:wordList){
+                    //canvas.drawRect(entry.box, mRedPaint);
 
-           // set the display text
-           //canvas.drawTextOnPath(entry.string, entry.getPath(),
-            //       0, entry.getTextHeight(), entry.getPaint());
+                    // set the display text
+                    //canvas.drawTextOnPath(entry.string, entry.getPath(),
+                    //       0, entry.getTextHeight(), entry.getPaint());
 
-           canvas.drawText(entry.string, entry.xLocation + (int)(word.textSize/10),
-                   entry.yLocation + (int)(entry.textSize*0.9),
-                   entry.getPaint());
-       }
-   }
+                    canvas.drawText(entry.string,
+                            entry.xLocation + (int)(word.textSize/10),
+                            entry.yLocation + (int)(entry.textSize*0.9),
+                            entry.getPaint());
+                }
+                break;
+            case 1:
+                y_pos = 10;
+                for(i=0; i< wordList.size();i++){
+
+                    if(i%2 == 0){
+                        canvas.drawText(wordList.get(i).string,
+                                cx + 20
+                                        - (int)((wordList.get(i).string.toCharArray().length)
+                                        *wordList.get(i).textSize*0.25f),
+                                y_pos + (int)(wordList.get(i).textSize*0.9),
+                                wordList.get(i).getPaint());
+                        y_pos = y_pos + (int)(wordList.get(i).textSize*0.7);
+
+                    }else {
+
+                        canvas.drawText(wordList.get(i).string + " " + wordList.get(i+1).string,
+                                cx + 20
+                                        - (int)((wordList.get(i).string.toCharArray().length +
+                                        wordList.get(i+1).string.toCharArray().length + 1)
+                                        *wordList.get(i).textSize*0.25f),
+                                y_pos + (int)(wordList.get(i).textSize*0.9),
+                                wordList.get(i).getPaint());
+
+                        y_pos = y_pos + (int)(wordList.get(i).textSize*0.7);
+                        i++;
+                    }
+
+
+                }
+                break;
+
+        }
+        primary_display++;
+
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+
+        if(event.getAction() == event.ACTION_DOWN){ //Only execute on Finger down action
+
+
+            float ScaleFrom = (float)0.0;
+            float ScaleTo = (float)1.0;
+
+            ScaleAnimation scaleAnimation = new ScaleAnimation(ScaleFrom, ScaleTo, ScaleFrom, ScaleTo, cx, cy);
+            scaleAnimation.setDuration(100);
+            scaleAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
+            this.startAnimation(scaleAnimation);
+
+            invalidate();
+
+        }
+
+        return true;
+    }
 
     public class Word {
         public String string = "";

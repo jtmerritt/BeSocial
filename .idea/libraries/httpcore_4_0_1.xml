@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="httpcore-4.0.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/httpcore-4.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/httpclient-4.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-oauth-client-servlet-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-oauth-client-jetty-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-oauth-client-java6-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-oauth-client-appengine-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-oauth-client-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-jdo-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-jackson2-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-gson-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-appengine-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-android-1.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/google-http-client-1.19.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
