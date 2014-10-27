@@ -41,7 +41,7 @@ public class WordCloudView extends View {
     private int size;
     private int width;
     private int height;
-    final private static int NUM_WORDS_DISPLAY = 15;
+    final private static int NUM_WORDS_DISPLAY = 20;
     final private static int MAX_PLACEMENT_ITERATIONS = 150;
     private int primary_display = 0;
 
@@ -107,8 +107,13 @@ public class WordCloudView extends View {
 
     public void setWordList(ArrayList<Map.Entry<String,Integer>> word_list){
 
-        int[] colors = {R.color.pasty_1, R.color.pasty_2, R.color.pasty_3,
-                R.color.pasty_4, R.color.pasty_5};
+        int[] colors = {getResources().getColor(android.R.color.holo_blue_light),
+                //R.color.pasty_1,
+                R.color.pasty_2,
+                R.color.pasty_3,
+                getResources().getColor(android.R.color.holo_green_light),
+                //R.color.pasty_4,
+                R.color.pasty_5};
 
         width = getWidth();
         height = getHeight();
@@ -285,16 +290,27 @@ public class WordCloudView extends View {
 
                     }else {
 
-                        canvas.drawText(wordList.get(i).string + " " + wordList.get(i+1).string,
-                                cx + 20
-                                        - (int)((wordList.get(i).string.toCharArray().length +
-                                        wordList.get(i+1).string.toCharArray().length + 1)
-                                        *wordList.get(i).textSize*0.25f),
-                                y_pos + (int)(wordList.get(i).textSize*0.9),
-                                wordList.get(i).getPaint());
+                        if(i+1 < wordList.size()){
+                            canvas.drawText(wordList.get(i).string + " " + wordList.get(i+1).string,
+                                    cx + 20
+                                            - (int)((wordList.get(i).string.toCharArray().length +
+                                            wordList.get(i+1).string.toCharArray().length + 1)
+                                            *wordList.get(i).textSize*0.25f),
+                                    y_pos + (int)(wordList.get(i).textSize*0.9),
+                                    wordList.get(i).getPaint());
+                            i++;
+                        }else{
+                            canvas.drawText(wordList.get(i).string,
+                                    cx + 20
+                                            - (int)((wordList.get(i).string.toCharArray().length)
+                                            *wordList.get(i).textSize*0.25f),
+                                    y_pos + (int)(wordList.get(i).textSize*0.9),
+                                    wordList.get(i).getPaint());
+                        }
+
 
                         y_pos = y_pos + (int)(wordList.get(i).textSize*0.7);
-                        i++;
+
                     }
 
 
@@ -315,7 +331,7 @@ public class WordCloudView extends View {
             float ScaleTo = (float)1.0;
 
             ScaleAnimation scaleAnimation = new ScaleAnimation(ScaleFrom, ScaleTo, ScaleFrom, ScaleTo, cx, cy);
-            scaleAnimation.setDuration(100);
+            scaleAnimation.setDuration(300);
             scaleAnimation.setInterpolator(new AccelerateInterpolator(1.5f));
             this.startAnimation(scaleAnimation);
 

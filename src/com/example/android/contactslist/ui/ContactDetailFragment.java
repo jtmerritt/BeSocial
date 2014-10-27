@@ -155,7 +155,6 @@ public class ContactDetailFragment extends Fragment implements
     private LinearLayout mStatsLayoutContainer;
     private LinearLayout mDetailsCallLogLayout;
     private LinearLayout mDetailsSMSLogLayout;
-    private ListView mListView;
     private TextView mEmptyView;
     private TextView mContactNameView;
     private TextView mNotesView;
@@ -166,7 +165,7 @@ public class ContactDetailFragment extends Fragment implements
     private FractionView fractionView = null;
     private WordCloudView wordCloudView = null;
     private Context mContext;
-    private ImageButton mOpenFullScreenChartButton;
+    private Button mOpenFullScreenChartButton;
     private LinearLayout mDetailFillerSpace;
     private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
     private ObservableScrollView mScrollView;
@@ -392,7 +391,7 @@ public class ContactDetailFragment extends Fragment implements
         //Chart Layout
         // addatch the button on the chart layout
         mOpenFullScreenChartButton =
-                (ImageButton) detailView.findViewById(R.id.open_full_screen_chart_button);
+                (Button) detailView.findViewById(R.id.open_full_screen_chart_button);
         mOpenFullScreenChartButton.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
@@ -2039,53 +2038,55 @@ Set the FractionView with appropriate time data
             mStatsLayoutContainer.removeAllViews();
 
             //TODO: Get all text into Strings Resource
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_call_count),
                     mContactStats.getCallCountOut(), mContactStats.getCallCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_message_count),
                     mContactStats.getMessagesCountOut(), mContactStats.getMessagesCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_word_count),
                     mContactStats.getWordCountOut(), mContactStats.getWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_word_count_average),
                     mContactStats.getWordCountAvgOut(), mContactStats.getWordCountAvgIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_smiley_count),
                     mContactStats.getSmileyCountOut(), mContactStats.getSmileyCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_heart_count),
                     mContactStats.getHeartCountOut(), mContactStats.getHeartCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_question_count),
                     mContactStats.getQuestionCountOut(), mContactStats.getQuestionCountIn());
             mStatsLayoutContainer.addView(view);
 
+            /*
             view = buildContactStatsItemLayout(
                     getResources().getString(R.string.stats_display_average_reply_time),
                     -1, -1);
             mStatsLayoutContainer.addView(view);
+            */
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_first_person_word_count),
                     mContactStats.getFirstPersonWordCountOut(),
                     mContactStats.getFirstPersonWordCountIn());
             mStatsLayoutContainer.addView(view);
 
-            view = buildContactStatsItemLayout(
+            view = buildContactStatsSparkChartItemLayout(
                     getResources().getString(R.string.stats_display_second_person_work_count),
                     mContactStats.getSecondPersonWordCountOut(),
                     mContactStats.getSecondPersonWordCountIn());
@@ -2291,6 +2292,28 @@ Set the FractionView with appropriate time data
     }
 
 
+    private LinearLayout buildContactStatsSparkChartItemLayout(String description, int out_value, int in_value) {
+
+        // Inflates the address layout
+        final LinearLayout statsLayout =
+                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
+                        R.layout.contact_stats_spark_chart_item, mStatsLayoutContainer, false);
+
+        // Gets handles to the view objects in the layout
+        final TextView contactStatsItem =
+                (TextView) statsLayout.findViewById(R.id.contact_stats_item);
+        final SparkBarChartView sparkBarChartView =
+                (SparkBarChartView) statsLayout.findViewById(R.id.spark_bar_chart);
+
+
+
+        // Sets TextView objects in the layout
+        contactStatsItem.setText(description);
+
+        sparkBarChartView.setCounts(in_value, out_value);
+
+        return statsLayout;
+    }
 
     private LinearLayout buildContactStatsItemLayout(String description, int out_value, int in_value) {
 

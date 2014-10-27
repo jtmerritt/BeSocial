@@ -26,6 +26,7 @@
     <string name="cancel">Cancel</string>
     <string name="date_format">MM-dd-yyyy</string>
     <string name="point_units"> ツ</string>
+    <string name="text_sad_face">:-(</string>
 
 
     <!-- Contact List Fragment Strings -->
@@ -80,6 +81,7 @@
     <string name="stats_display_accumulated_call_duration">Accumulated Call Duration (min)</string>
 
 
+    <string name="chart_extra_button">More</string>
 
 
 

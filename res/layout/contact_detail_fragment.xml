@@ -114,7 +114,7 @@
 
                     <com.example.android.contactslist.ui.WordCloudView
                         android:layout_width="match_parent"
-                        android:layout_height="300dp"
+                        android:layout_height="400dp"
                         android:id="@+id/word_cloud"
                         android:padding="@dimen/padding"
                         android:orientation="vertical" />
@@ -297,6 +297,7 @@
                         android:gravity="center"
                         android:textColor="@color/off_white_1" />
 
+                    <!--
                     <ImageButton
                         android:layout_width="118dp"
                         android:layout_height="match_parent"
@@ -305,12 +306,38 @@
                         android:layout_alignParentTop="true"
                         android:layout_alignParentRight="true"
                         android:layout_alignParentEnd="true" />
+                        -->
 
 
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/tiny_chart"
                         android:layout_width="match_parent"
                         android:layout_height="300dp" />
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/chart_button_container"
+                        android:focusableInTouchMode="false">
+
+                        <Button
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:text="@string/chart_extra_button"
+                            android:id="@+id/open_full_screen_chart_button"
+                            android:layout_gravity="center"
+                            android:textAlignment="center"
+                            android:singleLine="false"
+                            android:background="@android:drawable/alert_light_frame"
+                            android:shadowColor="#fff5f5f5"
+                            android:layout_weight=".33"
+                            android:importantForAccessibility="yes"
+                            android:clickable="true"
+                            android:alpha=".5"
+                            android:layout_margin="5dp" />
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout

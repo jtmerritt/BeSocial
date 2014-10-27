@@ -1,7 +1,11 @@
 TODO: All THIS STUFF
 ___________________________________________________________________
 
-***Small Tasks***
+***Priority List***
+- contact detail activity header bar
+    - get the hamburger menu?
+- usable notes taking
+- get background images from text messages or internet source - or display generic photo
 + Event Entry Fragment
     - [done] hook into event database
     - flag for manually entered events?
@@ -9,18 +13,13 @@ ___________________________________________________________________
     - figure out what to do with the event notes
     - [done but for address] Make values persist with screen rotation
     - Add a mapping interface button to pull a new address/place
-- get the hamburger menu working on the detail activity
-- Use ActionMode.callback to manually select multiple contacts to remove from a group
-    - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
-    - http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
-    - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
-    - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
-    - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
-- group stats must be collected just like contact stats
-- Have a nightly database maintenance routine
-- Fix bug: The user should not be able to delete contacts from the search results in the Contact List
 
-***Medium Tasks***
+
+- contact detail plant animation
+- context/item help
+- make cards interface
+- activity for creating groups
+
 - Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
@@ -29,49 +28,65 @@ ___________________________________________________________________
 - add another option to the CAB:
     - Move selection to another group
     -
-- Figure out how to cluster events into a conversation
-- Figure out how to calculate average reply time
+- Access gmail through official API: https://developers.google.com/gmail/android/
+- Use ActionMode.callback to manually select multiple contacts to remove from a group
+    - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
+    - http://stackoverflow.com/questions/12137798/remove-contact-from-a-specific-group-in-android
+    - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
+    - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
+    - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
+- Have a nightly database maintenance routine
+- Make sure that a missed call gets added into the incoming call count, maybe add 10 seconds of score.
+
+
+***Bug List***
+- Crashing when flipping contacts
 - Fix the title and userpic display of the action bar
     - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
     - http://stackoverflow.com/questions/19292605/android-viewpager-actionbar-and-android-app-fragments
     - Or just replace it with a custom menu bar with the frosted glass effect
-- Make the welcome screen update skip if the last update was very recent
-
-
-
-***Large Tasks***
+- Is it a problem that the method that creates the master contact list for the update, is also
+    reading from the Misses You list?
 + [bug] the scroll position for the current detail view affects the chart loading for the next page
     - premature loading of the chart
+- when the detail stats range is chosen, the background photo position shifts
+- Fix bug: The user should not be able to delete contacts from the search results in the Contact List
+- Make the Cancel update button work.
+- fix update auto-run
+- fix onResume for wordCloud
+
+
+***Future***
+- group stats must be collected just like contact stats
 + Word cloud
-    - words you use with someone
     - words you use with others but don't use with the current contact
+- add "Average Reply Time" to the detail stats display
 - Social event viewer
     - have a feature to display the library of tags
+- Access facebook through official API: https://developers.facebook.com/docs/android
 - Need to have some kind of happy chime and message after making contact with a friend
+- Access hangouts data: ?
+- On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
+- Figure out how to cluster events into a conversation
+- Figure out how to calculate average reply time
 - Create cards viewer for special data
     - Create a first-time startup UI
     - infrequent charts
     - feature notifications
     - make animation for welcome screen
-- Access gmail through official API: https://developers.google.com/gmail/android/
-- Access hangouts data: ?
-- Access facebook through official API: https://developers.facebook.com/docs/android
-- fix crash when setDisplayChartValues(true) for renderer_SMS
-- On the chart, it would be nice to display the data value.  But changing setDisplayChartValues(true)  crashes the program.
-- Make the Cancel update button work.
 - interface for other applications to send text to this, and enter that text into the event database with full analysis
 - For periodic database updates, it may be faster just to do it by message, rather than contact
-- Is it a problem that the method that creates the master contact list for the update, is also
-    reading from the Misses You list?
+- Make the welcome screen update skip if the last update was very recent
+
+
 
 ***Not Sure if Needed***
+- fix crash when setDisplayChartValues(true) for renderer_SMS
 - Is it possible to monitor when communication happens from a different app?
 - Find a cluster analysis package.
 - Cloud-based backup?
 - disallow viewPager for chartView - http://stackoverflow.com/questions/19359516/achartengine-with-panning-inside-a-viewpager
 - Save output of chart engine as bitmap? http://stackoverflow.com/questions/3107527/android-save-view-to-jpg-or-png
-- Under SMS Log and email log, make 'incoming' and 'outgoing', 'missed' be different colors with arrows possibly  (This is already done for call log)
-- Implement tab listeners to only have tab data loaded when needed - “Slow Adaptor” to load items to a scrolling list on the fly
 - Implement listeners for the preference changes (http://developer.android.com/guide/topics/ui/settings.html)
 
 
@@ -84,12 +99,14 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- charts instead of numbers in Detail stats
+
 + [done] Make static plot for recent history of contact
     - make it load when user scrolls down
     - there needs to be a datapoint for every month/week, in range, even if zero
-
++ Word cloud
+    - words you use with someone
 - having an overlap time for the update can lead to duplicate data getting added into stats
-
 + app should add and remove contact from Misses You group automatically at the appropriate times
     - [done] can add/remove contacts from group at time of update
     - [done] can add/remove contacts from group at time of manual event entry
