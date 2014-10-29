@@ -107,11 +107,11 @@ public class WordCloudView extends View {
 
     public void setWordList(ArrayList<Map.Entry<String,Integer>> word_list){
 
-        int[] colors = {getResources().getColor(android.R.color.holo_blue_light),
+        int[] colors = {android.R.color.holo_blue_light,
                 //R.color.pasty_1,
                 R.color.pasty_2,
                 R.color.pasty_3,
-                getResources().getColor(android.R.color.holo_green_light),
+                android.R.color.holo_green_light,
                 //R.color.pasty_4,
                 R.color.pasty_5};
 

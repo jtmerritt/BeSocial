@@ -148,7 +148,8 @@ public class ContactDetailFragment extends Fragment implements
     private int screenWidth;
     private int getScreenHeight;
 
-    private ImageView mActionBarIcon;
+    private ImageView mImageView;
+    //private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
     //private LinearLayout mActionLayout;
     //private LinearLayout mActionLayoutContainer;
@@ -164,6 +165,7 @@ public class ContactDetailFragment extends Fragment implements
 
     private FractionView fractionView = null;
     private WordCloudView wordCloudView = null;
+    private ScrollingImageView mScrollingImageContactHeaderView = null;
     private Context mContext;
     private Button mOpenFullScreenChartButton;
     private LinearLayout mDetailFillerSpace;
@@ -176,6 +178,7 @@ public class ContactDetailFragment extends Fragment implements
     private boolean chart_loaded = false;
     private boolean word_cloud_loaded = false;
     private boolean message_stats_loaded = false;
+    final private static int PARALLAX_SCROLL_FRACTION = 20;
 
 
 
@@ -242,10 +245,10 @@ public class ContactDetailFragment extends Fragment implements
 
 
             // Asynchronously loads the contact image
-            mImageLoader.loadImage(mContactUri, mActionBarIcon /*mImageView*/);
+            mImageLoader.loadImage(mContactUri, /*mActionBarIcon*/ mImageView);
 
             // Shows the contact photo ImageView and hides the empty view !!! Usually View.Visible
-            //mImageView.setVisibility(View.VISIBLE);
+            mImageView.setVisibility(View.VISIBLE);
 
 
             mEmptyView.setVisibility(View.GONE);
@@ -275,7 +278,7 @@ public class ContactDetailFragment extends Fragment implements
             // account for the view's space in the layout. Turn on the TextView that appears when
             // the layout is empty, and set the contact name to the empty string. Turn off any menu
             // items that are visible.
-            //mImageView.setVisibility(View.GONE);
+            mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
             mDetailsCallLogLayout.removeAllViews();
@@ -329,7 +332,7 @@ public class ContactDetailFragment extends Fragment implements
 
         mContext = getActivity().getApplicationContext();
 
-
+/*
         // reference to the actionBar ImageView
         mActionBarIcon = (ImageView) getActivity().findViewById(android.R.id.home);
 
@@ -339,7 +342,7 @@ public class ContactDetailFragment extends Fragment implements
         iconLp.leftMargin = 10;
         iconLp.rightMargin = 10;
         mActionBarIcon.setLayoutParams(iconLp);
-
+*/
         // Get the screen width
         screenWidth = ImageUtils.getScreenWidth(getActivity());
         getScreenHeight = ImageUtils.getScreenHeight(getActivity());
@@ -354,10 +357,10 @@ public class ContactDetailFragment extends Fragment implements
         // Inflates the main layout to be used by this fragment
         detailView = inflater.inflate(R.layout.contact_detail_fragment, container, false);
 
-        if (mIsTwoPaneLayout) {
+        if (!mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
             // name in details. For a one-pane view, the contact name is displayed as a title.
-            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name);
+            mContactNameView = (TextView) detailView.findViewById(R.id.contact_name_image_header);
             mContactNameView.setVisibility(View.VISIBLE);
         }
 
@@ -371,15 +374,21 @@ public class ContactDetailFragment extends Fragment implements
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
 
+        // set wordcloud view
         wordCloudView = (WordCloudView) detailView.findViewById(R.id.word_cloud);
 
-
+        // set header view
+        mScrollingImageContactHeaderView =
+                (ScrollingImageView) detailView.findViewById(R.id.contact_image_header);
+        mScrollingImageContactHeaderView.setViewWidth(screenWidth);
 
         // stats layout
 
         // get the layout container resource
         mStatsLayoutContainer =
                 (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
+
+
 
         // build buttons for the contact stats control
         buildContactStatsButtonLayout(detailView);
@@ -421,10 +430,10 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
-        // Gets handles to view objects in the layout
+        // Gets handles to view address objects in the layout
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
-        //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
+        mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
 
 
         //initialize the image view for the main contact detail image
@@ -464,7 +473,7 @@ public class ContactDetailFragment extends Fragment implements
                 // Blurring
 
                 alpha = (y <= 0) ? 1 : (400 / ((float)y));
-                parallax = -y/20;
+                parallax = -y/PARALLAX_SCROLL_FRACTION;
 
                 //limit the paralax to 70 pixels
                 if(parallax < -100){
@@ -482,6 +491,9 @@ public class ContactDetailFragment extends Fragment implements
                 mContactDetailImage.setAlpha(alpha);
                 mContactDetailImage.setTop(parallax);
                 mBlurredContactDetailImage.setTop(parallax);
+
+                // update the image header
+                mScrollingImageContactHeaderView.updateScroll(parallax);
 
 
                 // chart loading
@@ -502,6 +514,8 @@ public class ContactDetailFragment extends Fragment implements
                     setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
                     message_stats_loaded = true;
                 }
+
+
 
             }
         }) ;
@@ -2357,8 +2371,12 @@ Set the FractionView with appropriate time data
 https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/src/com/npi/blureffect/MainActivity.java
  */
     private void updateView() {
+        // set the activity background image
         mContactDetailImage.setImageBitmap(image);
         mBlurredContactDetailImage.setImageBitmap(newImg);
+
+        // set the header background image
+        mScrollingImageContactHeaderView.setBackgroundImage(newImg);
     }
 
 

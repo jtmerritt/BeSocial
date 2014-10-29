@@ -24,6 +24,7 @@
     android:layout_height="match_parent">
 
 
+
     <ImageView
         android:id="@+id/blurred_contact_detail_image"
         android:layout_width="match_parent"
@@ -386,7 +387,75 @@
         </com.example.android.contactslist.util.ObservableScrollView>
 
 
+
     </LinearLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp" >
+
+        <com.example.android.contactslist.ui.ScrollingImageView
+            android:id="@+id/contact_image_header"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="50dp"
+                android:id="@+id/drawer_icon"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/ic_drawer"
+                android:paddingBottom="14dp"
+                android:paddingTop="14dp" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/contact_image"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/drawer_icon"
+                android:layout_toEndOf="@+id/drawer_icon" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/contact_name_image_header"
+                android:text=""
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:textColor="@color/holo_blue"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textAlignment="center"
+                android:paddingRight="5dp"
+                android:maxLines="2"
+                android:editable="true"
+                android:textStyle="bold"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/contact_image"
+                android:layout_toEndOf="@+id/contact_image"
+                android:layout_toLeftOf="@+id/imageView2"
+                android:layout_toStartOf="@+id/imageView2" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/imageView2"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_action_add"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp" />
+
+        </RelativeLayout>
+
+    </FrameLayout>
 
     <!-- This view will be displayed when the views above are hidden. That happens when in two-pane
          layout mode and no contact is currently selected and therefore the this fragment will

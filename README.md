@@ -4,6 +4,7 @@ ___________________________________________________________________
 ***Priority List***
 - contact detail activity header bar
     - get the hamburger menu?
+    - implement contact action menu
 - usable notes taking
 - get background images from text messages or internet source - or display generic photo
 + Event Entry Fragment
@@ -19,7 +20,6 @@ ___________________________________________________________________
 - context/item help
 - make cards interface
 - activity for creating groups
-
 - Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:

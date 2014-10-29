@@ -84,6 +84,8 @@ public class ContactDetailActivity extends FragmentActivity
                 //getActionBar().setDisplayUseLogoEnabled(false);
                 //getActionBar().setDisplayShowTitleEnabled(false);
 
+                getActionBar().hide();
+
             }
 
             // Fetch the data Uri from the intent provided to this activity
