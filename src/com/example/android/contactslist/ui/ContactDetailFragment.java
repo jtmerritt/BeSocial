@@ -28,6 +28,8 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -472,7 +474,7 @@ public class ContactDetailFragment extends Fragment implements
 
                 // Blurring
 
-                alpha = (y <= 0) ? 1 : (400 / ((float)y));
+                alpha = (y <= 0) ? 1 : (300 / ((float)y));
                 parallax = -y/PARALLAX_SCROLL_FRACTION;
 
                 //limit the paralax to 70 pixels
@@ -1112,11 +1114,15 @@ public class ContactDetailFragment extends Fragment implements
 
                             // No image found => let's generate it!
                             BitmapFactory.Options options = new BitmapFactory.Options();
+                            BitmapRegionDecoder decoder = null;
 
                             //TODO take care of margin at the bottom of the photo
                             options.outHeight = getScreenHeight + 200;
                             options.inSampleSize = 2;
+
+
                             image = BitmapFactory.decodeFile(path, options);
+
 
                             // not allowed to blur more than 25
                             newImg = Blur.fastblur(mContext, image, 25);

@@ -64,7 +64,9 @@
                 android:layout_row="0"
                 android:layout_column="0"
                 android:layout_rowSpan="4"
-                android:fillViewport="false">
+                android:fillViewport="false"
+                android:layout_marginLeft="@dimen/listview_item_padding"
+                android:layout_marginRight="@dimen/listview_item_padding">
 
 
                 <LinearLayout
@@ -93,7 +95,6 @@
                             android:shadowColor="#fff5f5f5"
                             android:layout_weight=".5"
                             android:importantForAccessibility="yes"
-                            android:layout_marginLeft="@dimen/padding"
                             android:layout_marginRight="@dimen/padding"
                             android:layout_marginTop="5dp"
                             android:layout_marginBottom="5dp" />
@@ -111,7 +112,6 @@
                             android:layout_weight=".5"
                             android:importantForAccessibility="yes"
                             android:layout_marginLeft="@dimen/padding"
-                            android:layout_marginRight="@dimen/padding"
                             android:layout_marginTop="5dp"
                             android:layout_marginBottom="5dp" />
                     </LinearLayout>
@@ -121,8 +121,6 @@
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:id="@+id/class_layout"
-                        android:layout_marginRight="20dp"
-                        android:layout_marginLeft="20dp"
                         android:layout_marginTop="10dp">
 
                         <TextView
@@ -135,7 +133,7 @@
                             android:autoText="true" />
 
                         <Spinner
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/listed_input_item_width"
                             android:layout_height="wrap_content"
                             android:id="@+id/event_class_spinner"
                             android:layout_alignParentTop="true"
@@ -143,7 +141,8 @@
                             android:spinnerMode="dialog"
                             android:layout_weight=".66"
                             android:background="@android:drawable/alert_light_frame"
-                            android:clickable="true" />
+                            android:clickable="true"
+                            android:paddingLeft="@dimen/listview_item_padding" />
 
                     </LinearLayout>
 
@@ -152,8 +151,6 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/type_layout"
-                        android:layout_marginRight="20dp"
-                        android:layout_marginLeft="20dp"
                         android:layout_marginTop="10dp">
 
                         <TextView
@@ -203,8 +200,6 @@
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:id="@+id/address_layout"
-                        android:layout_marginRight="5dp"
-                        android:layout_marginLeft="20dp"
                         android:layout_marginTop="10dp"
                         android:weightSum="1">
 
@@ -218,7 +213,7 @@
 
                         <Button
                             style="?android:attr/buttonStyleSmall"
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/listed_input_item_width"
                             android:layout_height="wrap_content"
                             android:text="Address"
                             android:id="@+id/address"
@@ -229,13 +224,9 @@
                             android:singleLine="false"
                             android:paddingTop="5dp"
                             android:paddingBottom="5dp"
-                            android:paddingRight="@dimen/padding"
-                            android:paddingLeft="@dimen/padding"
-                            android:layout_marginRight="@dimen/padding"
-                            android:minHeight="60dp"
+                            android:minHeight="@dimen/list_item_height_single_text_line"
                             android:minLines="2"
-                            android:maxLines="3"
-                            android:layout_marginLeft="@dimen/padding" />
+                            android:maxLines="3" />
 
                     </LinearLayout>
 
@@ -248,9 +239,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/event_duration_layout"
                         android:focusableInTouchMode="false"
-                        android:layout_marginLeft="@dimen/padding"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginRight="@dimen/padding">
+                        android:layout_marginTop="10dp">
 
                         <TextView
                             android:layout_width="0dp"
@@ -261,7 +250,7 @@
                             android:layout_weight=".34" />
 
                         <Spinner
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/listed_input_item_width"
                             android:layout_height="wrap_content"
                             android:id="@+id/edit_duration"
                             android:layout_marginLeft="@dimen/padding"
@@ -269,10 +258,9 @@
                             android:prompt="@string/duration_prompt"
                             android:textAlignment="center"
                             android:layout_weight=".66"
-                            android:layout_marginRight="@dimen/padding"
                             android:background="@android:drawable/alert_light_frame"
                             style="?android:attr/buttonStyleSmall"
-                            android:paddingLeft="30dp" />
+                            android:paddingLeft="@dimen/listview_item_padding" />
 
                     </LinearLayout>
 
@@ -288,9 +276,7 @@
                             android:layout_height="wrap_content"
                             android:id="@+id/event_word_count_inner_layout"
                             android:focusableInTouchMode="false"
-                            android:layout_marginLeft="@dimen/padding"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginRight="@dimen/padding" >
+                            android:layout_marginTop="10dp">
 
                             <TextView
                                 android:layout_width="0dp"
@@ -302,7 +288,7 @@
 
                             <Button
                                 style="?android:attr/buttonStyleSmall"
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/listed_input_item_width"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/word_count_button"
                                 android:layout_weight=".66"
@@ -312,10 +298,8 @@
                                 android:singleLine="false"
                                 android:paddingTop="5dp"
                                 android:paddingBottom="5dp"
-                                android:paddingRight="@dimen/padding"
                                 android:paddingLeft="@dimen/padding"
-                                android:layout_marginRight="@dimen/padding"
-                                android:minHeight="40dp"
+                                android:minHeight="@dimen/listed_setting_item_height"
                                 android:minLines="1"
                                 android:maxLines="2"
                                 android:inputType="number"
@@ -328,7 +312,8 @@
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:id="@+id/word_count_seek_bar"
-                            android:layout_margin="@dimen/padding" />
+                            android:layout_marginTop="@dimen/padding"
+                            android:layout_marginBottom="@dimen/padding" />
 
 
                     </LinearLayout>
@@ -338,8 +323,6 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/notes_layout"
-                        android:layout_marginRight="20dp"
-                        android:layout_marginLeft="20dp"
                         android:layout_marginTop="10dp"
                         android:divider="@android:drawable/divider_horizontal_textfield">
 
@@ -353,7 +336,7 @@
 
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/listed_input_item_width"
                             android:layout_height="wrap_content"
                             android:inputType="textMultiLine"
                             android:id="@+id/event_notes"
@@ -380,7 +363,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_row="4"
-            android:layout_column="0">
+            android:layout_column="0"
+            android:layout_marginLeft="@dimen/listview_item_padding"
+            android:layout_marginRight="@dimen/listview_item_padding">
 
             <ImageButton
                 android:layout_width="0dp"
@@ -392,7 +377,9 @@
                 android:src="@android:drawable/ic_input_add"
                 android:clickable="true"
                 android:layout_weight=".5"
-                android:layout_margin="@dimen/padding" />
+                android:layout_marginTop="@dimen/padding"
+                android:layout_marginBottom="@dimen/padding"
+                android:layout_marginRight="@dimen/padding" />
 
             <ImageButton
                 android:layout_width="0dp"
@@ -403,7 +390,9 @@
                 android:clickable="true"
                 android:src="@android:drawable/ic_delete"
                 android:layout_weight=".5"
-                android:layout_margin="@dimen/padding" />
+                android:layout_marginTop="@dimen/padding"
+                android:layout_marginBottom="@dimen/padding"
+                android:layout_marginLeft="@dimen/padding" />
 
         </LinearLayout>
     </LinearLayout>
