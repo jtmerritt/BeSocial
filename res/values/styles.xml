@@ -24,15 +24,20 @@
     <style name="AppTheme" parent="@android:style/Theme"/>
 
     <style name="ContactListView">
+        <item name="android:scrollbars">none</item> <!-- kill the scrollbar -->
         <item name="android:verticalScrollbarPosition">right</item>
-        <item name="android:fastScrollAlwaysVisible">true</item>
-        <item name="android:scrollbarStyle">outsideInset</item>
+        <item name="android:fastScrollAlwaysVisible">false</item> <!-- hide the additional scroll marker -->
+        <item name="android:scrollbarStyle">insideOverlay</item>
     </style>
 
     <style name="listViewActivatedStyle"/>
 
     <style name="quickContactBadgeStyle">
         <item name="android:background">@drawable/quickcontact_badge_small</item>
+    </style>
+
+    <style name="contact_detail_item_background">
+        <item name="android:background">@drawable/rounded_rectangle</item>
     </style>
 
     <style name="searchTextHiglight">

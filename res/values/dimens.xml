@@ -20,7 +20,22 @@
          multiple views and changed from one central location. It also gives us the ability to
          provide alternate values for different device configurations using resource directory
          qualifiers. -->
-    <dimen name="padding">15dp</dimen>
+    <dimen name="padding">16dp</dimen>
+    <dimen name="list_padding">16dp</dimen>
+
+    <dimen name="list_item_vertical_padding">8dp</dimen>
+    <dimen name="list_vertical_padding">8dp</dimen>
     <dimen name="listview_item_padding">16dp</dimen>
+    <dimen name="list_item_height_single_text_line">56dp</dimen>
+    <dimen name="list_item_height_two_text_lines">72dp</dimen>
+    <dimen name="list_item_height_three_text_lines">88dp</dimen>
+    <dimen name="left_text_padding">72dp</dimen>
+    <dimen name="left_text_padding_minus_listview_item_padding">56dp</dimen>
+    <dimen name="right_text_margin">8dp</dimen>
+    <dimen name="avatar_width">48dp</dimen>
+
+
+
+
 
 </resources>

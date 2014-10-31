@@ -16,22 +16,32 @@
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
-                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_height="@dimen/list_item_height_two_text_lines"
                 style="@style/listViewActivatedStyle">
 
     <!-- Use standard android.R class icon id instead of app specific id. This is just useful for
          consistency. Use scaleType=centerCrop to give a nice full cropped image in the assigned
          space -->
-    <QuickContactBadge android:id="@android:id/icon"
-                       android:layout_height="?android:attr/listPreferredItemHeight"
-                       android:layout_width="?android:attr/listPreferredItemHeight"
-                       android:scaleType="centerCrop"
-                       style="@style/quickContactBadgeStyle"
-                       android:src="@drawable/ic_contact_picture_holo_light"/>
 
     <!-- Use standard android.R class text2 id instead of app specific id. This is just useful for
          consistency. This is secondary text and not always visible so by default is has its
          visibility set to gone -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="@dimen/left_text_padding_minus_listview_item_padding"
+        android:layout_height="fill_parent"
+        android:id="@+id/badge_frame"
+        android:layout_alignParentStart="true"
+        android:gravity="center_vertical">
+
+        <QuickContactBadge android:id="@android:id/icon"
+                           android:layout_height="@dimen/avatar_width"
+                           android:layout_width="@dimen/avatar_width"
+                           android:scaleType="centerCrop"
+                           style="@style/quickContactBadgeStyle"
+                           android:src="@drawable/ic_contact_picture_holo_light"/>
+    </LinearLayout>
+
     <TextView android:id="@android:id/text2"
               android:paddingLeft="16dp"
               android:paddingRight="16dp"
@@ -52,24 +62,24 @@
          align with the parent view if the text2 view is not part of the view hierarchy (which is
          its initial state). -->
     <TextView android:id="@android:id/text1"
-              android:paddingLeft="@dimen/listview_item_padding"
-              android:paddingRight="@dimen/listview_item_padding"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+              android:layout_height="match_parent"
               android:layout_above="@android:id/text2"
-              android:layout_toRightOf="@android:id/icon"
-              android:gravity="center_vertical"
+        android:gravity="center_vertical"
         android:layout_alignWithParentIfMissing="true"
               android:fontFamily="sans-serif-light"
               android:singleLine="true"
               android:ellipsize="marquee"
               android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_below="@android:id/text2"
-        android:layout_toLeftOf="@+id/fraction" />
+        android:layout_toLeftOf="@+id/fraction"
+        android:layout_toRightOf="@+id/badge_frame"
+        android:layout_toEndOf="@+id/badge_frame"
+        android:layout_marginRight="@dimen/right_text_margin" />
 
     <com.example.android.contactslist.ui.FractionView
-        android:layout_width="65dp"
-        android:layout_height="50dp"
+        android:layout_width="@dimen/left_text_padding_minus_listview_item_padding"
+        android:layout_height="@dimen/left_text_padding_minus_listview_item_padding"
         android:id="@+id/fraction"
         android:paddingBottom="5dp"
         android:orientation="vertical"

@@ -33,9 +33,14 @@
         <!-- Use standard android.R class list id instead of app specific id. This is just useful for
              consistency. -->
         <ListView android:id="@id/android:list"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  style="@style/ContactListView"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/ContactListView"
+            android:layout_marginLeft="@dimen/listview_item_padding"
+            android:layout_marginRight="@dimen/listview_item_padding"
+            android:paddingTop="@dimen/list_vertical_padding"
+            android:paddingBottom="@dimen/list_vertical_padding"
+            android:divider="@android:drawable/divider_horizontal_textfield" />
 
         <!-- Use standard android.R class empty id instead of app specific id. This is just useful for
          consistency. -->

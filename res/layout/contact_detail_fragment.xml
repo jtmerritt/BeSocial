@@ -48,15 +48,14 @@
         <com.example.android.contactslist.util.ObservableScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/scrollView" >
+            android:id="@+id/scrollView"
+            android:layout_marginLeft="@dimen/listview_item_padding"
+            android:layout_marginRight="@dimen/listview_item_padding">
 
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:showDividers="beginning|middle"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
                 android:id="@+id/d">
 
                 <LinearLayout
@@ -80,8 +79,8 @@
                         android:layout_weight="1">
 
                         <com.example.android.contactslist.ui.FractionView
-                            android:layout_width="122dp"
-                            android:layout_height="101dp"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
                             android:id="@+id/fraction"
                             android:paddingBottom="5dp"
                             android:orientation="vertical"
@@ -98,8 +97,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/word_cloud_layout"
-                    android:layout_margin="@dimen/padding"
-                    android:background="@color/gray_background_1" >
+                    android:layout_marginTop="@dimen/list_item_vertical_padding"
+                    style="@style/contact_detail_item_background">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -127,9 +126,9 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:id="@+id/stats_layout"
-                    android:background="@color/gray_background_1"
                     android:clickable="false"
-                    android:layout_margin="@dimen/padding">
+                    android:layout_marginTop="@dimen/list_item_vertical_padding"
+                    style="@style/contact_detail_item_background">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -283,8 +282,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/chart_layout"
-                    android:layout_margin="@dimen/padding"
-                    android:background="@color/gray_background_1">
+                    android:layout_marginTop="@dimen/list_item_vertical_padding"
+                    style="@style/contact_detail_item_background">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -346,8 +345,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/notes_layout"
-                    android:layout_margin="@dimen/padding"
-                    android:background="@color/gray_background_1">
+                    android:layout_marginTop="@dimen/list_item_vertical_padding"
+                    style="@style/contact_detail_item_background">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -382,7 +381,9 @@
                     android:orientation="vertical"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:id="@+id/contact_details_layout"></LinearLayout>
+                    android:id="@+id/contact_details_layout"
+                    android:layout_marginTop="@dimen/list_item_vertical_padding"
+                    style="@style/contact_detail_item_background"></LinearLayout>
             </LinearLayout>
         </com.example.android.contactslist.util.ObservableScrollView>
 
@@ -414,8 +415,8 @@
                 android:paddingTop="14dp" />
 
             <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="@dimen/avatar_width"
+                android:layout_height="@dimen/avatar_width"
                 android:id="@+id/contact_image"
                 android:layout_alignParentTop="true"
                 android:layout_toRightOf="@+id/drawer_icon"
@@ -426,7 +427,7 @@
                 android:layout_height="match_parent"
                 android:id="@+id/contact_name_image_header"
                 android:text=""
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:paddingLeft="5dp"
                 android:textColor="@color/holo_blue"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -451,7 +452,7 @@
                 android:src="@drawable/ic_action_add"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:paddingRight="10dp" />
+                android:paddingRight="@dimen/listview_item_padding" />
 
         </RelativeLayout>
 
