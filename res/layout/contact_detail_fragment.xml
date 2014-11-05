@@ -20,6 +20,7 @@
 -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.example.android.contactslist"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -394,7 +395,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp" >
+        android:layout_height="50dp">
 
         <com.example.android.contactslist.ui.ScrollingImageView
             android:id="@+id/contact_image_header"
@@ -422,39 +423,27 @@
                 android:layout_toRightOf="@+id/drawer_icon"
                 android:layout_toEndOf="@+id/drawer_icon" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/contact_name_image_header"
-                android:text=""
-                android:gravity="center"
-                android:paddingLeft="5dp"
-                android:textColor="@color/holo_blue"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textAlignment="center"
-                android:paddingRight="5dp"
-                android:maxLines="2"
-                android:editable="true"
-                android:textStyle="bold"
-                android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/contact_image"
-                android:layout_toEndOf="@+id/contact_image"
-                android:layout_toLeftOf="@+id/imageView2"
-                android:layout_toStartOf="@+id/imageView2" />
-
-            <ImageView
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:id="@+id/imageView2"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:src="@drawable/ic_action_add"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingRight="@dimen/listview_item_padding" />
-
         </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/contact_name_image_header"
+            android:text=""
+            android:gravity="center"
+            android:paddingLeft="5dp"
+            android:textColor="@color/primary_100"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAlignment="center"
+            android:paddingRight="5dp"
+            android:maxLines="2"
+            android:editable="true"
+            android:textStyle="bold"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/contact_image"
+            android:layout_toEndOf="@+id/contact_image"
+            android:textColorHighlight="@color/accent_200"
+            android:phoneNumber="false" />
 
     </FrameLayout>
 
@@ -470,5 +459,27 @@
         android:fontFamily="sans-serif-light"
         android:visibility="gone"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+
+
+    <com.example.android.contactslist.FloatingActionButton.FloatingActionButton2
+        android:id="@+id/fab_1"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/circle"
+        android:layout_gravity="right"
+        android:layout_marginRight="16dp">
+
+        <ImageView
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@drawable/fab_action_selector"
+            android:layout_gravity="center"
+            android:duplicateParentState="true"/>
+
+    </com.example.android.contactslist.FloatingActionButton.FloatingActionButton2>
+
 
 </FrameLayout>

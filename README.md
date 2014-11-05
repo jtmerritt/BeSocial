@@ -2,9 +2,9 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- contact detail activity header bar
-    - get the hamburger menu?
-    - implement contact action menu
+
+- get the hamburger menu?
+
 - usable notes taking
 - get background images from text messages or internet source - or display generic photo
 + Event Entry Fragment
@@ -100,7 +100,8 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 Done
 ___________________________________________________________________
 - charts instead of numbers in Detail stats
-
+- contact detail activity header bar
+    - implement contact action menu
 + [done] Make static plot for recent history of contact
     - make it load when user scrolls down
     - there needs to be a datapoint for every month/week, in range, even if zero

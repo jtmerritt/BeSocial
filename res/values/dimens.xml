@@ -40,7 +40,17 @@
     <dimen name="listed_input_item_width">72dp</dimen> <!-- 3x 72dp -->
 
 
+    <dimen name="fab_icon_size">32dp</dimen>
+    <dimen name="fab_size">@dimen/avatar_width</dimen>
 
+    <!-- used by Oguz Bilgener's Floating Action Button -->
+    <dimen name="action_button_size">72dp</dimen>
+    <dimen name="action_button_content_margin">16dp</dimen>
+    <dimen name="action_button_margin">12dp</dimen>
+    <dimen name="action_menu_radius">128dp</dimen>
+    <dimen name="sub_action_button_size">40dp</dimen>
+    <dimen name="sub_action_button_content_margin">6dp</dimen>
+    <!-- end Floating Action Button -->
 
 
 

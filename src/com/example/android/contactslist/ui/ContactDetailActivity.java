@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -97,7 +98,6 @@ public class ContactDetailActivity extends FragmentActivity
                 setContentView(R.layout.contact_detail_activity);
 
                 mPager = (ViewPager) findViewById(R.id.pager);
-                //mPager.setBackgroundColor(0xFF000000);
 
                 ParallaxPagerTransformer pt = new ParallaxPagerTransformer((R.id.contact_detail_image));
                 //pt.setBorder(20);
@@ -228,6 +228,50 @@ public class ContactDetailActivity extends FragmentActivity
 
                 mPager.setAdapter(mContactDetailAdapter);
                 mPager.setCurrentItem(mStartingAdapterPosition);
+                mPager.setOffscreenPageLimit(2);
+
+                mPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
+
+                    private     int scrollState=-1;
+
+
+                    @Override
+                    public void onPageSelected(int newPositon) {
+                    }
+
+                    @Override
+                    public void onPageScrolled(int position , float positionOffset, int positionOffsetPixel) {
+
+                        // if there is a side scroll over 100 pixels
+                        if(scrollState==ViewPager.SCROLL_STATE_DRAGGING &&
+                                Math.abs(positionOffsetPixel) > 100)
+                        {
+                            //int index = mPager.getCurrentItem();
+
+                            //Fragment f = mContactDetailAdapter.getItem(mPager.getCurrentItem());
+
+                            //TODO inform the fragment that it is side scrolling so that it can close the menu
+
+
+                            //mPager.getChildAt(mPager.getCurrentItem()).
+                            //viewPagerScrollStateChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+                        scrollState=state;
+
+                        /*
+                        Log.d("LMTLOGGERR",
+                                "   SCROLL_STATE_DRAGGING: "+ViewPager.SCROLL_STATE_DRAGGING +
+                                "   SCROLL_STATE_IDLE: "+ViewPager.SCROLL_STATE_IDLE +
+                                "   SCROLL_STATE_SETTLING: "+ViewPager.SCROLL_STATE_SETTLING +
+                                "   current state: "+state);
+                                */
+
+                    }
+                });
 
                break;
             default:

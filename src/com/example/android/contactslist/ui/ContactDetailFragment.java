@@ -16,9 +16,6 @@
 
 package com.example.android.contactslist.ui;
 
-import android.app.Activity;
-import java.util.*;  // for date formatting
-import java.text.*;  //for date formatting
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
@@ -28,9 +25,10 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,46 +37,45 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
 import android.provider.ContactsContract.Data;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.provider.MediaStore;
-import android.graphics.BitmapFactory;
-
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.FrameLayout;
-import android.widget.ListView;
-
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactSMSLogQuery;
+import com.example.android.contactslist.FloatingActionButton.FloatingActionButton3;
+import com.example.android.contactslist.FloatingActionButton.FloatingActionButton2;
+import com.example.android.contactslist.FloatingActionMenu.FloatingActionButton;
+import com.example.android.contactslist.FloatingActionMenu.FloatingActionMenu;
+import com.example.android.contactslist.FloatingActionMenu.SubActionButton;
+
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ScrollViewListener;
-import com.example.android.contactslist.contactStats.IntervalStats;
-import com.example.android.contactslist.dataImport.GatherSMSLog;
-import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
+import com.example.android.contactslist.contactStats.IntervalStats;
+import com.example.android.contactslist.dataImport.GatherSMSLog;
 import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.util.Blur;
@@ -86,12 +83,18 @@ import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
 import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
-import com.example.android.contactslist.contactStats.ContactInfo;
-
-
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -109,7 +112,6 @@ import java.io.IOException;
  */
 public class ContactDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
-        //, View.OnClickListener
 {
 
     public static final String EXTRA_CONTACT_URI =
@@ -151,6 +153,7 @@ public class ContactDetailFragment extends Fragment implements
     private int getScreenHeight;
 
     private ImageView mImageView;
+
     //private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
     //private LinearLayout mActionLayout;
@@ -181,6 +184,10 @@ public class ContactDetailFragment extends Fragment implements
     private boolean word_cloud_loaded = false;
     private boolean message_stats_loaded = false;
     final private static int PARALLAX_SCROLL_FRACTION = 20;
+
+    FloatingActionButton2 fab1;
+    FloatingActionMenu centerBottomMenu;
+
 
 
 
@@ -427,16 +434,10 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
-
-
-
-
-
         // Gets handles to view address objects in the layout
         mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
-
 
         //initialize the image view for the main contact detail image
         mContactDetailImage = (ImageView) detailView.findViewById(R.id.contact_detail_image);
@@ -526,10 +527,16 @@ public class ContactDetailFragment extends Fragment implements
         contactDetailChartView = new ContactDetailChartView(mContext, detailView);
         contactDetailChartView.makeLineChart(R.id.tiny_chart);
 
+        fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
+
+        setFloatingActionMenu();
+
         return detailView;
     }
 
-
+    public void fabClicked(View view) {
+        startNewEntry();
+    }
 
 
     @Override
@@ -618,20 +625,7 @@ public class ContactDetailFragment extends Fragment implements
         switch (item.getItemId()) {
             // When "edit" menu option selected
             case R.id.menu_edit_contact:
-                // Standard system edit contact intent
-                Intent intent = new Intent(Intent.ACTION_EDIT, mContactUri);
-
-                // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
-                // People app doesn't return the user to your app; instead, it displays the People
-                // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
-                // to set a special flag in the extended data for the Intent you send to the People
-                // app. The issue is does not appear in versions prior to Android 4.0. You can use
-                // the flag with any version of the People app; if the workaround isn't needed,
-                // the flag is ignored.
-                intent.putExtra("finishActivityOnSaveCompleted", true);
-
-                // Start the edit activity
-                startActivity(intent);
+                startContactEdit();
                 return true;
 
             case R.id.menu_imageButton_call:
@@ -662,6 +656,23 @@ public class ContactDetailFragment extends Fragment implements
                 startActivity(launchPreferencesIntent);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startContactEdit() {
+        // Standard system edit contact intent
+        Intent intent = new Intent(Intent.ACTION_EDIT, mContactUri);
+
+        // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
+        // People app doesn't return the user to your app; instead, it displays the People
+        // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
+        // to set a special flag in the extended data for the Intent you send to the People
+        // app. The issue is does not appear in versions prior to Android 4.0. You can use
+        // the flag with any version of the People app; if the workaround isn't needed,
+        // the flag is ignored.
+        intent.putExtra("finishActivityOnSaveCompleted", true);
+
+        // Start the edit activity
+        startActivity(intent);
     }
 
     private void runIntervalStats() {
@@ -1660,6 +1671,9 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         return null;
     }
 
+
+
+
     /**
      * This interface defines constants used by contact retrieval queries.
      */
@@ -2385,6 +2399,86 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
         mScrollingImageContactHeaderView.setBackgroundImage(newImg);
     }
 
+
+
+    /*
+    * set floating action menu
+*/
+    private void setFloatingActionMenu(){
+
+        SubActionButton.Builder rLSubBuilder = new SubActionButton.Builder(getActivity())
+                .setTheme(SubActionButton.THEME_ACCENT);
+
+        ImageView rlIcon1 = new ImageView(getActivity());
+        ImageView rlIcon2 = new ImageView(getActivity());
+        ImageView rlIcon3 = new ImageView(getActivity());
+        ImageView rlIcon4 = new ImageView(getActivity());
+        ImageView rlIcon5 = new ImageView(getActivity());
+
+        //rlIcon1.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_add));
+        rlIcon2.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_call));
+        rlIcon3.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_chat));
+        rlIcon4.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_email));
+        rlIcon5.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_edit));
+
+        rlIcon1.setImageResource(R.drawable.ic_action_add);
+
+        // Set 4 SubActionButtons
+        centerBottomMenu = new FloatingActionMenu.Builder(getActivity())
+                //.attachTo(mScrollingImageContactHeaderView)
+                .setStartAngle(170) // to the left - under the contact name
+                .setEndAngle(90) // to the bottom
+                //.setAnimationHandler(new SlideInAnimationHandler())
+                .addSubActionView(rLSubBuilder.setContentView(rlIcon1).build())
+                .addSubActionView(rLSubBuilder.setContentView(rlIcon2).build())
+                .addSubActionView(rLSubBuilder.setContentView(rlIcon3).build())
+                .addSubActionView(rLSubBuilder.setContentView(rlIcon4).build())
+                .addSubActionView(rLSubBuilder.setContentView(rlIcon5).build())
+                .attachTo(fab1)
+                .build();
+
+        rlIcon1.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                startNewEntry();
+            }
+        });
+        rlIcon2.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                startPhoneCall();
+            }
+        });
+        rlIcon3.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                startSMS();
+            }
+        });
+        rlIcon4.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                startEmail();
+            }
+        });
+        rlIcon5.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                startContactEdit();
+            }
+        });
+
+    }
+
+    public void viewPagerScrollStateChanged() {
+        centerBottomMenu.close(true);
+        //TODO inform the fragment that it is side scrolling so that it can close the menu
+    }
 
     /*
     Method allows a reference back to the adapter for possible addition or removal of contacts

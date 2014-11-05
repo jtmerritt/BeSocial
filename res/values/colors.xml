@@ -32,4 +32,33 @@
     <color name="pasty_5">#FFF2A5</color>
 
 
+    <!-- Lollipop color scheme -->
+
+    <!-- Primary Indigo -->
+    <color name="primary_50">#e8eaf6</color>
+    <color name="primary_100">#c5cae9</color>
+    <color name="primary_500">#3f51b5</color> <!-- Toolbar -->
+    <color name="primary_700">#303f9f</color> <!-- Status Bar -->
+
+    <!-- Accent Pink -->
+    <color name="accent_100">#f8bbd0</color>
+    <color name="accent_200">#f48fb1</color>
+    <color name="accent_400">#ec407a</color>
+
+
+    <!-- Light Themes -->
+    <!-- Text Alpha for black print -->
+    <color name="standard_text_on_white">#de000000</color> <!-- 87% alpha -->
+    <color name="secondary_text_on_white">#8a000000</color> <!-- 54% alpha -->
+    <color name="hint_text_on_white">#42000000</color> <!-- 26% alpha -->
+
+    <!-- Text Alpha for black print -->
+    <color name="standard_text_on_dark">#FFFFFF</color> <!-- 100% alpha -->
+    <color name="secondary_text_on_dark">#b3FFFFFF</color> <!-- 70% alpha -->
+    <color name="hint_text_on_dark">#4dFFFFFF</color> <!-- 30% alpha -->
+
+    <!-- Default Backgrounds -->
+    <color name="Google_Grey_200">#EEEEEE</color> <!-- Light Background -->
+    <color name="Google_Grey_850">#303030</color> <!-- Dark Background -->
+
 </resources>

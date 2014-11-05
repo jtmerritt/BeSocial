@@ -79,7 +79,7 @@
 
     <!-- the theme applied to the application or activity -->
     <style name="CustomActionBarTheme"
-        parent="@android:style/Theme.Holo.Light">
+        parent="@android:style/Theme.Holo.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/MyActionBar</item>
     </style>
 
@@ -87,14 +87,20 @@
     <style name="MyActionBar"
         parent="@android:style/Widget.Holo.ActionBar">
         <!--<item name="android:windowActionBarOverlay">true</item>-->
-        <item name="android:background">#01000000</item>
+        <item name="android:colorBackground">@color/primary_500</item>
+        <item name="android:colorForeground">@color/primary_500</item>
+        <item name="android:color">@color/primary_500</item>
+
+
         <item name="android:titleTextStyle">@style/ActionBarTitle</item>
 
     </style>
 
-    <style name="ActionBarTitle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+    <style name="ActionBarTitle"
+        parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textSize">18sp</item>
-        <!--<item name="android:paddingLeft">5dp</item>   Can't get this padding to work :( -->
+        <item name="android:textColor">@color/standard_text_on_white</item>
+
     </style>
 
 </resources>
