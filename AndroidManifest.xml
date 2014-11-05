@@ -106,7 +106,7 @@
                 android:value=".ui.ContactsListActivity" />
 
         </activity>
-        <activity android:name=".ui.EventEntryActivity"
+        <activity android:name=".ui.eventEntry.EventEntryActivity"
             android:label="@string/event_entry_activity"
             android:parentActivityName=".ui.ContactDetailActivity"
             android:theme="@style/CustomActionBarTheme">
@@ -114,9 +114,9 @@
                 android:value=".ui.ContactDetailActivity" />
 
         </activity>
-        <activity android:name=".ui.ContactDetailChartActivity"
+        <activity android:name=".ui.chartActivity.ContactDetailChartActivity"
             android:label="@string/contact_detail_chart_activity_label"
-            android:parentActivityName=".ui.ContactDetailChartActivity">
+            android:parentActivityName=".ui.chartActivity.ContactDetailChartActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.ContactDetailActivity" />
 

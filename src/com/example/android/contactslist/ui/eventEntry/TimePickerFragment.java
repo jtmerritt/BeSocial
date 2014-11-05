@@ -1,4 +1,4 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.eventEntry;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,6 +11,7 @@ import android.app.TimePickerDialog;
 import android.widget.TimePicker;
 
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.ui.eventEntry.EventEntryFragment;
 
 public class TimePickerFragment extends DialogFragment  //example is static
         implements TimePickerDialog.OnTimeSetListener {

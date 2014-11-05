@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.chartActivity;
 
 
 import android.annotation.SuppressLint;
@@ -47,9 +47,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -63,7 +61,7 @@ import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
-import com.example.android.contactslist.eventLogs.EventInfo;
+import com.example.android.contactslist.ui.UserPreferencesActivity;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 
@@ -72,10 +70,6 @@ import org.achartengine.model.SeriesSelection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -85,10 +79,10 @@ import java.util.List;
  *
  * This fragment appears full-screen in an activity on devices with small screen sizes, and as
  * part of a two-pane layout on devices with larger screens, alongside the
- * {@link ContactsListFragment}.
+ * {@link com.example.android.contactslist.ui.ContactsListFragment}.
  *
  * To create an instance of this fragment, use the factory method
- * {@link com.example.android.contactslist.ui.ContactDetailChartFragment#newInstance(android.net.Uri)}, passing as an argument the contact
+ * {@link ContactDetailChartFragment#newInstance(android.net.Uri)}, passing as an argument the contact
  * Uri for the contact you want to display.
  */
 public class ContactDetailChartFragment extends Fragment implements
@@ -139,7 +133,7 @@ public class ContactDetailChartFragment extends Fragment implements
      * setting the bundle as an argument.
      *
      * @param contactUri The contact Uri to load
-     * @return A new instance of {@link com.example.android.contactslist.ui.ContactDetailChartFragment}
+     * @return A new instance of {@link ContactDetailChartFragment}
      */
     public static ContactDetailChartFragment newInstance(Uri contactUri) {
         // Create new instance of this fragment

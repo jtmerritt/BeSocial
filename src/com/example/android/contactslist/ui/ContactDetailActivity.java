@@ -84,7 +84,6 @@ public class ContactDetailActivity extends FragmentActivity
                 //getActionBar().setDisplayShowHomeEnabled(false);
                 //getActionBar().setDisplayUseLogoEnabled(false);
                 //getActionBar().setDisplayShowTitleEnabled(false);
-
                 getActionBar().hide();
 
             }

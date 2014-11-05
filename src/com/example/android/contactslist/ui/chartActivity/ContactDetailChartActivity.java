@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.chartActivity;
 
 import android.annotation.TargetApi;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.util.Utils;
 
 /**
- * This class defines a simple FragmentActivity as the parent of {@link ContactDetailFragment}.
+ * This class defines a simple FragmentActivity as the parent of {@link com.example.android.contactslist.ui.ContactDetailFragment}.
  */
 public class ContactDetailChartActivity extends FragmentActivity {
     // Defines a tag for identifying the single fragment that this activity holds

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.eventEntry;
 
 
 import android.annotation.SuppressLint;
@@ -22,7 +22,6 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -39,7 +38,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.text.format.Time;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -72,20 +72,16 @@ import android.text.InputType;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.contactGroups.GroupMembership;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
-import com.example.android.contactslist.contactStats.ContactStatsHelper;
 import com.example.android.contactslist.dataImport.Updates;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
+import com.example.android.contactslist.ui.UserPreferencesActivity;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.Utils;
 import android.app.AlertDialog;
-
-import org.achartengine.GraphicalView;
-import org.achartengine.model.SeriesSelection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -95,7 +91,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -107,7 +102,7 @@ import java.util.concurrent.TimeUnit;
  * {@link com.example.android.contactslist.ui.ContactsListFragment}.
  *
  * To create an instance of this fragment, use the factory method
- * {@link com.example.android.contactslist.ui.EventEntryFragment#newInstance(android.net.Uri)}, passing as an argument the contact
+ * {@link EventEntryFragment#newInstance(android.net.Uri)}, passing as an argument the contact
  * Uri for the contact you want to display.
  */
 public class EventEntryFragment extends Fragment implements
@@ -173,7 +168,7 @@ public class EventEntryFragment extends Fragment implements
     private Spinner mClassSelectionSpinner;
     private Button mAddressViewButton;
     private Button mWordCountViewButton;
-    private TextView mEventNotes;
+    private EditText mEventNotes;
     private RadioGroup radioGroup;
     private RadioButton mIncomingButton;
     private RadioButton mOutgoingButton;
@@ -189,6 +184,8 @@ public class EventEntryFragment extends Fragment implements
 
     private Context mContext;
 
+    private TextView mEventNoteCharacterCount;
+
 
 
             /**
@@ -197,7 +194,7 @@ public class EventEntryFragment extends Fragment implements
      * setting the bundle as an argument.
      *
      * @param contactUri The contact Uri to load
-     * @return A new instance of {@link com.example.android.contactslist.ui.EventEntryFragment}
+     * @return A new instance of {@link EventEntryFragment}
      */
     public static EventEntryFragment newInstance(Uri contactUri) {
         // Create new instance of this fragment
@@ -365,7 +362,8 @@ public class EventEntryFragment extends Fragment implements
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
         mDurationView = (Spinner) detailView.findViewById(R.id.edit_duration);
         mClassSelectionSpinner = (Spinner) detailView.findViewById(R.id.event_class_spinner);
-        mEventNotes = (TextView) detailView.findViewById(R.id.event_notes);
+        mEventNotes = (EditText) detailView.findViewById(R.id.event_notes);
+        mEventNoteCharacterCount = (TextView) detailView.findViewById(R.id.event_note_character_count_view);
         mAddressTitle = (TextView) detailView.findViewById(R.id.address_title);
         mEventTypeTitle = (TextView) detailView.findViewById(R.id.event_type_title);
         mWordCountTitle = (TextView) detailView.findViewById(R.id.word_count_title);
@@ -500,16 +498,6 @@ public class EventEntryFragment extends Fragment implements
             }
         });
 
-        mEventNotes.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), R.string.next_version, Toast.LENGTH_SHORT).show();
-                //TODO Figure out what to do with event notes and tags
-                //editEventNotesTextDialog();
-            }
-        });
-
 
         mWordCountSeekBar.setMax(MAX_SEEK_BAR_WORD_COUNT);
         mWordCountSeekBar.setProgress(mWordCount);
@@ -530,6 +518,20 @@ public class EventEntryFragment extends Fragment implements
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+
+        mEventNotes.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+                mEventNoteCharacterCount.setText(Integer.toString((int)mEventNotes.getText().length()) + "/140");
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
+
 
         return detailView;
     }

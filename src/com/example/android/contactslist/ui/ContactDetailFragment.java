@@ -27,8 +27,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,7 +47,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -61,9 +58,7 @@ import android.widget.Toast;
 
 import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.ContactSMSLogQuery;
-import com.example.android.contactslist.FloatingActionButton.FloatingActionButton3;
 import com.example.android.contactslist.FloatingActionButton.FloatingActionButton2;
-import com.example.android.contactslist.FloatingActionMenu.FloatingActionButton;
 import com.example.android.contactslist.FloatingActionMenu.FloatingActionMenu;
 import com.example.android.contactslist.FloatingActionMenu.SubActionButton;
 
@@ -78,6 +73,8 @@ import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
+import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
+import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
 import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
@@ -153,6 +150,7 @@ public class ContactDetailFragment extends Fragment implements
     private int getScreenHeight;
 
     private ImageView mImageView;
+    private ImageView mEditNotes;
 
     //private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
@@ -421,13 +419,19 @@ public class ContactDetailFragment extends Fragment implements
 
 
         //Notes Layout
+
          // attach notes button
         mNotesView = (TextView) detailView.findViewById(R.id.notes_view);
-        mNotesView.setOnClickListener(new View.OnClickListener() {
+
+        mEditNotes = (ImageView) detailView.findViewById(R.id.edit_notes_icon);
+
+        mEditNotes.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
+                // Open new text editor
                 Toast.makeText(getActivity(), R.string.next_version, Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -1901,6 +1905,23 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     }
 
 
+    private void startEditNotes() {
+
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        //Uri uri = Uri.
+        //intent.setDataAndType(uri, "text/plain");
+
+        // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
+        // People app doesn't return the user to your app; instead, it displays the People
+        // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
+        // to set a special flag in the extended data for the Intent you send to the People
+        // app. The issue is does not appear in versions prior to Android 4.0. You can use
+        // the flag with any version of the People app; if the workaround isn't needed,
+        // the flag is ignored.
+        //intent.putExtra(Intent.EXTRA_TEXT, mNotesView.getText());
+        //startActivity(intent);
+    }
+
 
     /*
 Set the FractionView with appropriate time data
@@ -2441,6 +2462,8 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             // perform function when pressed
             @Override
             public void onClick(View v) {
+                //first close the menu, animated
+                closeFloatingMenu(true);
                 startNewEntry();
             }
         });
@@ -2448,6 +2471,8 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             // perform function when pressed
             @Override
             public void onClick(View v) {
+                //first close the menu, animated
+                closeFloatingMenu(true);
                 startPhoneCall();
             }
         });
@@ -2455,6 +2480,8 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             // perform function when pressed
             @Override
             public void onClick(View v) {
+                //first close the menu, animated
+                closeFloatingMenu(true);
                 startSMS();
             }
         });
@@ -2462,6 +2489,8 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             // perform function when pressed
             @Override
             public void onClick(View v) {
+                //first close the menu, animated
+                closeFloatingMenu(true);
                 startEmail();
             }
         });
@@ -2469,15 +2498,19 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             // perform function when pressed
             @Override
             public void onClick(View v) {
+                //first close the menu, animated
+                closeFloatingMenu(true);
                 startContactEdit();
             }
         });
 
     }
 
-    public void viewPagerScrollStateChanged() {
-        centerBottomMenu.close(true);
-        //TODO inform the fragment that it is side scrolling so that it can close the menu
+    public void closeFloatingMenu(boolean animated) {
+        //first close the menu, animated
+        centerBottomMenu.close(animated);
+        // toggle the button state
+        fab1.setChecked(false);
     }
 
     /*

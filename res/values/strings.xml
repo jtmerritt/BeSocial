@@ -16,7 +16,7 @@
 -->
 <resources>
 
-    <string name="app_name">BeSocial</string>
+    <string name="app_name">Cultivate</string>
     <string name="activity_contacts_list">Contacts List</string>
     <string name="activity_contact_detail">Contact Detail</string>
     <string name="contacts_list_search_results_title">Contacts List Search for \"%s\"</string>

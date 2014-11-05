@@ -2,11 +2,12 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-
-- get the hamburger menu?
-
 - usable notes taking
+- make cards interface
+
 - get background images from text messages or internet source - or display generic photo
+- activity for creating groups
+
 + Event Entry Fragment
     - [done] hook into event database
     - flag for manually entered events?
@@ -18,8 +19,6 @@ ___________________________________________________________________
 
 - contact detail plant animation
 - context/item help
-- make cards interface
-- activity for creating groups
 - Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
@@ -37,6 +36,8 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
 - Have a nightly database maintenance routine
 - Make sure that a missed call gets added into the incoming call count, maybe add 10 seconds of score.
+- get the hamburger menu?
+
 
 
 ***Bug List***

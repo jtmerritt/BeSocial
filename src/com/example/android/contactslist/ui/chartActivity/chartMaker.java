@@ -1,4 +1,4 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.chartActivity;
 
 import android.content.ContentResolver;
 import android.content.Context;

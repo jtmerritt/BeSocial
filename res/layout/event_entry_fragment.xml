@@ -327,31 +327,45 @@
                         android:divider="@android:drawable/divider_horizontal_textfield">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
                             android:text="@string/event_notes_title"
-                            android:id="@+id/event_notes_title"
-                            android:layout_weight=".33" />
+                            android:id="@+id/event_notes_title" />
 
 
-                        <TextView
-                            android:layout_width="@dimen/listed_input_item_width"
+                        <FrameLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textMultiLine"
-                            android:id="@+id/event_notes"
-                            android:layout_gravity="center_horizontal"
-                            android:hint="  ..."
-                            android:minLines="6"
-                            android:gravity="start"
-                            android:textIsSelectable="false"
-                            android:layout_marginLeft="@dimen/padding"
-                            android:layout_marginTop="@dimen/padding"
-                            android:layout_weight=".66"
-                            android:background="@android:drawable/alert_light_frame" />
+                            android:layout_marginTop="@dimen/padding">
+
+                            <EditText
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textMultiLine"
+                                android:id="@+id/event_notes"
+                                android:layout_gravity="center_horizontal"
+                                android:hint="  ..."
+                                android:minLines="6"
+                                android:gravity="start"
+                                android:textIsSelectable="false"
+                                android:background="@android:drawable/alert_light_frame"
+                                android:paddingStart="@dimen/padding"
+                                android:padding="@dimen/padding"
+                                android:paddingTop="32dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?android:attr/textAppearanceSmall"
+                                android:id="@+id/event_note_character_count_view"
+                                android:layout_gravity="right"
+                                android:alpha="0.5"
+                                android:layout_marginTop="@dimen/padding"
+                                android:layout_marginRight="@dimen/padding" />
+
+                        </FrameLayout>
                     </LinearLayout>
-
-
 
 
                 </LinearLayout>

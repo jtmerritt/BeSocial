@@ -1,4 +1,4 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.eventEntry;
 
 import java.util.Calendar;
 
@@ -7,6 +7,9 @@ import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
 import android.widget.DatePicker;
+
+import com.example.android.contactslist.ui.eventEntry.EventEntryFragment;
+
 /**
  * Created by Tyson Macdonald on 6/24/2014.
  */
