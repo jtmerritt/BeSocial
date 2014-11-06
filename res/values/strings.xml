@@ -138,7 +138,8 @@
     <string name="event_db_entry_clash">Clash with existing DB entry.  Try a different time.</string>
 
 
-
+    <!-- edit notes activity -->
+    <string name="notes_editor_activity">Contact Notes Editor</string>
 
     <!-- Strings for preferences-->
     <string name="preferences_fragment">Preferences</string>

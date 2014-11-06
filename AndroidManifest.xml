@@ -114,6 +114,14 @@
                 android:value=".ui.ContactDetailActivity" />
 
         </activity>
+        <activity android:name=".ui.notesEditor.NotesEditorActivity"
+            android:label="@string/notes_editor_activity"
+            android:parentActivityName=".ui.ContactDetailActivity"
+            android:theme="@style/CustomActionBarTheme">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ContactDetailActivity" />
+
+        </activity>
         <activity android:name=".ui.chartActivity.ContactDetailChartActivity"
             android:label="@string/contact_detail_chart_activity_label"
             android:parentActivityName=".ui.chartActivity.ContactDetailChartActivity">

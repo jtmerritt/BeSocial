@@ -22,6 +22,8 @@
          qualifiers. -->
     <dimen name="padding">16dp</dimen>
     <dimen name="list_padding">16dp</dimen>
+    <dimen name="nibble">4dp</dimen>
+
 
     <dimen name="list_item_vertical_padding">8dp</dimen>
     <dimen name="list_vertical_padding">8dp</dimen>

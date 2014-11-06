@@ -75,6 +75,7 @@ import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
 import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
+import com.example.android.contactslist.ui.notesEditor.NotesEditorActivity;
 import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
@@ -150,7 +151,7 @@ public class ContactDetailFragment extends Fragment implements
     private int getScreenHeight;
 
     private ImageView mImageView;
-    private ImageView mEditNotes;
+    private ImageView mEditNotesButton;
 
     //private ImageView mActionBarIcon;
     private LinearLayout mDetailsLayout;
@@ -423,15 +424,14 @@ public class ContactDetailFragment extends Fragment implements
          // attach notes button
         mNotesView = (TextView) detailView.findViewById(R.id.notes_view);
 
-        mEditNotes = (ImageView) detailView.findViewById(R.id.edit_notes_icon);
+        mEditNotesButton = (ImageView) detailView.findViewById(R.id.edit_notes_icon);
 
-        mEditNotes.setOnClickListener(new View.OnClickListener() {
+        mEditNotesButton.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
             @Override
             public void onClick(View view) {
                 // Open new text editor
-                Toast.makeText(getActivity(), R.string.next_version, Toast.LENGTH_SHORT).show();
-
+                startEditNotes();
             }
         });
 
@@ -1907,8 +1907,9 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
 
     private void startEditNotes() {
 
-        Intent intent = new Intent(Intent.ACTION_EDIT);
-        //Uri uri = Uri.
+        Intent intent = new Intent(mContext, NotesEditorActivity.class);
+        intent.setData(mContactUri);
+
         //intent.setDataAndType(uri, "text/plain");
 
         // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
@@ -1919,7 +1920,7 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         // the flag with any version of the People app; if the workaround isn't needed,
         // the flag is ignored.
         //intent.putExtra(Intent.EXTRA_TEXT, mNotesView.getText());
-        //startActivity(intent);
+        startActivity(intent);
     }
 
 
