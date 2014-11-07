@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,6 +55,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -127,7 +129,6 @@ public class NotesEditorFragment extends Fragment implements
     private Uri mContactUri; // Stores the contact Uri for this fragment instance
     private ContactInfo mContactStats = null;
     private String mContactLookupKey;
-    static Long mEventDate;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -142,13 +143,11 @@ public class NotesEditorFragment extends Fragment implements
     private EditText mEventNotes;
     private TextView mContactNotesView;
     private String mContactNotes;
-
-    private ImageButton mSubmitButton;
-    private ImageButton mCancelButton;
     private Context mContext;
 
     private TextView mEventNoteCharacterCount;
     private ImageView mUpdateNotesButton;
+    private CheckBox mAddDateCheckbox;
 
 
 
@@ -326,10 +325,7 @@ public class NotesEditorFragment extends Fragment implements
         mContactNotesView = (TextView) detailView.findViewById(R.id.contact_notes_view);
         mEventNoteCharacterCount = (TextView) detailView.findViewById(R.id.event_note_character_count_view);
         mUpdateNotesButton = (ImageView) detailView.findViewById(R.id.update_notes_icon);
-
-        //bUTTONS
-        mSubmitButton = (ImageButton) detailView.findViewById(R.id.save_button);
-        mCancelButton = (ImageButton) detailView.findViewById(R.id.cancel_button);
+        mAddDateCheckbox = (CheckBox) detailView.findViewById(R.id.add_date_check_box);
 
 
         if (mIsTwoPaneLayout) {
@@ -344,57 +340,75 @@ public class NotesEditorFragment extends Fragment implements
             @Override
             public void onClick(View v) {
 
-                // add the new "event" text to the top of the contact notes and clear the event notes
-                mContactNotes = mEventNotes.getText().toString() + "\n\n\r" + mContactNotes;
 
-                mContactNotesView.setText(mContactNotes);
+                // only make updates if there is new next
+                if (mEventNotes.getText().length() != 0) {
+                    // add the new "event" text to the top of the contact notes and clear the event notes
+                    // if the add date checkbox is checked, append the update under a date header
+                    if(mAddDateCheckbox.isChecked()){
 
-                mEventNotes.setText("");
-            }
-        });
+                        mContactNotes = getDateHeaderString() + mEventNotes.getText().toString() + "\n\n" + mContactNotes;
+                    }else {
+                        mContactNotes = mEventNotes.getText().toString() + "\n\n" + mContactNotes;
+                    }
 
-        //Display the current date
-        setDateAndTimeViews((long) 0);
 
-        mSubmitButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                new Thread(new Runnable() {
+                    mContactNotesView.setText(mContactNotes);
 
-                    @Override
-                    public void run() {
-                        int updateCount = 0;
-                        // add notes back to the google contact
+                    mEventNotes.setText("");
 
-                        final boolean insertComplete = updateCount > 0;
-
-                        getActivity().runOnUiThread(new Runnable() {
+                    if(mContactStats != null){
+                        new Thread(new Runnable() {
 
                             @Override
                             public void run() {
-                                // end by running the final method of the activity
-                                finishActivity(insertComplete);
+                                int updateCount = 0;
+                                // add notes back to the google contact
+
+
+                                ContentResolver cr = mContext.getContentResolver();
+                                ContentValues values = new ContentValues();
+
+                                values.clear();
+                                String noteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+                                String[] noteWhereParams = new String[]{mContactStats.getIDString(),ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
+                                values.put(ContactsContract.CommonDataKinds.Note.NOTE, mContactNotes);
+
+                                updateCount = cr.update(ContactsContract.Data.CONTENT_URI, values, noteWhere, noteWhereParams);
+
+
+
+                                final boolean insertComplete = updateCount > 0;
+
+                                getActivity().runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        if(insertComplete){
+                                            Toast.makeText(getActivity(),
+                                                    "Notes Saved", Toast.LENGTH_SHORT).show();
+                                        }else {
+                                            Toast.makeText(getActivity(),
+                                                    "Could not update database notes", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+
                             }
-                        });
+                        }).start();
+
+                    }else {
+                        Toast.makeText(getActivity(), "Contact ID error", Toast.LENGTH_SHORT).show();
 
                     }
-                }).start();
 
+                }else {
+                    Toast.makeText(getActivity(), "Enter Text", Toast.LENGTH_SHORT).show();
+
+                }
             }
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), R.string.entry_discarded, Toast.LENGTH_SHORT).show();
-
-                //Return to last activity
-                getActivity().finish();  // same as hitting back button
-                //TODO: do other stuff for tablet
-            }
-        });
 
 
         mEventNotes.addTextChangedListener(new TextWatcher() {
@@ -411,15 +425,6 @@ public class NotesEditorFragment extends Fragment implements
 
 
         return detailView;
-    }
-
-    private void finishActivity(Boolean insertComplete) {
-        if(insertComplete){
-            getActivity().finish();  // same as hitting back button
-        }else {
-            Toast.makeText(getActivity(),
-                    R.string.event_db_entry_clash, Toast.LENGTH_SHORT).show();
-        }
     }
 
 
@@ -441,35 +446,8 @@ public class NotesEditorFragment extends Fragment implements
 
             //retrieve the saved contact Notes
             mContactNotesView.setText(savedInstanceState.getString(BUNDLE_CONTACT_NOTES));
-
         }
-
-
-
     }
-
-    private void setDateAndTimeViews(Long timeInMills) {
-
-        // set the default time to now
-        Date date = new Date();
-
-        // if the time is not 0, then we should set the date to it
-        if(timeInMills != 0){
-            date.setTime(timeInMills);
-        }
-
-        mEventDate = date.getTime();
-
-        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
-        String formattedDate = formatDate.format(date);
-        //mDateViewButton.setText(formattedDate);
-
-    }
-
-
-
-
-
 
 
     private void setBasicContactInfo(){
@@ -503,7 +481,6 @@ public class NotesEditorFragment extends Fragment implements
 
         //save the cotact notes
         outState.putString(BUNDLE_CONTACT_NOTES, mContactNotesView.getText().toString());
-
     }
 
     @Override
@@ -855,34 +832,30 @@ public class NotesEditorFragment extends Fragment implements
         final static int QUERY_ID = 9;
     }
 
+
     /*
-    Sets the calendar date of the event, preserving the time that was previously set
-    And displays that date.
+    Return a formatted string for the date header
      */
-    static void setDate(int year, int monthOfYear, int dayOfMonth){  //TODO Can this be private?
-        //Display the current date
-
-        final Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(mEventDate);
-        c.set(Calendar.YEAR, year);
-        c.set(Calendar.MONTH, monthOfYear);
-        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-        // set the seconds and milliseconds to 0
-        // as there is little use for them in human time setting
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-
-        Date date = c.getTime();
-
-        DateFormat formatDate = new SimpleDateFormat("MM-dd-yyyy");
-        String formattedDate = formatDate.format(date);
-        //mDateViewButton.setText(formattedDate);
-        mEventDate = date.getTime();
-
+    private String getDateHeaderString(){
+        return "*****  " + getDateString((long)0) + "  *****\n";
     }
 
+    /*
+    * Return a string for the current calendar date
+     */
 
+    private String getDateString(Long timeInMills){
+        // set the default time to now
+        Date date = new Date();
+
+        // if the time is not 0, then we should set the date to it
+        if(timeInMills != 0){
+            date.setTime(timeInMills);
+        }
+
+        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
+        return formatDate.format(date);
+    }
 
 
 }

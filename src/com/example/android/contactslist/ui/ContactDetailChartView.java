@@ -35,6 +35,7 @@ public class ContactDetailChartView {
     private int conversion_ratio;
     private int preferred_first_day_of_week;
     private boolean animate = true;
+    private boolean classIsSet = false;
 
 
     public ContactDetailChartView(Context context, View detailView){
@@ -117,7 +118,12 @@ public class ContactDetailChartView {
         return mChart;
     }
 
+    public boolean isSet(){
+        return classIsSet;
+    }
+
     public void addDataFromEventList(ArrayList<EventInfo> eventList){
+
         ArrayList<Entry> valsComp1 = new ArrayList<Entry>();
         Entry c1e1;
         ArrayList<String> xVals = new ArrayList<String>();
@@ -183,6 +189,9 @@ public class ContactDetailChartView {
     }
 
     public void addData(){
+
+        classIsSet = true;
+
         ArrayList<Entry> valsComp1 = new ArrayList<Entry>();
         Entry c1e1;
         ArrayList<String> xVals = new ArrayList<String>();

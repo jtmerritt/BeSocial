@@ -227,7 +227,7 @@ public class ContactDetailActivity extends FragmentActivity
 
                 mPager.setAdapter(mContactDetailAdapter);
                 mPager.setCurrentItem(mStartingAdapterPosition);
-                mPager.setOffscreenPageLimit(2);
+                //mPager.setOffscreenPageLimit(2);
 
                 mPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
 

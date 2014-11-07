@@ -44,6 +44,7 @@ public class WordCloudView extends View {
     final private static int NUM_WORDS_DISPLAY = 20;
     final private static int MAX_PLACEMENT_ITERATIONS = 150;
     private int primary_display = 0;
+    private boolean classIsSet = false;
 
 
 
@@ -85,6 +86,10 @@ public class WordCloudView extends View {
     //mSectorOval = new RectF();
   }
 
+    public boolean isSet(){
+        return classIsSet;
+    }
+
     public Parcelable onSaveInstanceState() {
         // save state - so if you rotate the screen it will do the right thing.
         Bundle bundle = new Bundle();
@@ -106,6 +111,8 @@ public class WordCloudView extends View {
 
 
     public void setWordList(ArrayList<Map.Entry<String,Integer>> word_list){
+
+        classIsSet = true;
 
         int[] colors = {android.R.color.holo_blue_light,
                 //R.color.pasty_1,

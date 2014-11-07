@@ -18,8 +18,11 @@ package com.example.android.contactslist.ui;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -40,6 +43,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.InputType;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -50,6 +54,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -135,6 +140,7 @@ public class ContactDetailFragment extends Fragment implements
     private String mSMSNumber = "";
     private String mEmailAddress = "";
     private String mContactNotes;
+    private String mNewNotes;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -374,7 +380,7 @@ public class ContactDetailFragment extends Fragment implements
 
         //Expand the filler space
         mDetailFillerSpace = (LinearLayout)detailView.findViewById(R.id.filler_layout_container);
-        mDetailFillerSpace.setMinimumHeight(800);
+        mDetailFillerSpace.setMinimumHeight(950);
 
 
         //Populate items in content list
@@ -454,6 +460,8 @@ public class ContactDetailFragment extends Fragment implements
         mScrollView = (ObservableScrollView) detailView.findViewById(R.id.scrollView);
 
 
+        contactDetailChartView = new ContactDetailChartView(mContext, detailView);
+        contactDetailChartView.makeLineChart(R.id.tiny_chart);
 
 
         /*
@@ -502,34 +510,29 @@ public class ContactDetailFragment extends Fragment implements
                 // update the image header
                 mScrollingImageContactHeaderView.updateScroll(parallax);
 
-
-                // chart loading
-                if(!chart_loaded && y > 1400){
-                    getContactDetailChart();
-                    chart_loaded = true;
-                }
-
                 //wordCloud Loading
-                if(!word_cloud_loaded && y > 50){
+                if(!wordCloudView.isSet() && y > 50){
                     displayWordCloud();
-                    word_cloud_loaded = true;
                 }
 
-                //wordCloud Loading
+                //message stats Loading
                 if(!message_stats_loaded && y > 450){
                     Log.d(TAG, "Loading message stats");
                     setDefaultMessageStats();  //this process is started from here to ensure that the contact is already fully populated.
                     message_stats_loaded = true;
                 }
 
+                // chart loading
+                if(!contactDetailChartView.isSet() && y > 900){
+                    getContactDetailChart();
+                }
+
+
 
 
             }
         }) ;
 
-
-        contactDetailChartView = new ContactDetailChartView(mContext, detailView);
-        contactDetailChartView.makeLineChart(R.id.tiny_chart);
 
         fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
 
@@ -1906,7 +1909,8 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
 
 
     private void startEditNotes() {
-
+        editEventNotesTextDialog();
+        /*
         Intent intent = new Intent(mContext, NotesEditorActivity.class);
         intent.setData(mContactUri);
 
@@ -1921,8 +1925,153 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         // the flag is ignored.
         //intent.putExtra(Intent.EXTRA_TEXT, mNotesView.getText());
         startActivity(intent);
+        */
     }
 
+
+    private void editEventNotesTextDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.event_notes_title);
+
+// Set up the input
+        final EditText input = new EditText(getActivity());
+
+        input.setText("");
+        input.setMinHeight(200);
+
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        builder.setView(input);
+
+
+// Set up the buttons
+        builder.setNeutralButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Do something with the new text
+                mNewNotes = input.getText().toString();
+
+                updateContactNotes();
+            }
+        });
+
+        builder.setPositiveButton("Update with Date", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Do something with the new text
+                mNewNotes = getDateHeaderString() + input.getText().toString();
+
+                updateContactNotes();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+
+    /*
+    Update contact notes
+     */
+    private void updateContactNotes(){
+        // only make updates if there is new next
+        if (mNewNotes.length() != 0) {
+            // add the new "event" text to the top of the contact notes and clear the event notes
+            // if the add date checkbox is checked, append the update under a date header
+
+            mContactNotes = mNewNotes + "\n\n" + mContactNotes;
+
+            //Update the view
+            mNotesView.setText(mContactNotes);
+
+            mNewNotes = "";
+
+            if(mContactStats != null){
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        int updateCount = 0;
+                        // add notes back to the google contact
+
+
+                        ContentResolver cr = mContext.getContentResolver();
+                        ContentValues values = new ContentValues();
+
+                        values.clear();
+                        String noteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND "
+                                + ContactsContract.Data.MIMETYPE + " = ?";
+                        String[] noteWhereParams =
+                                new String[]{mContactStats.getIDString(),
+                                        ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
+                        values.put(ContactsContract.CommonDataKinds.Note.NOTE, mContactNotes);
+
+                        updateCount = cr.update(ContactsContract.Data.CONTENT_URI,
+                                values, noteWhere, noteWhereParams);
+
+
+
+                        final boolean insertComplete = updateCount > 0;
+
+                        getActivity().runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if(insertComplete){
+                                    Toast.makeText(getActivity(),
+                                            "Notes Saved",
+                                            Toast.LENGTH_SHORT).show();
+                                }else {
+                                    Toast.makeText(getActivity(),
+                                            "Could not update database notes",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+
+                    }
+                }).start();
+
+            }else {
+                Toast.makeText(getActivity(), "Contact ID error", Toast.LENGTH_SHORT).show();
+
+            }
+
+        }else {
+            Toast.makeText(getActivity(), "Enter Text", Toast.LENGTH_SHORT).show();
+
+        }
+    }
+
+
+    /*
+Return a formatted string for the date header
+ */
+    private String getDateHeaderString(){
+        return "*****  " + getDateString((long)0) + "  *****\n";
+    }
+
+    /*
+    * Return a string for the current calendar date
+     */
+
+    private String getDateString(Long timeInMills){
+        // set the default time to now
+        Date date = new Date();
+
+        // if the time is not 0, then we should set the date to it
+        if(timeInMills != 0){
+            date.setTime(timeInMills);
+        }
+
+        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
+        return formatDate.format(date);
+    }
 
     /*
 Set the FractionView with appropriate time data
