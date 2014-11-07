@@ -2,31 +2,21 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- usable notes taking
+- view the last 5 communications
 - make cards interface
+- figure out what to do with the event notes
+- flag for manually entered events?
 
 - get background images from text messages or internet source - or display generic photo
 - activity for creating groups
 
-+ Event Entry Fragment
-    - [done] hook into event database
-    - flag for manually entered events?
-    - [done] add in human readable date
-    - figure out what to do with the event notes
-    - [done but for address] Make values persist with screen rotation
-    - Add a mapping interface button to pull a new address/place
-
-
 - contact detail plant animation
-- context/item help
 - Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
     - score over time
-- add another option to the CAB:
-    - Move selection to another group
-    -
+
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Use ActionMode.callback to manually select multiple contacts to remove from a group
     - http://stackoverflow.com/questions/20304140/onlongclick-with-context-action-bar-cab-not-taking-place-only-onlistitemclick-p
@@ -41,6 +31,7 @@ ___________________________________________________________________
 
 
 ***Bug List***
+- crashing when contact notes are updated
 - Crashing when flipping contacts
 - Fix the title and userpic display of the action bar
     - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
@@ -58,6 +49,12 @@ ___________________________________________________________________
 
 
 ***Future***
+- add another option to the CAB:
+    - Move selection to another group
+    -
+- Event Entry Fragment: Add a mapping interface button to pull a new address/place
+- context/item help
+
 - group stats must be collected just like contact stats
 + Word cloud
     - words you use with others but don't use with the current contact
@@ -100,6 +97,12 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
++ Event Entry Fragment
+    - [done] hook into event database
+    - [done] add in human readable date
+    - [done but for address] Make values persist with screen rotation
+
+- created interface for adding to the contact notes
 - charts instead of numbers in Detail stats
 - contact detail activity header bar
     - implement contact action menu
