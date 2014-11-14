@@ -342,6 +342,34 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    style="@style/contact_detail_item_background"
+                    android:orientation="vertical"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/look_back"
+                    android:layout_marginTop="@dimen/list_item_vertical_padding" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="@string/look_back_title"
+                        android:id="@+id/look_back_title"
+                        android:textAlignment="center"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textColor="@color/off_white_1" />
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/look_back_layout_container"></LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -375,7 +403,7 @@
                             android:gravity="start"
                             android:textIsSelectable="true"
                             android:background="@android:drawable/alert_light_frame"
-                            android:textColorLink="@color/holo_blue"
+                            android:textColorLink="@android:color/holo_blue_light"
                             android:padding="@dimen/padding"
                             style="@style/AppTheme"
                             android:longClickable="true" />

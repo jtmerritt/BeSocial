@@ -152,7 +152,7 @@ public class ContactDetailChartView {
 
 
             LineDataSet setComp1 = new LineDataSet(valsComp1, "Points per Month");
-            setComp1.setColor(mContext.getResources().getColor(R.color.holo_blue));
+            setComp1.setColor(mContext.getResources().getColor(R.color.incoming_event));
             setComp1.setLineWidth(2.5f);
             setComp1.setDrawCubic(true);
             setComp1.setCubicIntensity(0.13f);  //default is 0.2f -- lower makes more straight lines
@@ -205,7 +205,7 @@ public class ContactDetailChartView {
         }
 
         LineDataSet setComp1 = new LineDataSet(valsComp1, "Cycle");
-        setComp1.setColor(mContext.getResources().getColor(R.color.holo_blue));
+        setComp1.setColor(mContext.getResources().getColor(R.color.incoming_event));
         setComp1.setLineWidth(0.5f);
         setComp1.setDrawCubic(true);
         setComp1.setDrawFilled(true);

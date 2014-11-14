@@ -20,7 +20,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -81,7 +80,6 @@ import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
 import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
-import com.example.android.contactslist.ui.notesEditor.NotesEditorActivity;
 import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
@@ -117,6 +115,7 @@ import java.util.concurrent.TimeUnit;
 public class ContactDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>
 {
+    private ContactDetailAdapter mContactDetailAdapter;
 
     public static final String EXTRA_CONTACT_URI =
             "com.example.android.contactslist.ui.EXTRA_CONTACT_URI";
@@ -160,12 +159,12 @@ public class ContactDetailFragment extends Fragment implements
     private ImageView mEditNotesButton;
 
     //private ImageView mActionBarIcon;
+    private LinearLayout mDetailFillerSpace;
     private LinearLayout mDetailsLayout;
-    //private LinearLayout mActionLayout;
-    //private LinearLayout mActionLayoutContainer;
     private LinearLayout mStatsLayoutContainer;
-    private LinearLayout mDetailsCallLogLayout;
-    private LinearLayout mDetailsSMSLogLayout;
+    private LinearLayout mLookBackLayoutContainer;
+
+
     private TextView mEmptyView;
     private TextView mContactNameView;
     private TextView mNotesView;
@@ -178,21 +177,23 @@ public class ContactDetailFragment extends Fragment implements
     private ScrollingImageView mScrollingImageContactHeaderView = null;
     private Context mContext;
     private Button mOpenFullScreenChartButton;
-    private LinearLayout mDetailFillerSpace;
     private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
     private ObservableScrollView mScrollView;
 
-    private ContactDetailAdapter mContactDetailAdapter;
 
     private ContactDetailChartView contactDetailChartView;
-    private boolean chart_loaded = false;
-    private boolean word_cloud_loaded = false;
     private boolean message_stats_loaded = false;
     final private static int PARALLAX_SCROLL_FRACTION = 20;
 
     FloatingActionButton2 fab1;
     FloatingActionMenu centerBottomMenu;
-    private ContactNotesInterface mContactNotesInterface;
+
+    private List<EventInfo> mLookBackEventLog = new ArrayList<EventInfo>();
+    private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
+
+
+    private String mLastEventDetailDate;
+    private int mLookBackMonthCount = 1;
 
 
 
@@ -281,11 +282,17 @@ public class ContactDetailFragment extends Fragment implements
 
             // Get a bunch of data using the loaderManager
             setBasicContactInfo();
+
+            // get the contact stats from the database and set the times for the fraction view
             getContactStats();
+
+            // fetch basic contact info with queries based on contactLookupKey
             getVoiceNumber();
             getSMSNumber();
             getEmailAddress();
-            getContactNote();
+
+            // TODO temp getContactNote();
+           //TODO temp getContactDetailEventLookBack();
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -297,7 +304,6 @@ public class ContactDetailFragment extends Fragment implements
             mImageView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
             mDetailsLayout.removeAllViews();
-            mDetailsCallLogLayout.removeAllViews();
 
             if (mContactNameView != null) {
                 mContactNameView.setText("");
@@ -363,15 +369,11 @@ public class ContactDetailFragment extends Fragment implements
         screenWidth = ImageUtils.getScreenWidth(getActivity());
         getScreenHeight = ImageUtils.getScreenHeight(getActivity());
 
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-
-        mContactNotesInterface = new ContactNotesInterface(mContext);
-
 
         // Inflates the main layout to be used by this fragment
         detailView = inflater.inflate(R.layout.contact_detail_fragment, container, false);
@@ -406,7 +408,8 @@ public class ContactDetailFragment extends Fragment implements
         // get the layout container resource
         mStatsLayoutContainer =
                 (LinearLayout) detailView.findViewById(R.id.stats_layout_container);
-
+        mLookBackLayoutContainer =
+                (LinearLayout) detailView.findViewById(R.id.look_back_layout_container);
 
 
         // build buttons for the contact stats control
@@ -532,9 +535,6 @@ public class ContactDetailFragment extends Fragment implements
                     getContactDetailChart();
                 }
 
-
-
-
             }
         }) ;
 
@@ -604,11 +604,15 @@ public class ContactDetailFragment extends Fragment implements
         //getLoaderManager().restartLoader(ContactNotesQuery.QUERY_ID, null, this);
     }
     private void getContactMessageStats(){
-        getLoaderManager().restartLoader(ContactEventLogQuery.QUERY_ID, null, this);
+        getLoaderManager().restartLoader(ContactEventLogStatsQuery.QUERY_ID, null, this);
     }
     private void getContactDetailChart(){
         getLoaderManager().restartLoader(ContactChartEventLogQuery.QUERY_ID, null, this);
     }
+    private void getContactDetailEventLookBack(){
+        getLoaderManager().restartLoader(ContactLookBackEventLogQuery.QUERY_ID, null, this);
+    }
+
     private void getContactDetailImage(){
         getLoaderManager().restartLoader(ContactDetailPhotoQuery.QUERY_ID, null, this);
     }
@@ -850,7 +854,7 @@ public class ContactDetailFragment extends Fragment implements
                         noteWhereParams,
                         null);
 
-            case ContactEventLogQuery.QUERY_ID:
+            case ContactEventLogStatsQuery.QUERY_ID:
                 // This query loads data from SocialEventsContentPRovider.
 
                 // If there is a call to retrieve all the data, then use only the contactKey in the query
@@ -938,6 +942,33 @@ public class ContactDetailFragment extends Fragment implements
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
 
 
+            case ContactLookBackEventLogQuery.QUERY_ID:
+                // This query loads data from SocialEventsContentPRovider.
+
+                // specify the date range to query
+                cal = Calendar.getInstance();
+                end_date = cal.getTimeInMillis();
+
+                // lets look one year back
+                cal.add(Calendar.MONTH, -mLookBackMonthCount);
+
+                start_date = cal.getTimeInMillis();
+
+
+                //prepare the shere and args clause for the contact lookup key
+                where = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                        + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
+
+                String[] whereArgs6 ={ mContactLookupKey,
+                        Long.toString(start_date), Long.toString(end_date)};
+
+                return new CursorLoader(getActivity(),
+                        SocialEventsContentProvider.SOCIAL_EVENTS_URI,
+                        null,
+                        where, whereArgs6,
+                        SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
+
+
         }
         return null;
 
@@ -1021,7 +1052,7 @@ public class ContactDetailFragment extends Fragment implements
             // being the second case of this query_ID, this section will not get called.
             //
             case 88://LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                if (data.moveToFirst()) {
+                if (data != null && data.moveToFirst()) {
                     // This query loads the contact call log details for the contact. More than
                     // one log is possible, so move each one to a
                     // LinearLayout in a Scrollview so multiple addresses can
@@ -1037,11 +1068,12 @@ public class ContactDetailFragment extends Fragment implements
                 break;
             case ContactStatsQuery.QUERY_ID:
 
-                setContactStatsFromCursor(data);
-                if (mContactStats != null) {
+                // set the content of mContactStats
+                mContactStats = setContactStatsFromCursor(data);
 
-                    setFractionView();
-                }
+                // set the fractionView with the contact times from mContactStats
+                setFractionView(mContactStats);
+
                     break;
             case ContactVoiceNumberQuery.QUERY_ID:
                 if(data.moveToFirst()){
@@ -1086,7 +1118,7 @@ public class ContactDetailFragment extends Fragment implements
                 }
                 break;
 
-            case ContactEventLogQuery.QUERY_ID:
+            case ContactEventLogStatsQuery.QUERY_ID:
 
                 if (mContactStats != null) {
 
@@ -1210,8 +1242,52 @@ public class ContactDetailFragment extends Fragment implements
                     contactDetailChartView.addDataFromEventList(eventList);
                 }
                 break;
+
+            case ContactLookBackEventLogQuery.QUERY_ID:
+
+                final int EVENT_DISPLAY_LIMIT = 5;
+
+                if (mContactStats != null &&
+                        data != null &&
+                        data.moveToFirst() ){
+
+                    // if there aren't enough events, go back further
+                    if(data.getCount() < EVENT_DISPLAY_LIMIT){
+                        mLookBackMonthCount++;
+                        getContactDetailEventLookBack();
+
+                        return;
+                    }
+
+                    // create an instance of the Events Contract for proper cursor interpretation
+                    SocialEventsContract sec = new SocialEventsContract(mContext);
+                    EventInfo event = null;
+                    ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+
+                    // advace the data cursor until the end, converting data to events
+                    do{
+
+                        //populate the event from the cursor
+                        event = sec.setEventInfoFromCursor(event, data);
+                        eventList.add(event);
+
+                    }while(data.moveToNext());
+
+
+                    sec.close();
+
+                    final int eventListLastIndex = eventList.size() - 1;
+
+                    mLookBackEventLog.addAll(eventList.subList(eventListLastIndex -
+                            EVENT_DISPLAY_LIMIT, eventListLastIndex));
+
+                    displayLookBackEventLog();
+                }
+
+                break;
         }
     }
+
 
     private void makeWordCloud(Cursor data) {
 
@@ -1229,7 +1305,7 @@ public class ContactDetailFragment extends Fragment implements
 
 
                     //grab only those events which match the current contact
-                    ArrayList<EventInfo> eventList =
+                    final ArrayList<EventInfo> eventList =
                             (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(mContactStats);
 
                     gatherSMSLog.closeSMSLog();
@@ -1244,6 +1320,7 @@ public class ContactDetailFragment extends Fragment implements
                     //get the sorted list of words
                     final ArrayList<Map.Entry<String, Integer>> word_list =
                             gatherWordCounts.getWordList(words_to_ignore);
+
                     getActivity().runOnUiThread(new Runnable() {
 
                         @Override
@@ -1251,6 +1328,9 @@ public class ContactDetailFragment extends Fragment implements
                             // end by running the final method of the activity
                             //Now send the list to the word cloud generator
                             wordCloudView.setWordList(word_list);
+
+                            // clear the internal event list
+                            eventList.clear();
                         }
                     });
                 }
@@ -1269,46 +1349,50 @@ public class ContactDetailFragment extends Fragment implements
     Take the cursor containing all the available data columns from the ContactStatsContentProvider
     and pace it in a contactInfo for easy access
     */
-    private void setContactStatsFromCursor(Cursor cursor){
-        if (cursor.moveToFirst()) {
-            mContactStats = new ContactInfo(
+    // TODO move this method out to another class
+    private ContactInfo setContactStatsFromCursor(Cursor cursor){
+        ContactInfo contactInfo = null;
+
+        // read the cursor only if it has content
+        if (cursor != null && cursor.moveToFirst()) {
+            contactInfo = new ContactInfo(
                     cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_NAME)),
                     cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_KEY)),
                     cursor.getLong(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_ID)));
 
-            mContactStats.setRowId(cursor.getLong(cursor.getColumnIndex(
+            contactInfo.setRowId(cursor.getLong(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry._ID)));
 
-            mContactStats.setDateLastEventIn(cursor.getLong(cursor.getColumnIndex(
+            contactInfo.setDateLastEventIn(cursor.getLong(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_IN)));
-            mContactStats.setDateLastEventOut(cursor.getLong(cursor.getColumnIndex(
+            contactInfo.setDateLastEventOut(cursor.getLong(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_OUT)));
-            mContactStats.setDateLastEvent(cursor.getString(cursor.getColumnIndex(
+            contactInfo.setDateLastEvent(cursor.getString(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT)));
-            mContactStats.setDateContactDue(cursor.getLong(cursor.getColumnIndex(
+            contactInfo.setDateContactDue(cursor.getLong(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DATE_CONTACT_DUE)));
 
-            mContactStats.setDateRecordLastUpdated(cursor.getLong(cursor.getColumnIndex(
+            contactInfo.setDateRecordLastUpdated(cursor.getLong(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DATE_RECORD_LAST_UPDATED)));
-            mContactStats.setEventIntervalLimit(cursor.getInt(cursor.getColumnIndex(
+            contactInfo.setEventIntervalLimit(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LIMIT)));
-            mContactStats.setEventIntervalLongest(cursor.getInt(cursor.getColumnIndex(
+            contactInfo.setEventIntervalLongest(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST)));
-            mContactStats.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
+            contactInfo.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
-            mContactStats.setStanding(cursor.getFloat(cursor.getColumnIndex(
+            contactInfo.setStanding(cursor.getFloat(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_STANDING)));
 
-            mContactStats.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
+            contactInfo.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
 
-            mContactStats.setEventCount(cursor.getInt(cursor.getColumnIndex(
+            contactInfo.setEventCount(cursor.getInt(cursor.getColumnIndex(
                     ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));
 
-
-
-            mContactStats.resetUpdateFlag(); //because this is just reporting on the database content
+            contactInfo.resetUpdateFlag(); //because this is just reporting on the database content
         }
+
+        return contactInfo;
     }
 
 
@@ -1785,7 +1869,7 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     }
 
     // for getting the event Log
-    public interface ContactEventLogQuery{
+    public interface ContactEventLogStatsQuery{
         final static int QUERY_ID = 10;
     }
 
@@ -1797,6 +1881,12 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     // for getting the event Log for the detail chart
     public interface ContactChartEventLogQuery{
         final static int QUERY_ID = 12;
+    }
+
+
+    // for getting the event Log for the event lookback display
+    public interface ContactLookBackEventLogQuery{
+        final static int QUERY_ID = 13;
     }
 
 /*
@@ -1917,158 +2007,24 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
     /*
 Set the FractionView with appropriate time data
  */
-    private void setFractionView() {
-        final int ONE_DAY = 86400000;
+    private void setFractionView(ContactInfo contactInfo) {
 
-        // set the fraction view with current state of contact countdown
-        // based on contact due date stored at the contact Event date
-        Time now = new Time();
-        now.setToNow();
+        if(contactInfo != null){
+            final int ONE_DAY = 86400000;
 
-        Long last_event = (mContactStats.getDateLastEventIn() > mContactStats.getDateLastEventOut() ?
-                mContactStats.getDateLastEventIn() : mContactStats.getDateLastEventOut());
+            // set the fraction view with current state of contact countdown
+            // based on contact due date stored at the contact Event date
+            Time now = new Time();
+            now.setToNow();
 
-        int days_left = (int) ((mContactStats.getDateEventDue() - now.toMillis(true)) / ONE_DAY);
-        int days_in_span = (int) ((mContactStats.getDateEventDue() - last_event) / ONE_DAY);
+            Long last_event = (contactInfo.getDateLastEventIn() > contactInfo.getDateLastEventOut() ?
+                    contactInfo.getDateLastEventIn() : contactInfo.getDateLastEventOut());
 
-        fractionView.setFraction(days_left, days_in_span);
-    }
+            int days_left = (int) ((contactInfo.getDateEventDue() - now.toMillis(true)) / ONE_DAY);
+            int days_in_span = (int) ((contactInfo.getDateEventDue() - last_event) / ONE_DAY);
 
-
-    /**
-     * Builds an empty callLog layout that just shows that no calls
-     * were found for this contact.
-     *
-     * @return A LinearLayout to add to the contact details layout
-     */
-    private LinearLayout buildEmptyCallLogLayout() {
-        return buildCallLogLayout("", 0, 0, "");
-    }
-
-    /**
-     * *****call log layout*************************
-     */
-
-    private void displayCallLog() {
-        // Each LinearLayout has the same LayoutParams so this can
-        // be created once and used for each address.
-        final LinearLayout.LayoutParams CallLoglayoutParams =
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        // Clears out the details layout first in case the details
-        // layout has CallLogs from a previous data load still
-        // added as children.
-
-        // Loops through all the rows in the Cursor
-        if (!mEventLog.isEmpty()) {
-
-            int j = mEventLog.size();
-            do {
-                // Implentation reverses the display order of the call log.
-                j--;
-
-                // If the item in the event log is for phone calls, display it.
-                if (mEventLog.get(j).getEventClass() == mEventLog.get(j).PHONE_CLASS) {
-                    // Builds the address layout
-                    final LinearLayout layout = buildCallLogLayout(
-                            mContactNameString,  /*name of caller, if available.*/
-                            mEventLog.get(j).getCallDate(), /*date of call. Time of day?*/
-                            mEventLog.get(j).getCallDuration(), /*Length of the call in Minutes*/
-                            mEventLog.get(j).getCallTypeSting()); /*Type of call: incoming, outgoing or missed */
-
-
-                    // Adds the new address layout to the details layout
-                    mDetailsCallLogLayout.addView(layout, CallLoglayoutParams);
-                }
-            } while (j > 0);
-
-        } else {
-            // If nothing found, adds an empty address layout
-            mDetailsCallLogLayout.addView(buildEmptyCallLogLayout(), CallLoglayoutParams);
+            fractionView.setFraction(days_left, days_in_span);
         }
-    }
-
-
-    private LinearLayout buildCallLogLayout(
-            String eventContactName,  /*name of caller, if available.*/
-            long CallDate, /*date of call. Time of day?*/
-            long eventDuration,  /*Length of the call in seconds*/
-            String eventType    /*Type of call: incoming, outgoing or missed */) {
-
-
-        // Inflates the address layout
-        final LinearLayout callLogLayout =
-                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_call_log_item, mDetailsCallLogLayout, false);
-
-        // Gets handles to the view objects in the layout
-        final TextView dateTextView =
-                (TextView) callLogLayout.findViewById(R.id.contact_detail_call_date);
-        final TextView durationTextView =
-                (TextView) callLogLayout.findViewById(R.id.contact_detail_call_duration);
-        final TextView typeTextView =
-                (TextView) callLogLayout.findViewById(R.id.contact_detail_call_type);
-
-        final ImageView typeImageView = (ImageView) callLogLayout.findViewById(R.id.call_type_image1);
-
-
-        // If there's no addresses for the contact, shows the empty view and message, and hides the
-        // header and button.
-        if (CallDate == 0) {
-            dateTextView.setVisibility(View.GONE);
-            typeTextView.setVisibility(View.GONE);
-            durationTextView.setText("No Calls Found");
-
-        } else {
-
-            // format date string
-            Date date = new Date(CallDate);
-            DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-            //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-            String formattedCallDate = format.format(date);
-
-            //convert time to minutes: seconds
-            long minute = TimeUnit.SECONDS.toMinutes(eventDuration);
-            long second = TimeUnit.SECONDS.toSeconds(eventDuration) -
-                    TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventDuration));
-
-
-            // Sets TextView objects in the layout
-            dateTextView.setText(formattedCallDate);
-            durationTextView.setText(minute + " mins " + second + " secs");
-            typeTextView.setText(eventType);
-
-
-            if (eventType.equalsIgnoreCase("incoming")) {
-                Log.d("typeTextView=", eventType);
-                typeTextView.setTextColor(getResources().getColor(R.color.holo_blue));
-                typeImageView.setBackgroundResource(R.drawable.incomingsmall);
-            } else if (eventType.equalsIgnoreCase("outgoing")) {
-                Log.d("typeTextView=", eventType);
-                typeTextView.setTextColor(getResources().getColor(R.color.yellow));
-                typeImageView.setBackgroundResource(R.drawable.outgoingsmall);
-            } else if (eventType.equalsIgnoreCase("missed/draft")) {
-                Log.d("typeTextView=", eventType);
-                typeTextView.setTextColor(getResources().getColor(R.color.red));
-                typeImageView.setBackgroundResource(R.drawable.missedsmall);
-            }
-
-        }
-        return callLogLayout;
-    }
-
-    List<EventInfo> mEventLog = new ArrayList<EventInfo>();
-
-
-    /**
-     * Builds an empty SMSLog layout that just shows that no SMSs
-     * were found for this contact.
-     *
-     * @return A LinearLayout to add to the contact details layout
-     */
-    private LinearLayout buildEmptySMSLogLayout() {
-        return buildSMSLogLayout("", 0, 0, "");
     }
 
 
@@ -2155,88 +2111,170 @@ Set the FractionView with appropriate time data
     }
 
 
+
+
+    private EventInfo addEventText(EventInfo event){
+
+        if(event.isTextClass()){
+            ContentResolver contentResolver = mContext.getContentResolver();
+
+            // Retrieve the single SMS event from the OS
+            String[] whereArgsSMS = {Long.toString(event.getDate()),
+                    Long.toString(event.getDate())};
+
+
+            Cursor data = contentResolver.query(
+                    ContactSMSLogQuery.SMSLogURI,
+                    ContactSMSLogQuery.PROJECTION,
+                    ContactSMSLogQuery.WHERE,
+                    whereArgsSMS,
+                    ContactSMSLogQuery.SORT_ORDER);
+
+            // if there is a cursor result, grab the text
+            if(data != null && data.moveToFirst()){
+                event.eventNotes = data.getString(ContactSMSLogQuery.BODY);
+            }
+
+        }
+
+        return event;
+    }
+
+
     /**
-     * *****SMS log layout*************************
+     * Builds an empty SMSLog layout that just shows that no SMSs
+     * were found for this contact.
+     *
+     * @return A LinearLayout to add to the contact details layout
+     */
+    private LinearLayout buildEmptyLookBackEventLayout() {
+        return buildLookBackEventLayout(null);
+    }
+
+    /**
+     * *****Communication Event "Look Back" log layout*************************
      */
 
-    private void displaySMSLog() {
+    private void displayLookBackEventLog() {
+
+        // remove all previous views
+        mLookBackLayoutContainer.removeAllViews();
+
+        mLastEventDetailDate = "";
         // Each LinearLayout has the same LayoutParams so this can
         // be created once and used for each SMS.
         final LinearLayout.LayoutParams SMSLoglayoutParams =
                 new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout layout;
 
-        // Loops through all the rows in the Cursor
-        if (!mEventLog.isEmpty()) {
-            int j = mEventLog.size();
-            do {
-                // Implentation reverses the display order of the SMS log.
-                j--;
-                //If the item in the event Log is for SMS, display it.
-                if (mEventLog.get(j).getEventClass() == mEventLog.get(j).SMS_CLASS) {
+        if (!mLookBackEventLog.isEmpty()) {
+            int i = 0 ;
+            // Loops through the list to display some of the events
+            for(EventInfo eventInfo : mLookBackEventLog){
 
-                    // Builds the address layout
-                    final LinearLayout layout = buildSMSLogLayout(
-                            mContactNameString,
-                            //TODO: This date may not be in the correct format.
-                            mEventLog.get(j).getDate(), /*date & time of SMS*/
-                            mEventLog.get(j).getWordCount(), /*Length of the SMS in Minutes*/
-                            mEventLog.get(j).getEventTypeSting()); /*Type of SMS: incoming, outgoing or missed */
+                // add message string to text, if any
+                eventInfo =addEventText(eventInfo);
 
+                // Builds the address layout
+                layout = buildLookBackEventLayout(eventInfo);
 
-                    // Adds the new SMS layout to the details layout
-                    mDetailsSMSLogLayout.addView(layout, SMSLoglayoutParams);
-                }
-            } while (j > 0);
+                // Adds the new SMS layout to the details layout
+                mLookBackLayoutContainer.addView(layout, SMSLoglayoutParams);
+                i++;
+            }
+
         } else {
             // If nothing found, adds an empty address layout
-            mDetailsSMSLogLayout.addView(buildEmptySMSLogLayout(), SMSLoglayoutParams);
+            mLookBackLayoutContainer.addView(buildEmptyLookBackEventLayout(), SMSLoglayoutParams);
         }
     }
 
 
-    private LinearLayout buildSMSLogLayout(
-            String SMSerName,  /*name of SMSer, if available.*/
-            long EventDate, /*date of SMS. Time of day?*/
-            long SMSDuration,  /*Length of the SMS in seconds*/
-            String SMSType    /*Type of SMS: incoming, outgoing or missed */) {
+    private LinearLayout buildLookBackEventLayout(EventInfo eventInfo) {
+
+        int message_layout_id;
+        // choose the correct layout to inflate with
+        if (eventInfo.getEventType() == EventInfo.INCOMING_TYPE) {
+            message_layout_id = R.layout.incoming_event_detail_item;
+        } else {
+            message_layout_id = R.layout.outgoing_event_detail_item;
+        }
 
         // Inflates the address layout
         final LinearLayout SMSLogLayout =
                 (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                        R.layout.contact_detail_sms_log_item, mDetailsSMSLogLayout, false);
+                        message_layout_id, mLookBackLayoutContainer, false);
 
         // Gets handles to the view objects in the layout
-        final TextView dateTextView =
-                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_date);
-        final TextView durationTextView =
-                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_word_count);
-        final TextView typeTextView =
-                (TextView) SMSLogLayout.findViewById(R.id.contact_detail_sms_type);
+        final TextView dateView =
+                (TextView) SMSLogLayout.findViewById(R.id.date_text_view);
+        final TextView timeTextView =
+                (TextView) SMSLogLayout.findViewById(R.id.time_text_view);
+        final TextView message_view =
+                (TextView) SMSLogLayout.findViewById(R.id.message);
 
-        // If there's no addresses for the contact, shows the empty view and message, and hides the
-        // header and button.
-        if (EventDate == 0) {
-            dateTextView.setVisibility(View.GONE);
-            typeTextView.setVisibility(View.GONE);
-            durationTextView.setText("No SMSs Found");
+        ImageView eventTypeIconView =
+                (ImageView) SMSLogLayout.findViewById(R.id.event_class_icon);
 
-        } else {
 
-            // format date string //TODO: correct date
-            Date date = new Date(EventDate);
-            DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-            //   format.setTimeZone(TimeZone.getTimeZone("PSD"));
-            String formattedEventDate = format.format(date);
+        if(eventInfo != null) {
 
-            // Sets TextView objects in the layout
-            dateTextView.setText(formattedEventDate);
-            durationTextView.setText(SMSDuration + " words");
-            typeTextView.setText(SMSType);
+            // get date and time strings
+            String[] date_and_time = getDateAndTimeStrings(eventInfo.getDate());
 
+            // set date view
+            dateView.setText(date_and_time[0]);
+
+            // set time view
+            timeTextView.setText(date_and_time[1]);
+
+            // set the message view
+            message_view.setText(eventInfo.eventNotes);
+
+
+            switch (eventInfo.getEventClass()){
+                case EventInfo.EMAIL_CLASS:
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_email));
+                    break;
+                case EventInfo.PHONE_CLASS:
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_call));
+
+                    // calculated display elements for call duration
+                    //convert time to minutes: seconds
+                    long minute = TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration);
+                    long second = TimeUnit.SECONDS.toSeconds(eventInfo.eventDuration) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration));
+                    message_view.setText(minute + " mins " + second + " secs");
+                    break;
+                case EventInfo.SMS_CLASS:
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_chat));
+                    break;
+                case EventInfo.MEETING_CLASS:
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_map));
+                    break;
+                default:
+            }
+
+            // cleanup on the date text view
+            // if the current message is of a repeat date, suppress the view
+            if(dateView.getText().toString().equalsIgnoreCase(mLastEventDetailDate)){
+                // hide the text
+                dateView.setTextSize(0);
+            }
+
+            mLastEventDetailDate = dateView.getText().toString();
+
+        }else{
+            dateView.setText("No events found");
+            dateView.setText("");
+            dateView.setText("");
         }
+
         return SMSLogLayout;
     }
+
+
 
     /**
      * Builds an empty address layout that just shows that no addresses
@@ -2504,6 +2542,9 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             @Override
             public void run() {
 
+                // open the interface to read the contact notes
+                ContactNotesInterface mContactNotesInterface = new ContactNotesInterface(mContext);
+
                 // fetch the new contact notes string
                 mContactNotes = mContactNotesInterface.loadContactNotes(mContactLookupKey);
 
@@ -2600,6 +2641,7 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
     /*
     Update contact notes
      */
+
     private void updateContactNotes(String newNotes){
         // only make updates if there is new next
         if (!newNotes.isEmpty()) {
@@ -2616,6 +2658,10 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
 
                     @Override
                     public void run() {
+
+                        // open the interface to write out the notes
+                        ContactNotesInterface mContactNotesInterface =
+                                new ContactNotesInterface(mContext);
 
                         int updateCount =
                                 mContactNotesInterface.setContactNotes(mContactStats.getIDString(),
@@ -2656,14 +2702,15 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
 Return a formatted string for the date header
  */
     private String getDateHeaderString(){
-        return "*****  " + getDateString((long)0) + "  *****\n";
+        // return only the date string
+        return "*****  " + getDateAndTimeStrings((long)0)[0] + "  *****\n";
     }
 
     /*
     * Return a string for the current calendar date
      */
 
-    private String getDateString(Long timeInMills){
+    private String[] getDateAndTimeStrings(Long timeInMills){
         // set the default time to now
         Date date = new Date();
 
@@ -2673,7 +2720,14 @@ Return a formatted string for the date header
         }
 
         DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
-        return formatDate.format(date);
+        String formattedEventDate = formatDate.format(date);
+
+        DateFormat formatTime = new SimpleDateFormat("HH:mm");
+        String formattedEventTime = formatTime.format(date);
+
+        String[] date_and_time = {formattedEventDate, formattedEventTime};
+
+        return date_and_time;
     }
 
 

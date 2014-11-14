@@ -19,7 +19,6 @@
     <!-- Define a standard holo blue color. Useful as we can refer to it from various other
          resource files or even code and it only needs to be updated in one place if we wanted
          to change it. -->
-    <color name="holo_blue">#FF33B5E5</color>
     <color name="red">#FF0000</color>
     <color name="yellow">#CCCC00</color>
     <color name="gray_background_1">#99333333</color>
@@ -31,12 +30,18 @@
     <color name="pasty_4">#528426</color>
     <color name="pasty_5">#FFF2A5</color>
 
+    <!-- Colors for incoming and outgoing events -->
+    <color name="incoming_event">@android:color/holo_blue_light</color>
+    <color name="outgoing_event">@android:color/holo_green_light</color>
+    <color name="missed_event">@color/red</color>
+
 
     <!-- Lollipop color scheme -->
 
     <!-- Primary Indigo -->
     <color name="primary_50">#e8eaf6</color>
     <color name="primary_100">#c5cae9</color>
+    <color name="primary_400">#5C6BC0</color>
     <color name="primary_500">#3f51b5</color> <!-- Toolbar -->
     <color name="primary_700">#303f9f</color> <!-- Status Bar -->
 

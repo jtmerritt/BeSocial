@@ -47,11 +47,11 @@ public class SparkBarChartView extends View {
     setBackgroundColor(Color.TRANSPARENT);
 
     mBluePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mBluePaint.setColor(getResources().getColor(android.R.color.holo_blue_light));
+    mBluePaint.setColor(getResources().getColor(R.color.incoming_event));
     mBluePaint.setStyle(Paint.Style.FILL);
 
     mGreenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mGreenPaint.setColor(getResources().getColor(android.R.color.holo_green_light));
+    mGreenPaint.setColor(getResources().getColor(R.color.outgoing_event));
     mGreenPaint.setStyle(Paint.Style.FILL);
 
     mOffWhitePaint = new Paint(Paint.ANTI_ALIAS_FLAG);

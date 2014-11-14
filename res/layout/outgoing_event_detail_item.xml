@@ -39,8 +39,9 @@
                   android:dividerPadding="12dp"
                   android:minHeight="48dp"
                   android:divider="?android:attr/listDivider"
-        android:background="@drawable/rounded_rectangle_primary_100"
-        android:layout_marginTop="@dimen/nibble">
+        android:background="@drawable/rounded_rectangle_outgoing_event"
+        android:layout_marginTop="@dimen/nibble"
+        android:layout_marginLeft="@dimen/left_text_padding">
 
         <LinearLayout
             android:orientation="vertical"
@@ -54,7 +55,6 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/event_class_icon"
                 android:src="@drawable/ic_action_map"
-                android:alpha="0.5"
                 android:layout_gravity="center_horizontal" />
 
             <TextView

@@ -83,6 +83,9 @@
 
     <string name="chart_extra_button">More</string>
 
+    <string name="look_back_title">Look Back</string>
+
+
 
 
     <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by

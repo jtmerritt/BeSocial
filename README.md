@@ -3,6 +3,8 @@ ___________________________________________________________________
 
 ***Priority List***
 - view the last 5 communications
+- get the hamburger menu?
+- adjust score for meetings
 - make cards interface
 - figure out what to do with the event notes
 - flag for manually entered events?
@@ -25,8 +27,6 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
 - Have a nightly database maintenance routine
-- Make sure that a missed call gets added into the incoming call count, maybe add 10 seconds of score.
-- get the hamburger menu?
 
 
 

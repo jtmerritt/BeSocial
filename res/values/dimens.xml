@@ -32,6 +32,8 @@
     <dimen name="list_item_height_two_text_lines">72dp</dimen>
     <dimen name="list_item_height_three_text_lines">88dp</dimen>
     <dimen name="left_text_padding">72dp</dimen>
+    <dimen name="right_text_padding">72dp</dimen>
+
     <dimen name="left_text_padding_minus_listview_item_padding">56dp</dimen>
     <dimen name="right_text_margin">8dp</dimen>
     <dimen name="avatar_width">48dp</dimen>

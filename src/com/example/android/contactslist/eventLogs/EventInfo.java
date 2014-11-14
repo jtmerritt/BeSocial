@@ -41,6 +41,16 @@ public class EventInfo {
     final public static int NOT_SENT_TO_CONTACT_STATS = 0;
     final public static int SENT_TO_CONTACT_STATS = 1;
 
+    public boolean isTextClass(){
+        switch(eventClass){
+            case EventInfo.EMAIL_CLASS:
+            case EventInfo.FACEBOOK:
+            case EventInfo.SMS_CLASS:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public void clear(){
         eventContactName = null;
@@ -246,5 +256,7 @@ public class EventInfo {
     public void setSecondPersonWordCount(int count) {
         eventSecondPersonWordCount = count;
     }
+
+
 
 }
