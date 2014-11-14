@@ -98,9 +98,11 @@ public class ContactDetailActivity extends FragmentActivity
 
                 mPager = (ViewPager) findViewById(R.id.pager);
 
-                ParallaxPagerTransformer pt = new ParallaxPagerTransformer((R.id.contact_detail_image));
-                //pt.setBorder(20);
-                //pt.setSpeed(0.2f);
+                // add all the views that need to be altered upon side scroll
+                ParallaxPagerTransformer pt =
+                        new ParallaxPagerTransformer(R.id.contact_detail_image,
+                                R.id.blurred_contact_detail_image, R.id.fab_1);
+
                 mPager.setPageTransformer(false, pt);
 
                 mContactDetailAdapter = new ContactDetailAdapter(this, getSupportFragmentManager());
@@ -230,6 +232,7 @@ public class ContactDetailActivity extends FragmentActivity
                 //mPager.setOffscreenPageLimit(2);
 
                 mPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
+                    //TODO perhaps delete this
 
                     private     int scrollState=-1;
 
@@ -245,15 +248,7 @@ public class ContactDetailActivity extends FragmentActivity
                         if(scrollState==ViewPager.SCROLL_STATE_DRAGGING &&
                                 Math.abs(positionOffsetPixel) > 100)
                         {
-                            //int index = mPager.getCurrentItem();
-
-                            //Fragment f = mContactDetailAdapter.getItem(mPager.getCurrentItem());
-
-                            //TODO inform the fragment that it is side scrolling so that it can close the menu
-
-
-                            //mPager.getChildAt(mPager.getCurrentItem()).
-                            //viewPagerScrollStateChanged();
+                            // stuff goes here
                         }
                     }
 

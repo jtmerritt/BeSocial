@@ -151,7 +151,7 @@ public class ContactDetailFragment extends Fragment implements
     // in multiple methods throughout this class.
    private ImageView mContactDetailImage;
     private ImageView mBlurredContactDetailImage;
-    private Bitmap image, newImg;
+    private Bitmap mBackgroundImage, mBlurredBackgroundImage;
     private int screenWidth;
     private int getScreenHeight;
 
@@ -539,6 +539,7 @@ public class ContactDetailFragment extends Fragment implements
         }) ;
 
 
+
         fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
 
         setFloatingActionMenu();
@@ -739,6 +740,7 @@ public class ContactDetailFragment extends Fragment implements
                         null,//ContactDetailQuery.SELECTION,
                         null,//ContactDetailQuery.ARGS,
                         null);
+
             case ContactAddressQuery.QUERY_ID:
                 // This query loads contact address details, see
                 // ContactAddressQuery for more information.
@@ -747,14 +749,7 @@ public class ContactDetailFragment extends Fragment implements
                         ContactAddressQuery.PROJECTION,
                         ContactAddressQuery.SELECTION,
                         null, null);
-/*
-            case LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                // This query loads main contact details, for use in generating a call log.
-                return new CursorLoader(getActivity(), mContactUri,
-                        ContactDetailQuery.PROJECTION,
-                        null, null, null);
 
-                        */
             case ContactSMSLogQuery.QUERY_ID:
                 // This query loads SMS logs
 
@@ -995,9 +990,8 @@ public class ContactDetailFragment extends Fragment implements
                     // name field based on OS version.
                     mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
 
+                    // retrieve the background image for the contact detail, based on contact name
                     getContactDetailImage();
-
-
 
 
                     // if there is a two pane view then mContactNameView is null
@@ -1177,15 +1171,18 @@ public class ContactDetailFragment extends Fragment implements
                             options.inSampleSize = 2;
 
 
-                            image = BitmapFactory.decodeFile(path, options);
+                            mBackgroundImage = BitmapFactory.decodeFile(path, options);
 
-
+                            //run the blur method on this bitmap
                             // not allowed to blur more than 25
-                            newImg = Blur.fastblur(mContext, image, 25);
+                            mBlurredBackgroundImage = Blur.fastblur(mContext, mBackgroundImage, 25);
 
-                            newImg = Bitmap.createScaledBitmap(newImg, screenWidth,
-                                    (int) (newImg.getHeight()
-                                    * ((float) screenWidth) / (float) newImg.getWidth()), false);
+                            // trim the blurred image down to size
+                            mBlurredBackgroundImage = Bitmap.createScaledBitmap(
+                                    mBlurredBackgroundImage, screenWidth,
+                                    (int) (mBlurredBackgroundImage.getHeight()
+                                            * ((float) screenWidth) /
+                                            ( float) mBlurredBackgroundImage.getWidth()), false);
 
                             getActivity().runOnUiThread(new Runnable() {
 
@@ -2442,11 +2439,11 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
  */
     private void updateView() {
         // set the activity background image
-        mContactDetailImage.setImageBitmap(image);
-        mBlurredContactDetailImage.setImageBitmap(newImg);
+        mContactDetailImage.setImageBitmap(mBackgroundImage);
+        mBlurredContactDetailImage.setImageBitmap(mBlurredBackgroundImage);
 
         // set the header background image
-        mScrollingImageContactHeaderView.setBackgroundImage(newImg);
+        mScrollingImageContactHeaderView.setBackgroundImage(mBlurredBackgroundImage);
     }
 
 
@@ -2473,9 +2470,11 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
 
         rlIcon1.setImageResource(R.drawable.ic_action_add);
 
-        // Set 4 SubActionButtons
+        //FloatingActionMenu.MenuStateChangeListener menuStateChangeListener = new FloatingActionMenu.MenuStateChangeListener.
+
+        // Set 5 SubActionButtons
         centerBottomMenu = new FloatingActionMenu.Builder(getActivity())
-                //.attachTo(mScrollingImageContactHeaderView)
+
                 .setStartAngle(170) // to the left - under the contact name
                 .setEndAngle(90) // to the bottom
                 //.setAnimationHandler(new SlideInAnimationHandler())
@@ -2485,6 +2484,7 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
                 .addSubActionView(rLSubBuilder.setContentView(rlIcon4).build())
                 .addSubActionView(rLSubBuilder.setContentView(rlIcon5).build())
                 .attachTo(fab1)
+                //.setStateChangeListener(menuStateChangeListener )
                 .build();
 
         rlIcon1.setOnClickListener(new View.OnClickListener() {
