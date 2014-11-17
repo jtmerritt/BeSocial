@@ -2,7 +2,6 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- get the hamburger menu?
 - adjust score for meetings
 - make cards interface
 - figure out what to do with the event notes

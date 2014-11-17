@@ -91,6 +91,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment displays details of a specific contact from the contacts provider. It shows the
@@ -651,6 +652,9 @@ public class EventEntryFragment extends Fragment implements
      */
     private void generateNewEvent() {
 
+        final int conversion_ratio =
+                mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
+
         // set the word count to zero if there are no words
         // set the duration to zero if there is only text
         if(eventClassIsText(mEventClass)) {
@@ -673,14 +677,22 @@ public class EventEntryFragment extends Fragment implements
                 mEventType,
                 mEventDate,
                 time,
-                mDuration,
+                mDuration*60, // convert from minutes to seconds
                 mWordCount,
                 0, EventInfo.NOT_SENT_TO_CONTACT_STATS);
         //TODO: save everything to an eventInfo and send to the database
 
+        mNewEventInfo.setScore((int) ((float)mWordCount/(float)conversion_ratio + mDuration));
 
     }
 
+    double secondsToDecimalMinutes(long duration){
+        double minute = TimeUnit.SECONDS.toMinutes(duration);
+        double second = TimeUnit.SECONDS.toSeconds(duration) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(duration));
+
+        return  (minute + second/60);
+    }
 
     private void editEventNotesTextDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

@@ -450,21 +450,11 @@
             android:layout_height="fill_parent">
 
             <ImageView
-                android:layout_width="30dp"
-                android:layout_height="50dp"
-                android:id="@+id/drawer_icon"
-                android:layout_alignParentTop="true"
-                android:src="@drawable/ic_drawer"
-                android:paddingBottom="14dp"
-                android:paddingTop="14dp" />
-
-            <ImageView
                 android:layout_width="@dimen/avatar_width"
                 android:layout_height="@dimen/avatar_width"
                 android:id="@+id/contact_image"
                 android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/drawer_icon"
-                android:layout_toEndOf="@+id/drawer_icon" />
+                android:layout_marginLeft="@dimen/avatar_width" />
 
         </RelativeLayout>
 
