@@ -510,7 +510,7 @@
         android:id="@+id/fab_1"
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="26dp"
         android:background="@drawable/circle"
         android:layout_gravity="right"
         android:layout_marginRight="16dp">
@@ -519,6 +519,24 @@
             android:layout_width="@dimen/fab_icon_size"
             android:layout_height="@dimen/fab_icon_size"
             android:src="@drawable/fab_action_selector"
+            android:layout_gravity="center"
+            android:duplicateParentState="true"/>
+
+    </com.example.android.contactslist.FloatingActionButton.FloatingActionButton2>
+
+    <com.example.android.contactslist.FloatingActionButton.FloatingActionButton2
+        android:id="@+id/fab_2"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_marginTop="26dp"
+        android:background="@drawable/circle"
+        android:layout_gravity="left"
+        android:layout_marginLeft="16dp">
+
+        <ImageView
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@drawable/ic_action_view_as_list"
             android:layout_gravity="center"
             android:duplicateParentState="true"/>
 

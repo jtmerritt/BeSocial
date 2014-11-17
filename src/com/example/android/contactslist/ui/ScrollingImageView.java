@@ -74,8 +74,15 @@ class ScrollingImageView extends View {
 
     public void setBackgroundImage(Bitmap bmp) {
         this.originalImage = bmp;
-        adaptedImage = Bitmap.createBitmap(bmp);
+
+        if (getHeight() > 0 && bmp != null) {
+            adaptedImage = Bitmap.createBitmap(bmp, 0, 0, screenWidth, getHeight());
+
+        }else{
+            adaptedImage = Bitmap.createBitmap(bmp);
+        }
         invalidate();
+
     }
 
     public void setViewWidth(int screenWidth) {

@@ -2,7 +2,6 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- view the last 5 communications
 - get the hamburger menu?
 - adjust score for meetings
 - make cards interface
@@ -27,7 +26,7 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
 - Have a nightly database maintenance routine
-
+- Method to edit contact settings
 
 
 ***Bug List***
@@ -97,6 +96,8 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- view the last 6 communications
+
 + Event Entry Fragment
     - [done] hook into event database
     - [done] add in human readable date

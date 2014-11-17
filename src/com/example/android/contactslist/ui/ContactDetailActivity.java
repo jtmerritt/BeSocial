@@ -101,7 +101,7 @@ public class ContactDetailActivity extends FragmentActivity
                 // add all the views that need to be altered upon side scroll
                 ParallaxPagerTransformer pt =
                         new ParallaxPagerTransformer(R.id.contact_detail_image,
-                                R.id.blurred_contact_detail_image, R.id.fab_1);
+                                R.id.blurred_contact_detail_image, R.id.fab_1, R.id.fab_2);
 
                 mPager.setPageTransformer(false, pt);
 
@@ -132,12 +132,6 @@ public class ContactDetailActivity extends FragmentActivity
                     ft.commit();
                 }
             }
-
-
-
-
-
-
 
 
         } else {
@@ -229,10 +223,11 @@ public class ContactDetailActivity extends FragmentActivity
 
                 mPager.setAdapter(mContactDetailAdapter);
                 mPager.setCurrentItem(mStartingAdapterPosition);
-                //mPager.setOffscreenPageLimit(2);
+                mPager.setOffscreenPageLimit(3);
 
+
+                /*
                 mPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
-                    //TODO perhaps delete this
 
                     private     int scrollState=-1;
 
@@ -256,16 +251,17 @@ public class ContactDetailActivity extends FragmentActivity
                     public void onPageScrollStateChanged(int state) {
                         scrollState=state;
 
-                        /*
+
                         Log.d("LMTLOGGERR",
                                 "   SCROLL_STATE_DRAGGING: "+ViewPager.SCROLL_STATE_DRAGGING +
                                 "   SCROLL_STATE_IDLE: "+ViewPager.SCROLL_STATE_IDLE +
                                 "   SCROLL_STATE_SETTLING: "+ViewPager.SCROLL_STATE_SETTLING +
                                 "   current state: "+state);
-                                */
+
 
                     }
                 });
+                 */
 
                break;
             default:
@@ -283,6 +279,11 @@ public class ContactDetailActivity extends FragmentActivity
         }
     }
 
-
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        mPager.removeAllViews();
+    }
 
 }

@@ -52,6 +52,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -130,30 +131,22 @@ public class ContactDetailFragment extends Fragment implements
     // intent that will trigger available apps to handle viewing a location (such as Maps)
     private static final String GEO_URI_SCHEME_PREFIX = "geo:0,0?q=";
 
+    private static final int PARALLAX_SCROLL_FRACTION = 20;
+
+    private Context mContext;
+
+
+    private View detailView;
+
     // Whether or not this fragment is showing in a two pane layout
     private boolean mIsTwoPaneLayout;
 
-    private Uri mContactUri; // Stores the contact Uri for this fragment instance
-    private ContactInfo mContactStats = null;
-    private String mContactLookupKey;
-    private String mVoiceNumber = "";
-    private String mSMSNumber = "";
-    private String mEmailAddress = "";
-    private String mContactNotes;
-
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
-
-
-    // the main layout to be used by this fragment
-    private View detailView;
 
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
-   private ImageView mContactDetailImage;
+    private ImageView mContactDetailImage;
     private ImageView mBlurredContactDetailImage;
-    private Bitmap mBackgroundImage, mBlurredBackgroundImage;
-    private int screenWidth;
-    private int getScreenHeight;
 
     private ImageView mImageView;
     private ImageView mEditNotesButton;
@@ -169,31 +162,47 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mContactNameView;
     private TextView mNotesView;
     private TextView mDetailsSubtitleView;
+    private FloatingActionButton2 fab1;
+    private FloatingActionButton2 fab_hist;
+
+    private FloatingActionMenu centerBottomMenu;
+
     private MenuItem mEditContactMenuItem;
-    private String mContactNameString;
 
     private FractionView fractionView = null;
     private WordCloudView wordCloudView = null;
     private ScrollingImageView mScrollingImageContactHeaderView = null;
-    private Context mContext;
     private Button mOpenFullScreenChartButton;
-    private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
     private ObservableScrollView mScrollView;
 
-
     private ContactDetailChartView contactDetailChartView;
-    private boolean message_stats_loaded = false;
-    final private static int PARALLAX_SCROLL_FRACTION = 20;
 
-    FloatingActionButton2 fab1;
-    FloatingActionMenu centerBottomMenu;
+
+
+    // fragment data
+    private int screenWidth;
+    private int getScreenHeight;
+
+    private Uri mContactUri; // Stores the contact Uri for this fragment instance
+    private ContactInfo mContactStats = null;
+    private String mContactLookupKey;
+    private String mVoiceNumber = "";
+    private String mSMSNumber = "";
+    private String mEmailAddress = "";
+    private String mContactNotes;
+    private String mContactNameString;
 
     private List<EventInfo> mLookBackEventLog = new ArrayList<EventInfo>();
     private List<EventInfo> mEventLog = new ArrayList<EventInfo>();
 
-
     private String mLastEventDetailDate;
     private int mLookBackMonthCount = 1;
+    private int mNumMonthsBackForMessageStats = 500; // The default value should represent all data
+    private boolean message_stats_loaded = false;
+    private boolean lookBack_loaded = false;
+
+
+
 
 
 
@@ -291,8 +300,12 @@ public class ContactDetailFragment extends Fragment implements
             getSMSNumber();
             getEmailAddress();
 
-            // TODO temp getContactNote();
-           //TODO temp getContactDetailEventLookBack();
+            if(lookBack_loaded == false) {
+                getContactDetailEventLookBack();
+                lookBack_loaded = true;
+            }
+
+            getContactNote();
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -541,14 +554,26 @@ public class ContactDetailFragment extends Fragment implements
 
 
         fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
+        fab_hist = (FloatingActionButton2) detailView.findViewById(R.id.fab_2);
+
+        fab_hist.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View view) {
+
+                Toast.makeText(getActivity(),
+                        R.string.next_version, Toast.LENGTH_SHORT).show();
+
+                //TODO open lookback overlay
+            }
+        });
+
 
         setFloatingActionMenu();
 
-        return detailView;
-    }
 
-    public void fabClicked(View view) {
-        startNewEntry();
+
+        return detailView;
     }
 
 
@@ -741,14 +766,6 @@ public class ContactDetailFragment extends Fragment implements
                         null,//ContactDetailQuery.ARGS,
                         null);
 
-            case ContactAddressQuery.QUERY_ID:
-                // This query loads contact address details, see
-                // ContactAddressQuery for more information.
-                final Uri uri = Uri.withAppendedPath(mContactUri, Contacts.Data.CONTENT_DIRECTORY);
-                return new CursorLoader(getActivity(), uri,
-                        ContactAddressQuery.PROJECTION,
-                        ContactAddressQuery.SELECTION,
-                        null, null);
 
             case ContactSMSLogQuery.QUERY_ID:
                 // This query loads SMS logs
@@ -1011,38 +1028,7 @@ public class ContactDetailFragment extends Fragment implements
                     // such as the chart and stats
                 }
                 break;
-            case ContactAddressQuery.QUERY_ID:
-                // This query loads the contact address details. More than
-                // one contact address is possible, so move each one to a
-                // LinearLayout in a Scrollview so multiple addresses can
-                // be scrolled by the user.
 
-                // Each LinearLayout has the same LayoutParams so this can
-                // be created once and used for each address.
-                final LinearLayout.LayoutParams layoutParams =
-                        new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-                // Clears out the details layout first in case the details
-                // layout has addresses from a previous data load still
-                // added as children.
-
-                // Loops through all the rows in the Cursor
-                if (data.moveToFirst()) {
-                    do {
-                        // Builds the address layout
-                        final LinearLayout layout = buildAddressLayout(
-                                data.getInt(ContactAddressQuery.TYPE),
-                                data.getString(ContactAddressQuery.LABEL),
-                                data.getString(ContactAddressQuery.ADDRESS));
-                        // Adds the new address layout to the details layout
-                        mDetailsLayout.addView(layout, layoutParams);
-                    } while (data.moveToNext());
-                } else {
-                    // If nothing found, adds an empty address layout
-                    mDetailsLayout.addView(buildEmptyAddressLayout(), layoutParams);
-                }
-                break;
             // being the second case of this query_ID, this section will not get called.
             //
             case 88://LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
@@ -1146,16 +1132,9 @@ public class ContactDetailFragment extends Fragment implements
 
             case ContactDetailPhotoQuery.QUERY_ID:
 
-
-                //boolean isOK=false; //Found a DCIM path ?
                 if(data.moveToFirst())
                 {
                     final String path=data.getString(1);
-
-                    //Drawable background = Drawable.createFromPath(path);
-                    //detailView.setBackground(background);
-
-
 
                     new Thread(new Runnable() {
 
@@ -1170,27 +1149,26 @@ public class ContactDetailFragment extends Fragment implements
                             options.outHeight = getScreenHeight + 200;
                             options.inSampleSize = 2;
 
-
-                            mBackgroundImage = BitmapFactory.decodeFile(path, options);
+                            final Bitmap backgroundImage = BitmapFactory.decodeFile(path, options);
 
                             //run the blur method on this bitmap
                             // not allowed to blur more than 25
-                            mBlurredBackgroundImage = Blur.fastblur(mContext, mBackgroundImage, 25);
+                            final Bitmap blurredBackgroundImage = Blur.fastblur(mContext, backgroundImage, 25);
 
                             // trim the blurred image down to size
-                            mBlurredBackgroundImage = Bitmap.createScaledBitmap(
-                                    mBlurredBackgroundImage, screenWidth,
-                                    (int) (mBlurredBackgroundImage.getHeight()
+                            final Bitmap croppedBlurredBackgroundImage = Bitmap.createScaledBitmap(
+                                    blurredBackgroundImage, screenWidth,
+                                    (int) (blurredBackgroundImage.getHeight()
                                             * ((float) screenWidth) /
-                                            ( float) mBlurredBackgroundImage.getWidth()), false);
+                                            ( float) blurredBackgroundImage.getWidth()), false);
 
                             getActivity().runOnUiThread(new Runnable() {
 
                                 @Override
                                 public void run() {
-                                    updateView();
+                                    updateViewImageBackground(backgroundImage,
+                                            croppedBlurredBackgroundImage);
 
-                                    // And finally stop the progressbar
                                 }
                             });
 
@@ -1242,14 +1220,14 @@ public class ContactDetailFragment extends Fragment implements
 
             case ContactLookBackEventLogQuery.QUERY_ID:
 
-                final int EVENT_DISPLAY_LIMIT = 5;
+                final int NUMBER_EVENTS = 6;
 
                 if (mContactStats != null &&
                         data != null &&
                         data.moveToFirst() ){
 
                     // if there aren't enough events, go back further
-                    if(data.getCount() < EVENT_DISPLAY_LIMIT){
+                    if(data.getCount() < NUMBER_EVENTS + 1){
                         mLookBackMonthCount++;
                         getContactDetailEventLookBack();
 
@@ -1259,26 +1237,34 @@ public class ContactDetailFragment extends Fragment implements
                     // create an instance of the Events Contract for proper cursor interpretation
                     SocialEventsContract sec = new SocialEventsContract(mContext);
                     EventInfo event = null;
-                    ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+                    //ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+                    mLookBackEventLog.clear();
 
                     // advace the data cursor until the end, converting data to events
                     do{
 
                         //populate the event from the cursor
                         event = sec.setEventInfoFromCursor(event, data);
-                        eventList.add(event);
+                        mLookBackEventLog.add(event);
 
                     }while(data.moveToNext());
 
-
                     sec.close();
 
-                    final int eventListLastIndex = eventList.size() - 1;
+                    mLookBackEventLog.subList(0, mLookBackEventLog.size() - NUMBER_EVENTS)
+                                .clear();
 
-                    mLookBackEventLog.addAll(eventList.subList(eventListLastIndex -
-                            EVENT_DISPLAY_LIMIT, eventListLastIndex));
+                    loadLookBack();
 
-                    displayLookBackEventLog();
+                    // free up object references
+                    //eventList.clear();
+                }else{
+
+                    // try looking back further
+                    mLookBackMonthCount++;
+                    getContactDetailEventLookBack();
+
+                    return;
                 }
 
                 break;
@@ -1804,35 +1790,6 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
 
 
 
-    /**
-     * This interface defines constants used by address retrieval queries.
-     */
-    public interface ContactAddressQuery {
-        // A unique query ID to distinguish queries being run by the
-        // LoaderManager.
-        final static int QUERY_ID = 2;
-
-        // The query projection (columns to fetch from the provider)
-        final static String[] PROJECTION = {
-                StructuredPostal._ID,
-                StructuredPostal.FORMATTED_ADDRESS,
-                StructuredPostal.TYPE,
-                StructuredPostal.LABEL,
-
-        };
-
-        // The query selection criteria. In this case matching against the
-        // StructuredPostal content mime type.
-        final static String SELECTION =
-                Data.MIMETYPE + "='" + StructuredPostal.CONTENT_ITEM_TYPE + "'";
-
-        // The query column numbers which map to each value in the projection
-        final static int ID = 0;
-        final static int ADDRESS = 1;
-        final static int TYPE = 2;
-        final static int LABEL = 3;
-    }
-
 
     /**
       * This interface defines the ID used to call the ContactStatsContentProvider.
@@ -1943,6 +1900,48 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         });
 
        }
+
+
+
+
+
+
+
+    private void openAddress(String address){
+
+        final Intent viewIntent = new Intent(Intent.ACTION_VIEW, constructGeoUri(address));
+
+
+        // A PackageManager instance is needed to verify that there's a default app
+        // that handles ACTION_VIEW and a geo Uri.
+        final PackageManager packageManager = getActivity().getPackageManager();
+
+        // Checks for an activity that can handle this intent. Preferred in this
+        // case over Intent.createChooser() as it will still let the user choose
+        // a default (or use a previously set default) for geo Uris.
+        if (packageManager.resolveActivity(
+                viewIntent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+            startActivity(viewIntent);
+        } else {
+            // If no default is found, displays a message that no activity can handle
+            // the view button.
+            Toast.makeText(getActivity(),
+                    R.string.no_intent_found, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Constructs a geo scheme Uri from a postal address.
+     *
+     * @param postalAddress A postal address.
+     * @return the geo:// Uri for the postal address.
+     */
+    private Uri constructGeoUri(String postalAddress) {
+        // Concatenates the geo:// prefix to the postal address. The postal address must be
+        // converted to Uri format and encoded for special characters.
+        return Uri.parse(GEO_URI_SCHEME_PREFIX + Uri.encode(postalAddress));
+    }
+
 
     private void startPhoneCall() {
         Intent implicitIntent = new Intent();
@@ -2110,33 +2109,48 @@ Set the FractionView with appropriate time data
 
 
 
-    private EventInfo addEventText(EventInfo event){
-
-        if(event.isTextClass()){
-            ContentResolver contentResolver = mContext.getContentResolver();
-
-            // Retrieve the single SMS event from the OS
-            String[] whereArgsSMS = {Long.toString(event.getDate()),
-                    Long.toString(event.getDate())};
 
 
-            Cursor data = contentResolver.query(
-                    ContactSMSLogQuery.SMSLogURI,
-                    ContactSMSLogQuery.PROJECTION,
-                    ContactSMSLogQuery.WHERE,
-                    whereArgsSMS,
-                    ContactSMSLogQuery.SORT_ORDER);
 
-            // if there is a cursor result, grab the text
-            if(data != null && data.moveToFirst()){
-                event.eventNotes = data.getString(ContactSMSLogQuery.BODY);
+
+
+    /*
+    *   Look Back
+     */
+
+    private void loadLookBack(){
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                if (!mLookBackEventLog.isEmpty()) {
+                    int i = 0;
+                    // Loops through the list to display some of the events
+                    for (EventInfo eventInfo : mLookBackEventLog) {
+
+                        // add message string to text, if any
+                        mLookBackEventLog.get(i).eventNotes = addEventText(eventInfo);
+
+                        i++;
+                    }
+                }
+
+
+                getActivity().runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        displayLookBackEventLog();
+
+                    }
+                });
+
             }
+        }).start();
 
-        }
-
-        return event;
     }
-
 
     /**
      * Builds an empty SMSLog layout that just shows that no SMSs
@@ -2170,9 +2184,6 @@ Set the FractionView with appropriate time data
             // Loops through the list to display some of the events
             for(EventInfo eventInfo : mLookBackEventLog){
 
-                // add message string to text, if any
-                eventInfo =addEventText(eventInfo);
-
                 // Builds the address layout
                 layout = buildLookBackEventLayout(eventInfo);
 
@@ -2187,8 +2198,36 @@ Set the FractionView with appropriate time data
         }
     }
 
+    private String addEventText(EventInfo event){
 
-    private LinearLayout buildLookBackEventLayout(EventInfo eventInfo) {
+        if(event.isTextClass()){
+            ContentResolver contentResolver = mContext.getContentResolver();
+
+            // Retrieve the single SMS event from the OS
+            String[] whereArgsSMS = {Long.toString(event.getDate()),
+                    Long.toString(event.getDate())};
+
+
+            Cursor data = contentResolver.query(
+                    ContactSMSLogQuery.SMSLogURI,
+                    ContactSMSLogQuery.PROJECTION,
+                    ContactSMSLogQuery.WHERE,
+                    whereArgsSMS,
+                    ContactSMSLogQuery.SORT_ORDER);
+
+            // if there is a cursor result, grab the text
+            if(data != null && data.moveToFirst()){
+                event.eventNotes = data.getString(ContactSMSLogQuery.BODY);
+            }
+
+            data.close();
+
+        }
+
+        return event.eventNotes;
+    }
+
+    private LinearLayout buildLookBackEventLayout(final EventInfo eventInfo) {
 
         int message_layout_id;
         // choose the correct layout to inflate with
@@ -2230,25 +2269,35 @@ Set the FractionView with appropriate time data
             message_view.setText(eventInfo.eventNotes);
 
 
+            // calculated display elements for call duration
+            //convert time to minutes: seconds
+            final long minute = TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration);
+            final long second = TimeUnit.SECONDS.toSeconds(eventInfo.eventDuration) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration));
+
+            // create the intent for the event icon
+
             switch (eventInfo.getEventClass()){
                 case EventInfo.EMAIL_CLASS:
+                    // set icon
                     eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_email));
                     break;
                 case EventInfo.PHONE_CLASS:
                     eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_call));
-
-                    // calculated display elements for call duration
-                    //convert time to minutes: seconds
-                    long minute = TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration);
-                    long second = TimeUnit.SECONDS.toSeconds(eventInfo.eventDuration) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(eventInfo.eventDuration));
+                    // set text
                     message_view.setText(minute + " mins " + second + " secs");
                     break;
                 case EventInfo.SMS_CLASS:
                     eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_chat));
+
                     break;
                 case EventInfo.MEETING_CLASS:
+                    // set icon
                     eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_map));
+                    // set text
+                    message_view.setText(minute + " mins " + second + " secs");
+
+
                     break;
                 default:
             }
@@ -2262,6 +2311,33 @@ Set the FractionView with appropriate time data
 
             mLastEventDetailDate = dateView.getText().toString();
 
+
+            // Defines an onClickListener object for the event type icon button
+            eventTypeIconView.setOnClickListener(new View.OnClickListener() {
+                // Defines what to do when users click the address button
+                @Override
+                public void onClick(View view) {
+
+
+                    switch (eventInfo.getEventClass()){
+                        case EventInfo.EMAIL_CLASS:
+                            break;
+                        case EventInfo.PHONE_CLASS:
+
+                            break;
+                        case EventInfo.SMS_CLASS:
+                            startSMS();
+                            break;
+                        case EventInfo.MEETING_CLASS:
+                            openAddress(eventInfo.getAddress());
+                            break;
+                        default:
+                    }
+
+
+                }
+            });
+
         }else{
             dateView.setText("No events found");
             dateView.setText("");
@@ -2273,104 +2349,26 @@ Set the FractionView with appropriate time data
 
 
 
-    /**
-     * Builds an empty address layout that just shows that no addresses
-     * were found for this contact.
-     *
-     * @return A LinearLayout to add to the contact details layout
-     */
-    private LinearLayout buildEmptyAddressLayout() {
-        return buildAddressLayout(0, null, null);
-    }
 
-    /**
-     * Builds an address LinearLayout based on address information from the Contacts Provider.
-     * Each address for the contact gets its own LinearLayout object; for example, if the contact
-     * has three postal addresses, then 3 LinearLayouts are generated.
-     *
-     * @param addressType      From
-     *                         {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#TYPE}
-     * @param addressTypeLabel From
-     *                         {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#LABEL}
-     * @param address          From
-     *                         {@link android.provider.ContactsContract.CommonDataKinds.StructuredPostal#FORMATTED_ADDRESS}
-     * @return A LinearLayout to add to the contact details layout,
-     * populated with the provided address details.
-     */
-    private LinearLayout buildAddressLayout(int addressType, String addressTypeLabel,
-                                            final String address) {
 
-        // Inflates the address layout
-        final LinearLayout addressLayout =
-                (LinearLayout) LayoutInflater.from(getActivity()).inflate(
-                       R.layout.contact_detail_item, mDetailsLayout, false);
 
-        // Gets handles to the view objects in the layout
-        final TextView headerTextView =
-                (TextView) addressLayout.findViewById(R.id.contact_detail_header);
-        final TextView addressTextView =
-                (TextView) addressLayout.findViewById(R.id.contact_detail_item);
-        final ImageButton viewAddressButton =
-                (ImageButton) addressLayout.findViewById(R.id.button_view_address);
 
-        // If there's no addresses for the contact, shows the empty view and message, and hides the
-        // header and button.
-        if (addressTypeLabel == null && addressType == 0) {
-            headerTextView.setVisibility(View.GONE);
-            viewAddressButton.setVisibility(View.GONE);
-            addressTextView.setText(R.string.no_address);
-        } else {
-            // Gets postal address label type
-            CharSequence label =
-                    StructuredPostal.getTypeLabel(getResources(), addressType, addressTypeLabel);
 
-            // Sets TextView objects in the layout
-            headerTextView.setText(label);
-            addressTextView.setText(address);
 
-            // Defines an onClickListener object for the address button
-            viewAddressButton.setOnClickListener(new View.OnClickListener() {
-                // Defines what to do when users click the address button
-                @Override
-                public void onClick(View view) {
 
-                    final Intent viewIntent =
-                            new Intent(Intent.ACTION_VIEW, constructGeoUri(address));
 
-                    // A PackageManager instance is needed to verify that there's a default app
-                    // that handles ACTION_VIEW and a geo Uri.
-                    final PackageManager packageManager = getActivity().getPackageManager();
 
-                    // Checks for an activity that can handle this intent. Preferred in this
-                    // case over Intent.createChooser() as it will still let the user choose
-                    // a default (or use a previously set default) for geo Uris.
-                    if (packageManager.resolveActivity(
-                            viewIntent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
-                        startActivity(viewIntent);
-                    } else {
-                        // If no default is found, displays a message that no activity can handle
-                        // the view button.
-                        Toast.makeText(getActivity(),
-                                R.string.no_intent_found, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
 
-        }
-        return addressLayout;
-    }
 
-    /**
-     * Constructs a geo scheme Uri from a postal address.
-     *
-     * @param postalAddress A postal address.
-     * @return the geo:// Uri for the postal address.
-     */
-    private Uri constructGeoUri(String postalAddress) {
-        // Concatenates the geo:// prefix to the postal address. The postal address must be
-        // converted to Uri format and encoded for special characters.
-        return Uri.parse(GEO_URI_SCHEME_PREFIX + Uri.encode(postalAddress));
-    }
+
+
+
+
+
+
+
+
+
 
 
     private LinearLayout buildContactStatsSparkChartItemLayout(String description, int out_value, int in_value) {
@@ -2437,13 +2435,13 @@ Set the FractionView with appropriate time data
 /*
 https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/src/com/npi/blureffect/MainActivity.java
  */
-    private void updateView() {
+    private void updateViewImageBackground(Bitmap backgroundImage, Bitmap blurredBackgroundImage) {
         // set the activity background image
-        mContactDetailImage.setImageBitmap(mBackgroundImage);
-        mBlurredContactDetailImage.setImageBitmap(mBlurredBackgroundImage);
+        mContactDetailImage.setImageBitmap(backgroundImage);
+        mBlurredContactDetailImage.setImageBitmap(blurredBackgroundImage);
 
         // set the header background image
-        mScrollingImageContactHeaderView.setBackgroundImage(mBlurredBackgroundImage);
+        mScrollingImageContactHeaderView.setBackgroundImage(blurredBackgroundImage);
     }
 
 
@@ -2542,21 +2540,43 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             @Override
             public void run() {
 
+                int i = 0;
+
                 // open the interface to read the contact notes
                 ContactNotesInterface mContactNotesInterface = new ContactNotesInterface(mContext);
 
                 // fetch the new contact notes string
                 mContactNotes = mContactNotesInterface.loadContactNotes(mContactLookupKey);
 
+
+
+                // check the value of getActivity() and perhaps fail gracefully
+                while(getActivity() == null){
+
+                    // Make the thread wait half a second. If you want...
+                    try {
+                        Thread.sleep(150);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if(i > 2){
+                        return;
+                    }
+
+                    i++;
+                }
+
                 getActivity().runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
                         // set the notes text view to display the new string
-                        mNotesView.setText(mContactNotes);
+                        if(mNotesView != null){
+                            mNotesView.setText(mContactNotes);
+                        }
                     }
                 });
-
             }
         }).start();
 
@@ -2743,6 +2763,43 @@ Return a formatted string for the date header
      */
     public void setAdapter(ContactDetailAdapter adapter) {
         mContactDetailAdapter = adapter;
+    }
+
+
+
+    /*
+     * Memory management
+     * http://stackoverflow.com/questions/16409020/fragmentstatepageradapter-outofmemoryerror
+     *
+     * This helps keep the activity from crashing, though the memory profile is still bloated after many page turns
+     *
+     * and the photos aren't loaded when flipping pages
+     *
+     * Other general advice for memory management:
+     * http://stackoverflow.com/questions/20416981/view-pager-memory-analyzer
+     */
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+
+        unbindDrawables(detailView); // <---This should be the ID of this fragments (ScreenSlidePageFragment) layout
+    }
+
+    private void unbindDrawables(View view)
+    {
+        if (view.getBackground() != null)
+        {
+            view.getBackground().setCallback(null);
+        }
+        if (view instanceof ViewGroup && !(view instanceof AdapterView))
+        {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++)
+            {
+                unbindDrawables(((ViewGroup) view).getChildAt(i));
+            }
+            ((ViewGroup) view).removeAllViews();
+        }
     }
 }
 

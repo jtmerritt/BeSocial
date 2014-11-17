@@ -10,6 +10,9 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import java.util.ArrayList;
 import android.database.Cursor;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AlphabetIndexer;
 
 import com.example.android.contactslist.R;
@@ -77,6 +80,11 @@ public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
         }
     }
 
+    public void removeAll(){
+        mFragments.clear();
+    }
+
+
     public void remove(int i) {
         mFragments.remove(i);
         notifyDataSetChanged();
@@ -103,4 +111,5 @@ public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
     public void setPager(ViewPager pager) {
         mPager = pager;
     }
+
 }
