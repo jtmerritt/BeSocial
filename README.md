@@ -2,13 +2,18 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- adjust score for meetings
+- background images
+    - from text messages
+    - internet source
+        - picasso
+        - facebook
+    - display generic photo
+
+- activity for creating groups
+
 - make cards interface
 - figure out what to do with the event notes
 - flag for manually entered events?
-
-- get background images from text messages or internet source - or display generic photo
-- activity for creating groups
 
 - contact detail plant animation
 - Update contact stats when a communication happens
@@ -31,10 +36,6 @@ ___________________________________________________________________
 ***Bug List***
 - crashing when contact notes are updated
 - Crashing when flipping contacts
-- Fix the title and userpic display of the action bar
-    - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
-    - http://stackoverflow.com/questions/19292605/android-viewpager-actionbar-and-android-app-fragments
-    - Or just replace it with a custom menu bar with the frosted glass effect
 - Is it a problem that the method that creates the master contact list for the update, is also
     reading from the Misses You list?
 + [bug] the scroll position for the current detail view affects the chart loading for the next page
@@ -52,7 +53,10 @@ ___________________________________________________________________
     -
 - Event Entry Fragment: Add a mapping interface button to pull a new address/place
 - context/item help
-
+- Fix the title and userpic display of the action bar
+    - http://stackoverflow.com/questions/14427005/setting-actionbar-title-with-a-viewpager
+    - http://stackoverflow.com/questions/19292605/android-viewpager-actionbar-and-android-app-fragments
+    - Or just replace it with a custom menu bar with the frosted glass effect
 - group stats must be collected just like contact stats
 + Word cloud
     - words you use with others but don't use with the current contact

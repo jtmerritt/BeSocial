@@ -1,12 +1,16 @@
 package com.example.android.contactslist.contactGroups;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
+import com.example.android.contactslist.contactStats.ContactStatsContract;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +26,13 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
 
 
+
     //When making the info card for this group use the lookupKey "GROUP" for easy distintion
 
     private ContentResolver mContentResolver;
     private ContactInfo largestGroup;
     public ContactInfo shortestTermGroup = null;
+    private Context mContext;
 
 /*
     Primary compontents of ContactInfo that are used
@@ -39,9 +45,10 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
     private int member_count = 0;
  */
 
-    public void setGroupsContentResolver(ContentResolver contentResolver){
+    public void setGroupsContentResolver(Context context){
         mGroups = new ArrayList<ContactInfo>();
-        mContentResolver = contentResolver;
+        mContentResolver = context.getContentResolver();
+        mContext = context;
     }
 
     public ArrayList<ContactInfo> getGroupList(){
@@ -85,11 +92,12 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
             do {
                 //Collect the full group info for each group ID and add it to the list
                 g = getGroupInfoByID(cursor.getString(IDX_ID));
-                
+
+                //TODO need to revisit the approved list
                 if((g !=null) && groupTitleIsOnTheApprovedList(g.getName())){
 
                     // read the group behavior
-                    g = setGroupBehaviorFromName(g);
+                    g = GroupBehavior.setGroupBehaviorFromName(g, ContactInfo.PASSIVE_BEHAVIOR, mContext );
                     mGroups.add(g);
                 }
             }while (cursor.moveToNext());
@@ -132,9 +140,41 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         return g;
     }
 
+    public ArrayList<ContactInfo> loadIncludedGroupsFromDB() {
+        final String[] GROUP_PROJECTION = null;
+        final String SELECTION = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                + " = ? AND " +
+                ContactStatsContract.TableEntry.KEY_PRIMARY_BEHAVIOR
+                + " != ?";
+
+        final String[] ARGS = {ContactInfo.group_lookup_key,
+                Integer.toString(ContactInfo.IGNORED)};
+
+        Cursor c = mContentResolver.query(
+                ContactStatsContentProvider.CONTACT_STATS_URI,
+                GROUP_PROJECTION,
+                SELECTION,
+                ARGS,
+                ContactStatsContract.TableEntry.KEY_CONTACT_NAME + " ASC");
+
+
+
+        if(c != null && c.moveToFirst()) {
+            ContactInfo g;
+            do {
+
+                g = ContactStatsContract.getContactInfoFromCursor(c);
+
+                mGroups.add(g);
+
+            }while (c.moveToNext());
+        }
+        c.close();
+        return mGroups;
+    }
     
-    
-    
+
+    // TODO fix this miss, it even skipps the first cursor position
     public ArrayList<ContactInfo> loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
@@ -151,38 +191,27 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         final int IDX_ID = c.getColumnIndex(ContactsContract.Groups._ID);
         final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
-        //TODO: Is this hashmap necessary?
-        Map<String,ContactInfo> m = new HashMap<String, ContactInfo>();
+        if(c != null && c.moveToFirst()) {
+            while (c.moveToNext()) {
+                ContactInfo g = new ContactInfo(c.getString(IDX_TITLE), ContactInfo.group_lookup_key,
+                        Long.parseLong(c.getString(IDX_ID)));
 
-        while (c.moveToNext()) {
-            ContactInfo g = new ContactInfo(c.getString(IDX_TITLE), ContactInfo.group_lookup_key,
-                    Long.parseLong(c.getString(IDX_ID)));
-
-            //append member count to the core group information
-            g.setMemberCount(c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT)));
+                //append member count to the core group information
+                g.setMemberCount(c.getInt(c.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT)));
 
 
-            if((g.getMemberCount() > 0 ) &&(groupTitleIsOnTheApprovedList(g.getName()))){
+                if ((g.getMemberCount() > 0) && (groupTitleIsOnTheApprovedList(g.getName()))) {
 
-                g = setGroupBehaviorFromName(g);
-                mGroups.add(g);
-
-/*
-                // group with duplicate name?
-                ContactInfo g2 = m.get(g.getName());
-                if (g2==null) {
-                    m.put(g.getName(), g);
+                    g = GroupBehavior.setGroupBehaviorFromName(g, ContactInfo.PASSIVE_BEHAVIOR, mContext);
                     mGroups.add(g);
-                } else {
-                    g2.id+=","+g.id;
-                }*/
 
-                //The usefullness of this assumes that the largest group contains all contacts
-                if(largestGroup == null){
-                    largestGroup = g;
-                }
-                if(g.getMemberCount() > largestGroup.getMemberCount()){
-                    largestGroup = g;
+                    //The usefullness of this assumes that the largest group contains all contacts
+                    if (largestGroup == null) {
+                        largestGroup = g;
+                    }
+                    if (g.getMemberCount() > largestGroup.getMemberCount()) {
+                        largestGroup = g;
+                    }
                 }
             }
         }
@@ -190,12 +219,12 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         return mGroups;
     }
 
-    //TODO: There must be a better way to deal with the approved list
+    //TODO: Clean this shit up
     private boolean groupTitleIsOnTheApprovedList(String title){
-        if(title.equals("Starred in Android") ||
+        if(title.equals(mContext.getResources().getString(R.string.group_starred)) ||
                 title.equals("BeSocial") ||
-                title.equals("Socia") ||
-                title.equals("Misses you") ||
+                title.equals(mContext.getResources().getString(R.string.group_app_name)) ||
+                title.equals(mContext.getResources().getString(R.string.group_misses_you)) ||
                 title.contains("Weeks") ||
                 title.contains("Week") ||
                 title.contains("Days") ||
@@ -219,41 +248,6 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
 
 
-    public ContactInfo setGroupBehaviorFromName(ContactInfo group){
-
-        //TODO get the delims working from the strings resource
-        String delims = "[ .,?!\\-]+";
-        String[] tokens = group.getName().split(delims);
-        Long duration = (long) 0;
-        int behavior = 0;
-
-        //TODO set up other cases for other group title formats
-        if(tokens.length == 2) {
-            // getting the string resource to work here is difficult. There is no context
-            if ((tokens[1].equals("Week"))
-                    || (tokens[1].equals("Weeks"))) {
-
-                group.setEventIntervalLimit(Integer.parseInt(tokens[0]) * 7);
-                group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
-
-            } else if ((tokens[1].equals("Day"))
-                    || (tokens[1].equals("Days"))) {
-
-                // set number of days
-                group.setEventIntervalLimit(Integer.parseInt(tokens[0]));
-                group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
-
-
-            } else {
-                group.setEventIntervalLimit(365);
-                group.setBehavior(ContactInfo.RANDOM_BEHAVIOR);
-            }
-        }else {
-            group.setEventIntervalLimit(365);
-            group.setBehavior(ContactInfo.RANDOM_BEHAVIOR);
-        }
-        return group;
-    }
 
     public void getShortestTermGroup(){
 

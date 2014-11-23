@@ -41,12 +41,14 @@ public class UserPreferencesActivity extends Activity {
             //TODO This method may no longer be necessary
             ListPreference list = (ListPreference) this.findPreference("source_group_list_preference_key");
 
-            ContactGroupsList contactGroupsList = new ContactGroupsList();
-            List<ContactInfo> groupList;
+
+
+            // get the new set of groups from the DB
+            final ContactGroupsList contactGroupsList = new ContactGroupsList();
 
             // collect list of applicable gmail contact groups
-            contactGroupsList.setGroupsContentResolver(getContentResolver());
-            groupList = contactGroupsList.loadGroups();
+            contactGroupsList.setGroupsContentResolver(getActivity());
+            final List<ContactInfo> groupList = contactGroupsList.loadIncludedGroupsFromDB();
 
             String[] entries = new String[groupList.size()];
             String[] entryValues = new String[groupList.size()];

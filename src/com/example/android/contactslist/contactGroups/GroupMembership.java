@@ -70,17 +70,17 @@ public class GroupMembership {
         if(mGroups == null){
             ContactGroupsList contactGroupsList = new ContactGroupsList();
             // collect list of applicable gmail contact groups
-            contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+            contactGroupsList.setGroupsContentResolver(mContext);
             mGroups = contactGroupsList.loadGroups();
         }
 
         // match the group flag to the group name
         switch (group_flag){
             case STAR_GROUP:
-                groupName = mContext.getResources().getString(R.string.Starred);
+                groupName = mContext.getResources().getString(R.string.group_starred);
                 break;
             case MISSES_YOU_GROUP:
-                groupName = mContext.getResources().getString(R.string.misses_you);
+                groupName = mContext.getResources().getString(R.string.group_misses_you);
                 break;
             case BASE_GROUP:
             default:
@@ -404,7 +404,7 @@ Method to create the full list of contacts represented by the groups used in thi
         if(mGroups == null) {
             ContactGroupsList contactGroupsList = new ContactGroupsList();
             // collect list of applicable gmail contact groups
-            contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+            contactGroupsList.setGroupsContentResolver(mContext);
             mGroups = contactGroupsList.loadGroups();
         }
 

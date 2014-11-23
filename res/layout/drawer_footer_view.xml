@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-android:id="@+id/settings_droor_view"
+android:id="@+id/footer"
 android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:textAppearance="?android:attr/textAppearanceListItemSmall"
@@ -9,6 +9,5 @@ android:gravity="center"
 android:paddingLeft="16dp"
 android:paddingRight="16dp"
 android:textColor="#ff1"
-android:text="@string/settings_droor_text"
 android:background="?android:attr/activatedBackgroundIndicator"
 android:minHeight="?android:attr/listPreferredItemHeightSmall"/>

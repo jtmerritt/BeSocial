@@ -62,14 +62,14 @@ public class Notification {
     private void getNotificationList() {
 
         // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        contactGroupsList.setGroupsContentResolver(mContext);
         mGroups = contactGroupsList.loadGroups();
 
         for (ContactInfo groupInfo:mGroups) {
-            if(groupInfo.getName().equals(mContext.getString(R.string.misses_you))){
+            if(groupInfo.getName().equals(mContext.getString(R.string.group_misses_you))){
                 groupID = groupInfo.getIDLong();
                 groupSize = groupInfo.getMemberCount();
-                groupName = mContext.getString(R.string.misses_you);
+                groupName = mContext.getString(R.string.group_misses_you);
 
                 final String parameters[] = {String.valueOf(groupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
 
@@ -109,7 +109,7 @@ public class Notification {
 
         getNotificationList();
 
-        if(cursor.moveToFirst()){
+        if(cursor != null && cursor.moveToFirst()){
             mContactName = cursor.getString(ContactsGroupQuery.DISPLAY_NAME);
             mContactUri = ContactsContract.Contacts.getLookupUri(
                     cursor.getLong(ContactsGroupQuery.ID),

@@ -1049,10 +1049,15 @@ public class ContactDetailFragment extends Fragment implements
             case ContactStatsQuery.QUERY_ID:
 
                 // set the content of mContactStats
-                mContactStats = setContactStatsFromCursor(data);
+                if(data != null && data.moveToFirst()){
+                    mContactStats = ContactStatsContract.getContactInfoFromCursor(data);
+                }
 
-                // set the fractionView with the contact times from mContactStats
-                setFractionView(mContactStats);
+                // check to make sure the contact object exists
+                if(mContactStats != null){
+                    // set the fractionView with the contact times from mContactStats
+                    setFractionView(mContactStats);
+                }
 
                     break;
             case ContactVoiceNumberQuery.QUERY_ID:
@@ -1328,55 +1333,7 @@ public class ContactDetailFragment extends Fragment implements
     }
 
 
-    /*
-    Take the cursor containing all the available data columns from the ContactStatsContentProvider
-    and pace it in a contactInfo for easy access
-    */
-    // TODO move this method out to another class
-    private ContactInfo setContactStatsFromCursor(Cursor cursor){
-        ContactInfo contactInfo = null;
 
-        // read the cursor only if it has content
-        if (cursor != null && cursor.moveToFirst()) {
-            contactInfo = new ContactInfo(
-                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_NAME)),
-                    cursor.getString(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_KEY)),
-                    cursor.getLong(cursor.getColumnIndex(ContactStatsContract.TableEntry.KEY_CONTACT_ID)));
-
-            contactInfo.setRowId(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry._ID)));
-
-            contactInfo.setDateLastEventIn(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_IN)));
-            contactInfo.setDateLastEventOut(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT_OUT)));
-            contactInfo.setDateLastEvent(cursor.getString(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_LAST_EVENT)));
-            contactInfo.setDateContactDue(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_CONTACT_DUE)));
-
-            contactInfo.setDateRecordLastUpdated(cursor.getLong(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DATE_RECORD_LAST_UPDATED)));
-            contactInfo.setEventIntervalLimit(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LIMIT)));
-            contactInfo.setEventIntervalLongest(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LONGEST)));
-            contactInfo.setEventIntervalAvg(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_AVG)));
-            contactInfo.setStanding(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_STANDING)));
-
-            contactInfo.setDecay_rate(cursor.getFloat(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_DECAY_RATE)));
-
-            contactInfo.setEventCount(cursor.getInt(cursor.getColumnIndex(
-                    ContactStatsContract.TableEntry.KEY_EVENT_COUNT)));
-
-            contactInfo.resetUpdateFlag(); //because this is just reporting on the database content
-        }
-
-        return contactInfo;
-    }
 
 
 

@@ -2,6 +2,19 @@ package com.example.android.contactslist.contactStats;
 
 
 public class ContactInfo {
+    // behaviors
+    final public static int IGNORED = 0;
+    final public static int PASSIVE_BEHAVIOR = 1;
+    final public static int RANDOM_BEHAVIOR = 2;
+    final public static int COUNTDOWN_BEHAVIOR = 3;
+    final public static int AUTOMATIC_BEHAVIOR = 4;
+    final static public String group_lookup_key = "GROUP";
+
+    // if a contact is equal to this row ID, then we know it's new and not committed
+    final public static long NEW_CONTACT_ROW_ID = 100000;
+
+
+    // parameters
     private long rowId = NEW_CONTACT_ROW_ID; //default value for easy detection of new contacts in Updates.java
     private long ContactID; // for android contact list
     private String ContactName;
@@ -13,9 +26,30 @@ public class ContactInfo {
     private String dateLastEvent = "";  //formatted string // -
 
     private long dateRecordLastUpdated = 0;  //when was the database record updated // -
+
+    // if the behavior is a countdown, then this value stores the full countdown time
     private int eventIntervalLimit = 0; // number of days //-
+
     private int eventIntervalLongest = 0; // number of days
+
     private int eventIntervalAvg = 0; // number of days
+
+    private float standing_value = 0;
+    private int eventCount = 0; // -
+
+
+    private float decay_rate = 0;
+
+    private long primary_group_membership = 0;  //by ID //-
+
+    // for both contactInfo and GroupInfo
+    private int primary_behavior = 0; //-
+
+    // for contactInfo as GroupInfo
+    private int member_count = 0;
+
+
+
 
     private int callDurationTotal = 0; //seconds // -
     private int callDurationAvg = 0; // seconds //-
@@ -30,17 +64,6 @@ public class ContactInfo {
     private int callCountIn = 0; // -
     private int callCountOut = 0; // -
     private int callCountMissed = 0; // -
-    //TODO incorporate number of missed calls
-
-    private int eventCount = 0; // -
-    private float standing_value = 0;
-
-    private float decay_rate = 0;
-
-    private long primary_group_membership = 0;  //by ID //-
-    private int primary_behavior = 0; //-
-    private int member_count = 0;
-
 
     private int textSmileyCountIn = 0; //-
     private int textSmileyCountOut = 0;//-
@@ -64,13 +87,7 @@ public class ContactInfo {
     private boolean Updated = false;
 
 
-    final public static int UNDEFINED = 0;
-    final public static int RANDOM_BEHAVIOR = 1;
-    final public static int COUNTDOWN_BEHAVIOR = 2;
-    final public static int AUTOMATIC_BEHAVIOR = 3;
-    static public String group_lookup_key = "GROUP";
 
-    final public static long NEW_CONTACT_ROW_ID = 100000;
 
     //constructor
     public ContactInfo(String name, String key, long id){

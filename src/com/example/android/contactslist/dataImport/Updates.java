@@ -83,7 +83,7 @@ public class Updates {
 
         // collect list of applicable gmail contact groups
         groupList = new ContactGroupsList();
-        groupList.setGroupsContentResolver(mContext.getContentResolver());
+        groupList.setGroupsContentResolver(mContext);
     }
 
     public Updates(Context context, ProgressBar activity_progress_bar,
@@ -100,7 +100,7 @@ public class Updates {
 
         // collect list of applicable gmail contact groups
         groupList = new ContactGroupsList();
-        groupList.setGroupsContentResolver(mContext.getContentResolver());
+        groupList.setGroupsContentResolver(mContext);
 
     }
 
@@ -537,7 +537,7 @@ public class Updates {
     private boolean getLargestGroup(){
 
         // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(mContext.getContentResolver());
+        contactGroupsList.setGroupsContentResolver(mContext);
         contactGroupsList.loadGroups();
         // the list of groups is now available in contactGroupsList;
 
@@ -852,7 +852,7 @@ This method ensures that groups and their behaviors are recorded in the contactS
 
             //add any new groups (based on ID) to the database.
 
-            groupRowID = statsDb.addIfNewContact(group);
+            groupRowID = groupStatsHelper.addGroupToDBIfNew(group, statsDb);
             if( groupRowID == -1 ){  //-1 for existing group
                 // if the group ID already exists, make sure the new base info is copied into the old group
                 // however the name and behavior for the group can change

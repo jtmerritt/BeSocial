@@ -7,6 +7,8 @@ import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 
+import java.util.ArrayList;
+
 
 /**
  * Created by Tyson Macdonald on 6/25/2014.
@@ -38,6 +40,18 @@ public class GroupStatsHelper {
         return contactStatsDb.getContactStats(where, whereArg);
     }
 
+    public ContactInfo getGroupInfoFromGroupName(String name, ContactStatsContract contactStatsDb) {
+
+        // query contacts database for the group stats
+        String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                + " = '" + ContactInfo.group_lookup_key + "' AND " +
+                //where the group ID is stored
+                ContactStatsContract.TableEntry.KEY_CONTACT_NAME + " = ?";
+        String whereArg = name;
+
+        return contactStatsDb.getContactStats(where, whereArg);
+    }
+
 
     public ContactInfo getGroupInfoFromContactStats(ContactInfo contact,
                                                      ContactStatsContract contactStatsDb ){
@@ -45,21 +59,54 @@ public class GroupStatsHelper {
     }
 
 
-    public boolean updateGroupInfo(ContactInfo groupInfo, ContactStatsContract contactStatsDb) {
+    // returns the number of records updated
+    public int updateGroupInfo(ContactInfo groupInfo, ContactStatsContract contactStatsDb) {
 
         // call function which parses the entire event into the correct stats
-        if (contactStatsDb.updateContact(groupInfo) > 0) {
-            return true;
-        }
-
-        return false;
+        return  contactStatsDb.updateContact(groupInfo);
     }
 
-    public boolean addGroupToDBIfNew(ContactInfo groupInfo, ContactStatsContract contactStatsDb){
-        if(contactStatsDb.addIfNewContact(groupInfo) != -1){
-            return true;
-        }
-         return false;
+    // returns the number of records added
+    public long addGroupToDBIfNew(ContactInfo groupInfo, ContactStatsContract contactStatsDb){
+        return contactStatsDb.addIfNewContact(groupInfo);
     }
 
+    public long updateGroupListInDB(ArrayList<ContactInfo> list, ContactStatsContract contactStatsDb){
+        int records_updated = 0;
+
+        for(ContactInfo group: list){
+
+            // try adding the group to the database
+            if(addGroupToDBIfNew(group, contactStatsDb) == 0){
+
+                // if the group isn't added, try updating an existing record.
+                records_updated += updateGroupInfo(group, contactStatsDb);
+            }else {
+                records_updated++;
+            }
+        }
+        return records_updated;
+    }
+    public long addGroupListToDB(ArrayList<ContactInfo> list, ContactStatsContract contactStatsDb){
+        int records_updated = 0;
+
+        for(ContactInfo group: list){
+
+            // try adding the group to the database
+            records_updated += addGroupToDBIfNew(group, contactStatsDb);
+        }
+        return records_updated;
+    }
+
+    public int removeGroupFromDB(long group_id, ContactStatsContract contactStatsDb) {
+
+        // query contacts database for the group stats
+        String where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                + " = '" + ContactInfo.group_lookup_key + "' AND " +
+                //where the group ID is stored
+                ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
+        String[] whereArgs = {Long.toString(group_id)};
+
+        return contactStatsDb.deleteContact(where, whereArgs);
+    }
 }

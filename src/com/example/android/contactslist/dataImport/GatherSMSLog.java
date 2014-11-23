@@ -163,7 +163,11 @@ Method to update the notification window and the activity progress bar, if avail
     This method does not reach back further in time.
      */
 
-    private void loadSMSLogForContact(ContactInfo contact) {
+    private boolean loadSMSLogForContact(ContactInfo contact) {
+
+        if(contact == null){
+            return false;
+        }
 
         ((ArrayList<EventInfo>)mEventLog).ensureCapacity(mCursorCount);
 
@@ -187,7 +191,7 @@ Method to update the notification window and the activity progress bar, if avail
 
         Log.d("GatherSMSLog: ", "End contact phone number acquisition");
 
-        if(phoneNumberCursor.moveToFirst()){
+        if(phoneNumberCursor != null && phoneNumberCursor.moveToFirst()){
 
             do {
                 phoneNumber = phoneNumberCursor.getString(phoneNumberCursor
@@ -198,7 +202,7 @@ Method to update the notification window and the activity progress bar, if avail
         }else {
             // if the contact has no phone number, then there won't be any match and we can all go home
             phoneNumberCursor.close();
-            return;
+            return false;
         }
         phoneNumberCursor.close();
         Log.d("GatherSMSLog: ", "Closed phone number cursor");
@@ -295,6 +299,8 @@ Method to update the notification window and the activity progress bar, if avail
             Log.d("GatherSMSLog: ", "End cycling through SMS database");
 
         }
+
+        return true;
     }
 
 

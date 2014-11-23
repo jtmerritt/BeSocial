@@ -63,7 +63,7 @@ public class ContactStatsContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // Uisng SQLiteQueryBuilder instead of query() method
+        // Using SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
         // check if the caller has requested a column which does not exists
@@ -85,6 +85,8 @@ public class ContactStatsContentProvider extends ContentProvider {
             case LOOKUP_KEY:
                 queryBuilder.appendWhere((ContactStatsContract.TableEntry.KEY_CONTACT_KEY + "="
                         + uri.getLastPathSegment()));
+                        // TODO Fix: the above statement segfaults with the Lookup_key case
+
                 break;
 
             default:
@@ -94,7 +96,6 @@ public class ContactStatsContentProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection,
                 selectionArgs, null, null, sortOrder);
-        // TODO Fix: the above statement segfaults with the Lookup_key case
 
         // make sure that potential listeners are getting notified
         cursor.setNotificationUri(mContext.getContentResolver(), uri);
@@ -194,6 +195,7 @@ public class ContactStatsContentProvider extends ContentProvider {
 
     private void checkColumns(String[] projection) {
         String[] available = {
+                ContactStatsContract.TableEntry._ID,
                 ContactStatsContract.TableEntry.KEY_CONTACT_ID,
                 ContactStatsContract.TableEntry.KEY_CONTACT_NAME,
                 ContactStatsContract.TableEntry.KEY_CONTACT_KEY,
@@ -223,7 +225,9 @@ public class ContactStatsContentProvider extends ContentProvider {
                 ContactStatsContract.TableEntry.KEY_STANDING,
                 ContactStatsContract.TableEntry.KEY_DECAY_RATE,
                 ContactStatsContract.TableEntry.KEY_PRIMARY_GROUP_MEMBERSHIP,
-                ContactStatsContract.TableEntry.KEY_PRIMARY_BEHAVIOR
+                ContactStatsContract.TableEntry.KEY_PRIMARY_BEHAVIOR,
+                ContactStatsContract.TableEntry.KEY_MEMBER_COUNT
+
         };
 
         if (projection != null) {

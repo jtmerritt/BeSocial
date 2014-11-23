@@ -44,6 +44,7 @@ import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.ui.groupsEditor.GroupsEditorActivity;
 import com.example.android.contactslist.util.Utils;
 import android.app.NotificationManager;
 
@@ -61,8 +62,10 @@ public class ContactsListActivity extends FragmentActivity implements
     private static final String TAG = "ContactsListActivity";
 
     // Bundle key for saving the current group displayed
-    private static final String STATE_GROUP =
+    public static final String STATE_GROUP =
             "com.example.android.contactslist.ui.GROUP";
+    public static final String STATE_GROUP_ID =
+            "com.example.android.contactslist.ui.GROUP_ID";
 
     private ContactDetailFragment mContactDetailFragment;
 
@@ -81,7 +84,6 @@ public class ContactsListActivity extends FragmentActivity implements
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
 
-    ContactGroupsList contactGroupsList = new ContactGroupsList();
     List<ContactInfo> mGroups;// = new ArrayList<GroupInfo>();
     String mGroupName;
 
@@ -111,6 +113,7 @@ public class ContactsListActivity extends FragmentActivity implements
             // Fetch query from intent and notify the fragment that it should display search
             // results instead of all contacts.
             String searchQuery = getIntent().getStringExtra(SearchManager.QUERY);
+
             ContactsListFragment mContactsListFragment = (ContactsListFragment)
                     getSupportFragmentManager().findFragmentById(R.id.contact_list);
 
@@ -125,14 +128,60 @@ public class ContactsListActivity extends FragmentActivity implements
             setTitle(title);
         }
 
-        // collect list of applicable gmail contact groups
-        contactGroupsList.setGroupsContentResolver(getContentResolver());
-        mGroups = contactGroupsList.loadGroups();
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        //set up the 3 drawer footers
+        final TextView footerView =
+                (TextView) LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.drawer_footer_view, mDrawerList, false);
+        footerView.setText(getResources().getText(R.string.drawer_footer_text_import));
 
+        final TextView footerSettingsView =
+                (TextView) LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.drawer_footer_view, mDrawerList, false);
+        footerSettingsView.setText(getResources().getText(R.string.drawer_footer_text_settings));
+
+        final TextView footerEditGroupsView =
+                (TextView) LayoutInflater.from(getApplicationContext())
+                        .inflate(R.layout.drawer_footer_view,
+                                mDrawerList, false);
+        footerEditGroupsView.setText(getResources().getText(R.string.drawer_footer_text_groups));
+
+
+
+        // Add the footers to the drawer view
+        mDrawerList.addFooterView(footerView);
+        mDrawerList.addFooterView(footerSettingsView);
+        mDrawerList.addFooterView(footerEditGroupsView);
+
+
+        footerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startImportActivity();
+            }
+        });
+
+
+        footerSettingsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPreferenceActivity();
+            }
+        });
+
+        footerEditGroupsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startGroupsEditorActivity();
+            }
+        });
 
         // set Navigation Drawer to show gmail contact groups
-        addItemsToGroupsDrawerList();
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        //populateNavigationDrawer();
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_9,
+                GravityCompat.START);
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getActionBar().setHomeButtonEnabled(true);
@@ -173,33 +222,34 @@ public class ContactsListActivity extends FragmentActivity implements
         if (getIntent() != null) {
             Bundle extras = getIntent().getExtras();
             if (extras != null) {
+
+
                 mGroupName = extras.getString(STATE_GROUP);
                 setDefaultContactGroup(mGroupName);
                 NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 manager.cancel(10002);
                 //Integer.getInteger(extras.getString("notification_id")));
+
+
             }else {
                 if (savedInstanceState != null) {
                     // If we're restoring state after this fragment was recreated then
                     // get the group id from the saved state for display
                     mGroupName = savedInstanceState.getString(STATE_GROUP);
-                    setDefaultContactGroup(mGroupName);
 
                 }else {
-                    setDefaultContactGroup(null);
-
-                }            }
+                    mGroupName = null;
+                }
+            }
         }else {
 
             if (savedInstanceState != null) {
                 // If we're restoring state after this fragment was recreated then
                 // get the group id from the saved state for display
                 mGroupName = savedInstanceState.getString(STATE_GROUP);
-                    setDefaultContactGroup(mGroupName);
 
             }else {
-                   setDefaultContactGroup(null);
-
+                mGroupName = null;
             }
         }
 
@@ -214,16 +264,37 @@ public class ContactsListActivity extends FragmentActivity implements
         //Save the current group ID
         outState.putString(STATE_GROUP, mGroupName);
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // get the new set of groups from the DB
+        final ContactGroupsList contactGroupsList = new ContactGroupsList();
+
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(this);
+        mGroups = contactGroupsList.loadIncludedGroupsFromDB();
+
+        // then populate the navigation drawer with the list of groups
+        populateNavigationDrawer();
+
+        // then the default group setting requires that the navigation drawer be fully set up
+        setDefaultContactGroup(mGroupName);
+    }
+
+
     /*
     Populate the activity navigation drawer
      */
-    private void addItemsToGroupsDrawerList() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        List<String> list = new ArrayList<String>();
+    private void populateNavigationDrawer() {
 
-        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_9,
-                GravityCompat.START);
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        //Add a footer to the drawer
+        mDrawerList.setFooterDividersEnabled(true);
+
+        List<String> list = new ArrayList<String>();
 
         for (ContactInfo groupInfo:mGroups) {
             list.add(groupInfo.getGroupSummary());
@@ -232,41 +303,9 @@ public class ContactsListActivity extends FragmentActivity implements
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, list);
 
-
-        //Add a footer to the droor
-        mDrawerList.setFooterDividersEnabled(true);
-
-        //set up the footer
-        TextView footerView =
-                (TextView) LayoutInflater.from(getApplicationContext())
-                        .inflate(R.layout.droor_footer_view, mDrawerList, false);
-        //set up the footer
-        TextView footerSettingsView =
-                (TextView) LayoutInflater.from(getApplicationContext())
-                        .inflate(R.layout.droor_footer_settings_view, mDrawerList, false);
-
-        //The other footer view
-        mDrawerList.addFooterView(footerView);
-        mDrawerList.addFooterView(footerSettingsView);
-
-
-        footerView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startImportActivity();
-            }
-        });
-
-
-        footerSettingsView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                    startPreferenceActivity();
-            }
-        });
-
         mDrawerList.setAdapter(dataAdapter);
     }
+
 
     /*
 Send intent for opening the XML file import activity
@@ -285,6 +324,14 @@ Send intent for opening the XML file import activity
         // Make it a subactivity so we know when it returns
         startActivity(launchPreferencesIntent2);
     }
+
+    private void startGroupsEditorActivity(){
+
+        Intent explicitlyLoadedIntent = new Intent();
+        explicitlyLoadedIntent.setClass(this, GroupsEditorActivity.class);
+        startActivity(explicitlyLoadedIntent);
+    }
+
 
     /**
      * Overrides newView() to inflate the list item views.
@@ -325,7 +372,7 @@ Send intent for opening the XML file import activity
 
 
 
-
+/*
     public class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
@@ -348,7 +395,7 @@ Send intent for opening the XML file import activity
         }
 
     }
-
+*/
 
 
     /**
@@ -435,7 +482,7 @@ Send intent for opening the XML file import activity
         mGroupName = mGroups.get(pos).getName();
     }
 
-
+/*
     private void selectDatabaseUpdate() {
         // update the main content by replacing fragments
         // May be helpful for when dealing with new fragments: http://stackoverflow.com/questions/21059179/android-navigation-drawer-fragments
@@ -449,7 +496,7 @@ Send intent for opening the XML file import activity
         setTitle("Update Database");
         mDrawerLayout.closeDrawer(mDrawerList);
     }
-
+*/
 
     private void setDefaultContactGroup(String intentGroupName) {
 

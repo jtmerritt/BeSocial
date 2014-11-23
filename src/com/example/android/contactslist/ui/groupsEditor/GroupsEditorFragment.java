@@ -14,84 +14,75 @@
  * limitations under the License.
  */
 
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.groupsEditor;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.SearchManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
-import android.provider.ContactsContract.CommonDataKinds.Event;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
-import android.text.SpannableString;
-import android.text.TextUtils;
+import android.text.InputType;
 import android.text.style.TextAppearanceSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ActionMode;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AlphabetIndexer;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
-import android.widget.SearchView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
-
-import com.example.android.contactslist.BuildConfig;
-import com.example.android.contactslist.ContactsGroupQuery;
-import com.example.android.contactslist.R;
-import com.example.android.contactslist.contactGroups.GroupMembership;
-import com.example.android.contactslist.contactStats.ContactInfo;
-import com.example.android.contactslist.notification.SetAlarm;
-import com.example.android.contactslist.notification.FileIO;
-import com.example.android.contactslist.util.ImageLoader;
-import com.example.android.contactslist.util.Utils;
 import android.widget.Toast;
 
+import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.R;
+import com.example.android.contactslist.contactGroups.GoogleGroupMaker;
+import com.example.android.contactslist.contactGroups.GroupBehavior;
+import com.example.android.contactslist.contactGroups.GroupStatsHelper;
+import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
+import com.example.android.contactslist.contactStats.ContactStatsContract;
+import com.example.android.contactslist.ui.UserPreferencesActivity;
+import com.example.android.contactslist.util.ImageLoader;
+import com.example.android.contactslist.util.Utils;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import android.os.Bundle;
 
 
 /**
  * This fragment displays a list of contacts stored in the Contacts Provider. Each item in the list
  * shows the contact's thumbnail photo and display name. On devices with large screens, this
  * fragment's UI appears as part of a two-pane layout, along with the UI of
- * {@link ContactDetailFragment}. On smaller screens, this fragment's UI appears as a single pane.
+ * {@link com.example.android.contactslist.ui.ContactDetailFragment}. On smaller screens, this fragment's UI appears as a single pane.
  *
  * This Fragment retrieves contacts based on a search string. If the user doesn't enter a search
  * string, then the list contains all the contacts in the Contacts Provider. If the user enters a
@@ -105,80 +96,59 @@ import android.os.Bundle;
  * trigger starts a new Activity which loads a fresh instance of this fragment. The resulting UI
  * displays the filtered list and disables the search feature to prevent furthering searching.
  */
-public class ContactsListFragment extends ListFragment implements
+public class GroupsEditorFragment extends ListFragment implements
         AdapterView.OnItemClickListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
     // Defines a  for identifying log entries
-    private static final String TAG = "ContactsListFragment";
-
-    private final int PICK_CONTACT_REQUEST = 212;
-
-    // Bundle key for saving previously selected search result item
-    private static final String STATE_PREVIOUSLY_SELECTED_KEY =
-            "com.example.android.contactslist.ui.SELECTED_ITEM";
+    private static final String TAG = "GroupsEditorActivity";
 
     // Bundle key for saving the current group displayed
     private static final String STATE_GROUP_ID =
             "com.example.android.contactslist.ui.GROUP_ID";
 
-    private ContactsAdapter mAdapter; // The main query adapter
+    private GroupsAdapter mAdapter; // The main query adapter
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
-    private String mSearchTerm; // Stores the current search query term
 
     //Implemented ActionMode for the Action Bar
     protected Object mActionMode;
     private ActionMode.Callback mActionModeCallback;
-    private String removeContactLookupKeyFromGroup;
+    private long mDeleteGroupID = -1; //TODO save in onPause?
+    private String name_of_new_group = "";
 
-    // Contact selected listener that allows the activity holding this fragment to be notified of
+
+    // Group selected listener that allows the activity holding this fragment to be notified of
     // a contact being selected
-    private OnContactsInteractionListener mOnContactSelectedListener;
-
-    // Stores the previously selected search item so that on a configuration change the same item
-    // can be reselected again
-    private int mPreviouslySelectedSearchItem = 0;
-
-    // Whether or not the search query has changed since the last time the loader was refreshed
-    private boolean mSearchQueryChanged;
+    private OnGroupsInteractionListener mOnGroupSelectedListener;
 
     // Whether or not this fragment is showing in a two-pane layout
     private boolean mIsTwoPaneLayout;
 
-    // Whether or not this is a search result view of this fragment, only used on pre-honeycomb
-    // OS versions as search results are shown in-line via Action Bar search from honeycomb onward
-    private boolean mIsSearchResultView = false;
-
-
     private int mGroupID = -1;  //stores the selected groupID for display
-
-    private FractionView mFractionView;
 
 
     /**
      * Fragments require an empty constructor.
      */
-    public ContactsListFragment() {
+    public GroupsEditorFragment() {
     }
 
+
     /**
-     * In platform versions prior to Android 3.0, the ActionBar and SearchView are not supported,
-     * and the UI gets the search string from an EditText. However, the fragment doesn't allow
-     * another search when search results are already showing. This would confuse the user, because
-     * the resulting search would re-query the Contacts Provider instead of searching the listed
-     * results. This method sets the search query and also a boolean that tracks if this Fragment
-     * should be displayed as a search result view or not.
+     * Factory method to generate a new instance of the fragment given a contact Uri. A factory
+     * method is preferable to simply using the constructor as it handles creating the bundle and
+     * setting the bundle as an argument.
      *
-     * @param query The contacts search query.
+     * @return A new instance of {@link GroupsEditorFragment}
      */
-    public void setSearchQuery(String query) {
-        if (TextUtils.isEmpty(query)) {
-            mIsSearchResultView = false;
-        } else {
-            mSearchTerm = query;
-            mIsSearchResultView = true;
-        }
+    public static GroupsEditorFragment newInstance() {
+        // Create new instance of this fragment
+        final GroupsEditorFragment fragment = new GroupsEditorFragment();
+
+        // Return fragment
+        return fragment;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -194,15 +164,11 @@ public class ContactsListFragment extends ListFragment implements
         setHasOptionsMenu(true);
 
         // Create the main contacts adapter
-        mAdapter = new ContactsAdapter(getActivity());
+        mAdapter = new GroupsAdapter(getActivity());
 
         if (savedInstanceState != null) {
             // If we're restoring state after this fragment was recreated then
-            // retrieve previous search term and previously selected search
-            // result.
-            mSearchTerm = savedInstanceState.getString(SearchManager.QUERY);
-            mPreviouslySelectedSearchItem =
-                    savedInstanceState.getInt(STATE_PREVIOUSLY_SELECTED_KEY, 0);
+
 
             // get the group id from the saved state for display
             mGroupID = savedInstanceState.getInt(STATE_GROUP_ID);
@@ -277,9 +243,23 @@ public class ContactsListFragment extends ListFragment implements
                 switch (item.getItemId()) {
 
                     case R.id.menu_remove_contact:
-                        GroupMembership groupMembership = new GroupMembership(getActivity());
-                        groupMembership.removeContactFromGroup(mGroupID,
-                                removeContactLookupKeyFromGroup );
+                        GoogleGroupMaker googleGroupMaker = new GoogleGroupMaker(getActivity());
+                        googleGroupMaker.removeGoogleGroup(mDeleteGroupID);
+
+                        // method to remove group from app DB
+                        final ContactStatsContract statsDb =
+                                new ContactStatsContract(getActivity());
+                        final GroupStatsHelper groupStatsHelper =
+                                new GroupStatsHelper(getActivity());
+
+                        // delete group from the app Database
+                        final int records_updated =
+                                groupStatsHelper.removeGroupFromDB(mDeleteGroupID, statsDb);
+
+                        Toast.makeText(getActivity(),
+                                Long.toString(records_updated)
+                                        + " Record(s) Updated",
+                                Toast.LENGTH_SHORT).show();
 
                         mode.finish(); // Action picked, so close the CAB
                         return true;
@@ -316,7 +296,7 @@ public class ContactsListFragment extends ListFragment implements
 
 
                 // Using the lookupKey because the wrong ID was being returned
-                removeContactLookupKeyFromGroup = cursor.getString(ContactsQuery.LOOKUP_KEY);
+                mDeleteGroupID = cursor.getLong(GroupsListStatsQuery.GROUP_ID);
                 // Start the CAB using the ActionMode.Callback defined above
                 mActionMode = getActivity().startActionMode(mActionModeCallback);
                 view.setSelected(true);
@@ -358,17 +338,11 @@ public class ContactsListFragment extends ListFragment implements
             getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         }
 
-        // If there's a previously selected search item from a saved state then don't bother
-        // initializing the loader as it will be restarted later when the query is populated into
-        // the action bar search view (see onQueryTextChange() in onCreateOptionsMenu()).
-        if (mPreviouslySelectedSearchItem == 0) {
-            // Initialize the loader, and create a loader identified by ContactsQuery.QUERY_ID
-
-            //Normally the complete list of contacts would be shown below, but we want the default to be settable by groups
-            //getLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
-        }
+        //getGroupStats();
+        loadGoogleGroupsList();
     }
 
+    
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -379,12 +353,13 @@ public class ContactsListFragment extends ListFragment implements
             // activity will be notified and can take further action such as populating the contact
             // detail pane (if in multi-pane layout) or starting a new activity with the contact
             // details (single pane layout).
-            mOnContactSelectedListener = (OnContactsInteractionListener) activity;
+            mOnGroupSelectedListener = (OnGroupsInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnContactsInteractionListener");
+                    + " must implement OnGroupsInteractionListener");
         }
     }
+    
 
     @Override
     public void onPause() {
@@ -403,12 +378,11 @@ public class ContactsListFragment extends ListFragment implements
         // Moves to the Cursor row corresponding to the ListView item that was clicked
         cursor.moveToPosition(position);
 
-        // Creates a contact lookup Uri from contact ID and lookup_key
-        final Uri uri = Contacts.getLookupUri(
-                cursor.getLong(ContactsQuery.ID),
-                cursor.getString(ContactsQuery.LOOKUP_KEY));
+        // get the id of the group to pass on to the contact list
+        final int group_id = cursor.getInt(GroupsListStatsQuery.GROUP_ID);
+        final String group_name = cursor.getString(GroupsListStatsQuery.NAME);
 
-        //TODO: Fix: for some reason the contactID is getting changed from a 3 digit number to 5 digits
+
         // This is making some methods not work right.
 
 
@@ -416,7 +390,7 @@ public class ContactsListFragment extends ListFragment implements
         // parent activity loads a ContactDetailFragment that displays the details for the selected
         // contact. In a single-pane layout, the parent activity starts a new activity that
         // displays contact details in its own Fragment.
-        mOnContactSelectedListener.onContactSelected(uri, mGroupID);
+        mOnGroupSelectedListener.onGroupSelected(group_id, group_name);
 
         // If two-pane layout sets the selected item to checked so it remains highlighted. In a
         // single-pane layout a new activity is started so this is not needed.
@@ -426,6 +400,10 @@ public class ContactsListFragment extends ListFragment implements
     }
 
 
+
+
+
+
     /**
      * Called when ListView selection is cleared, for example
      * when search mode is finished and the currently selected
@@ -433,7 +411,7 @@ public class ContactsListFragment extends ListFragment implements
      */
     private void onSelectionCleared() {
         // Uses callback to notify activity this contains this fragment
-        mOnContactSelectedListener.onSelectionCleared();
+        mOnGroupSelectedListener.onSelectionCleared();
 
         // Clears currently checked item
         getListView().clearChoices();
@@ -451,123 +429,14 @@ public class ContactsListFragment extends ListFragment implements
         // Locate the search item
         MenuItem searchItem = menu.findItem(R.id.menu_search);
 
-        // In versions prior to Android 3.0, hides the search item to prevent additional
-        // searches. In Android 3.0 and later, searching is done via a SearchView in the ActionBar.
-        // Since the search doesn't create a new Activity to do the searching, the menu item
-        // doesn't need to be turned off.
-        if (mIsSearchResultView) {
-            searchItem.setVisible(false);
-        }
 
         //MenuItem settingsItem = menu.add("Settings");
-
-
-        // In version 3.0 and later, sets up and configures the ActionBar SearchView
-        if (Utils.hasHoneycomb()) {
-
-            // Retrieves the system search manager service
-            final SearchManager searchManager =
-                    (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-
-            // Retrieves the SearchView from the search menu item
-            final SearchView searchView = (SearchView) searchItem.getActionView();
-
-            // Assign searchable info to SearchView
-            searchView.setSearchableInfo(
-                    searchManager.getSearchableInfo(getActivity().getComponentName()));
-
-            // Set listeners for SearchView
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String queryText) {
-                    // Nothing needs to happen when the user submits the search string
-                    return true;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    // Called when the action bar search text has changed.  Updates
-                    // the search filter, and restarts the loader to do a new query
-                    // using the new search string.
-                    String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
-
-                    // Don't do anything if the filter is empty
-                    if (mSearchTerm == null && newFilter == null) {
-                        return true;
-                    }
-
-                    // Don't do anything if the new filter is the same as the current filter
-                    if (mSearchTerm != null && mSearchTerm.equals(newFilter)) {
-                        return true;
-                    }
-
-                    // Updates current filter to new filter
-                    mSearchTerm = newFilter;
-
-                    // Restarts the loader. This triggers onCreateLoader(), which builds the
-                    // necessary content Uri from mSearchTerm.
-                    mSearchQueryChanged = true;
-                    getLoaderManager().restartLoader(
-                            ContactsQuery.QUERY_ID, null, ContactsListFragment.this);
-                    return true;
-                }
-            });
-
-            if (Utils.hasICS()) {
-                // This listener added in ICS
-                searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-                    @Override
-                    public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                        // Nothing to do when the action item is expanded
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                        // When the user collapses the SearchView the current search string is
-                        // cleared and the loader restarted.
-                        if (!TextUtils.isEmpty(mSearchTerm)) {
-                            onSelectionCleared();
-                        }
-                        mSearchTerm = null;
-                        getLoaderManager().restartLoader(
-                                ContactsQuery.QUERY_ID, null, ContactsListFragment.this);
-                        return true;
-                    }
-                });
-            }
-
-            if (mSearchTerm != null) {
-                // If search term is already set here then this fragment is
-                // being restored from a saved state and the search menu item
-                // needs to be expanded and populated again.
-
-                // Stores the search term (as it will be wiped out by
-                // onQueryTextChange() when the menu item is expanded).
-                final String savedSearchTerm = mSearchTerm;
-
-                // Expands the search menu item
-                if (Utils.hasICS()) {
-                    searchItem.expandActionView();
-                }
-
-                // Sets the SearchView to the previous search string
-                searchView.setQuery(savedSearchTerm, false);
-            }
-        }
     }
 
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (!TextUtils.isEmpty(mSearchTerm)) {
-            // Saves the current search string
-            outState.putString(SearchManager.QUERY, mSearchTerm);
-
-            // Saves the currently selected contact
-            outState.putInt(STATE_PREVIOUSLY_SELECTED_KEY, getListView().getCheckedItemPosition());
-        }
 
         //Save the current group ID
         outState.putInt(STATE_GROUP_ID, mGroupID);
@@ -579,7 +448,7 @@ public class ContactsListFragment extends ListFragment implements
         switch (item.getItemId()) {
             // Sends a request to the People app to display the create contact screen
             case R.id.menu_add_contact:
-                addContactToGroup();
+                specifyNewGroupToAdd();
                 break;
             // For platforms earlier than Android 3.0, triggers the search activity
             case R.id.menu_search:
@@ -598,16 +467,42 @@ public class ContactsListFragment extends ListFragment implements
         return super.onOptionsItemSelected(item);
     }
 
-    public void setGroupQuery(int groupID) {
-        if (groupID == -1) {
-            //mGroupID = groupID; ///um...
-        } else {
-            mGroupID = groupID;
-            getLoaderManager().restartLoader(
-                    ContactsGroupQuery.QUERY_ID, null, ContactsListFragment.this);
+    // create a dialog that allows the user to specify the name of the new group
+    private void specifyNewGroupToAdd() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.dialog_title_enter_group_name);
 
-        }
+        // Set up the input
+        final EditText input = new EditText(getActivity());
+
+
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final GoogleGroupMaker googleGroupMaker = new GoogleGroupMaker(getActivity());
+
+                name_of_new_group = input.getText().toString();
+
+                // create new group with the given name
+                googleGroupMaker.makeContactGroup(name_of_new_group);
+
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -616,56 +511,23 @@ public class ContactsListFragment extends ListFragment implements
 
         // switch between search query and a group query
         switch (id) {
-            case ContactsQuery.QUERY_ID:
-                // If this is the loader for finding contacts in the Contacts Provider
 
-                // There are two types of searches, one which displays all contacts and
-                // one which filters contacts by a search query. If mSearchTerm is set
-                // then a search query has been entered and the latter should be used.
-
-                if (mSearchTerm == null) {
-                    // Since there's no search string, use the content URI that searches the entire
-                    // Contacts table
-                    contentUri = ContactsQuery.CONTENT_URI;
-
-                } else {
-                    // Since there's a search string, use the special content Uri that searches the
-                    // Contacts table. The URI consists of a base Uri and the search string.
-                    contentUri =
-                            Uri.withAppendedPath(ContactsQuery.FILTER_URI, Uri.encode(mSearchTerm));
-                }
-
-                // Returns a new CursorLoader for querying the Contacts table. No arguments are used
-                // for the selection clause. The search string is either encoded onto the content URI,
-                // or no contacts search string is used. The other search criteria are constants. See
-                // the ContactsQuery interface.
+            case GroupsListQuery.QUERY_ID:
                 return new CursorLoader(getActivity(),
-                        contentUri,
-                        ContactsQuery.PROJECTION,
-                        ContactsQuery.SELECTION,
+                        GroupsListQuery.CONTENT_URI,
+                        GroupsListQuery.PROJECTION,
+                        GroupsListQuery.SELECTION,
                         null,
+                        GroupsListQuery.SORT_ORDER);
+            case GroupsListStatsQuery.QUERY_ID:
 
-                        ContactsQuery.SORT_ORDER);
+                return new CursorLoader(getActivity(),
+                        GroupsListStatsQuery.CONTENT_URI,
+                        GroupsListStatsQuery.PROJECTION,
+                        GroupsListStatsQuery.SELECTION,
+                        GroupsListStatsQuery.ARGS,
+                        GroupsListStatsQuery.SORT_ORDER);
 
-            case ContactsGroupQuery.QUERY_ID:
-                if (mGroupID != -1) {
-                    contentUri = ContactsGroupQuery.CONTENT_URI;
-
-                    final String parameters[] = {String.valueOf(mGroupID)};//, Event.CONTENT_ITEM_TYPE, "Contact Due"};
-
-
-                    return new CursorLoader(getActivity(),
-                            contentUri,
-                            ContactsGroupQuery.PROJECTION,
-                            //TODO: It would be nice if the due date could also be captured here, instead of having to make another call
-                            // The result is a very rough interface
-                            ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID + "= ? ",
-                            //+ " AND " + ContactsContract.Data.MIMETYPE + "= ? "
-                            // + " AND " + Event.LABEL + "= ? ",
-                            parameters,
-
-                            ContactsGroupQuery.SORT_ORDER);
-                }
 
             default:
 
@@ -678,37 +540,67 @@ public class ContactsListFragment extends ListFragment implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // This swaps the new cursor into the adapter.
         switch (loader.getId()) {
-            case ContactsQuery.QUERY_ID:
-            case ContactsGroupQuery.QUERY_ID:
-                mAdapter.swapCursor(data);
 
+            case GroupsListQuery.QUERY_ID:
 
-                // If this is a two-pane layout and there is a search query then
-                // there is some additional work to do around default selected
-                // search item.
-                if (mIsTwoPaneLayout && !TextUtils.isEmpty(mSearchTerm) && mSearchQueryChanged) {
-                    // Selects the first item in results, unless this fragment has
-                    // been restored from a saved state (like orientation change)
-                    // in which case it selects the previously selected search item.
-                    if (data != null && data.moveToPosition(mPreviouslySelectedSearchItem)) {
-                        // Creates the content Uri for the previously selected contact by appending the
-                        // contact's ID to the Contacts table content Uri
-                        final Uri uri = Uri.withAppendedPath(
-                                Contacts.CONTENT_URI, String.valueOf(data.getLong(ContactsGroupQuery.ID)));
+                if(data != null && data.moveToFirst()){
+                    final ArrayList<ContactInfo> list = new ArrayList<ContactInfo>();
+                    ContactInfo group;
 
-                        mOnContactSelectedListener.onContactSelected(uri, mGroupID);
-                        getListView().setItemChecked(mPreviouslySelectedSearchItem, true);
-                    } else {
-                        // No results, clear selection.
-                        onSelectionCleared();
-                    }
-                    // Only restore from saved state one time. Next time fall back
-                    // to selecting first item. If the fragment state is saved again
-                    // then the currently selected item will once again be saved.
-                    mPreviouslySelectedSearchItem = 0;
-                    mSearchQueryChanged = false;
+                    do{
+                        group = new ContactInfo(data.getString(GroupsListQuery.TITLE),
+                                ContactInfo.group_lookup_key,
+                                data.getLong(GroupsListQuery.ID));
+                        group.setMemberCount(data.getInt(GroupsListQuery.MEMBER_COUNT));
+                        group = GroupBehavior.setGroupBehaviorFromName(group,
+                                // choose the default behavior based on if the group was just added
+                                // the new group should at least be included/ checked
+                                group.getName().equals(name_of_new_group) ?
+                                        ContactInfo.PASSIVE_BEHAVIOR : ContactInfo.IGNORED,
+                                getActivity());
+
+                        list.add(group);
+
+                    }while(data.moveToNext());
+
+                    // reset the record for which was the recently added group
+                    name_of_new_group = "";
+
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            final ContactStatsContract statsDb =
+                                    new ContactStatsContract(getActivity());
+                            final GroupStatsHelper groupStatsHelper =
+                                    new GroupStatsHelper(getActivity());
+
+                            // adds each group to the database,if they aren't already there
+                            // any new group that has a prescribed behavior is opted in
+                            // That is, it's checked by default
+                            groupStatsHelper.addGroupListToDB(list, statsDb);
+
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    // in the UI thread update the group list from the database
+
+                                    getGroupStats();
+
+                                }
+                            });
+                        }
+                    }).start();
+
 
                 }
+
+
+                break;
+            case GroupsListStatsQuery.QUERY_ID:
+                mAdapter.swapCursor(data);
+
                 break;
             default:
 
@@ -716,10 +608,10 @@ public class ContactsListFragment extends ListFragment implements
         }
     }
 
+
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if ((loader.getId() == ContactsQuery.QUERY_ID) ||
-                (loader.getId() == ContactsGroupQuery.QUERY_ID)) {
+        if (loader.getId() == GroupsListStatsQuery.QUERY_ID) {
             // When the loader is being reset, clear the cursor from the adapter. This allows the
             // cursor resources to be freed.
             mAdapter.swapCursor(null);
@@ -741,7 +633,7 @@ public class ContactsListFragment extends ListFragment implements
                 android.R.attr.listPreferredItemHeight, typedValue, true);
 
         // Create a new DisplayMetrics object
-        final DisplayMetrics metrics = new android.util.DisplayMetrics();
+        final DisplayMetrics metrics = new DisplayMetrics();
 
         // Populate the DisplayMetrics
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -829,23 +721,25 @@ public class ContactsListFragment extends ListFragment implements
         return null;
     }
 
+
+
     /**
      * This is a subclass of CursorAdapter that supports binding Cursor columns to a view layout.
      * If those items are part of search results, the search string is marked by highlighting the
-     * query text. An {@link AlphabetIndexer} is used to allow quicker navigation up and down the
+     * query text. An {@link android.widget.AlphabetIndexer} is used to allow quicker navigation up and down the
      * ListView.
      */
-    private class ContactsAdapter extends CursorAdapter implements SectionIndexer {
+    private class GroupsAdapter extends CursorAdapter implements SectionIndexer {
         private LayoutInflater mInflater; // Stores the layout inflater
         private AlphabetIndexer mAlphabetIndexer; // Stores the AlphabetIndexer instance
-        private TextAppearanceSpan highlightTextSpan; // Stores the highlight text appearance style
+        //private TextAppearanceSpan highlightTextSpan; // Stores the highlight text appearance style
 
         /**
          * Instantiates a new Contacts Adapter.
          *
          * @param context A context that has access to the app's layout.
          */
-        public ContactsAdapter(Context context) {
+        public GroupsAdapter(Context context) {
             super(context, null, 0);
 
             // Stores inflater for use later
@@ -860,30 +754,10 @@ public class ContactsListFragment extends ListFragment implements
 
             // Instantiates a new AlphabetIndexer bound to the column used to sort contact names.
             // The cursor is left null, because it has not yet been retrieved.
-            mAlphabetIndexer = new AlphabetIndexer(null, ContactsQuery.SORT_KEY, alphabet);
-
-            // Defines a span for highlighting the part of a display name that matches the search
-            // string
-            highlightTextSpan = new TextAppearanceSpan(getActivity(), R.style.searchTextHiglight);
+            mAlphabetIndexer = new AlphabetIndexer(null, GroupsListStatsQuery.NAME, alphabet);
         }
 
-        /**
-         * Identifies the start of the search string in the display name column of a Cursor row.
-         * E.g. If displayName was "Adam" and search query (mSearchTerm) was "da" this would
-         * return 1.
-         *
-         * @param displayName The contact display name.
-         * @return The starting position of the search string in the display name, 0-based. The
-         * method returns -1 if the string is not found in the display name, or if the search
-         * string is empty or null.
-         */
-        private int indexOfSearchQuery(String displayName) {
-            if (!TextUtils.isEmpty(mSearchTerm)) {
-                return displayName.toLowerCase(Locale.getDefault()).indexOf(
-                        mSearchTerm.toLowerCase(Locale.getDefault()));
-            }
-            return -1;
-        }
+
 
         /**
          * Overrides newView() to inflate the list item views.
@@ -892,7 +766,7 @@ public class ContactsListFragment extends ListFragment implements
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
             // Inflates the list item layout.
             final View itemLayout =
-                    mInflater.inflate(R.layout.contact_list_item, viewGroup, false);
+                    mInflater.inflate(R.layout.group_list_item, viewGroup, false);
 
             // Creates a new ViewHolder in which to store handles to each view resource. This
             // allows bindView() to retrieve stored references instead of calling findViewById for
@@ -902,7 +776,73 @@ public class ContactsListFragment extends ListFragment implements
             holder.text2 = (TextView) itemLayout.findViewById(android.R.id.text2);
             holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
 
-            holder.fractionView = (FractionView) itemLayout.findViewById(R.id.fraction);
+            holder.checkBox = (CheckBox) itemLayout.findViewById(R.id.checkBox);
+
+
+
+            holder.checkBox.setOnClickListener(new View.OnClickListener() {
+                // perform function when pressed
+                @Override
+                public void onClick(View v) {
+
+
+
+                    if(holder.checkBox.isChecked()){
+                        // set the behavior according to the name
+                        holder.group = GroupBehavior.setGroupBehaviorFromName(holder.group,
+                                ContactInfo.PASSIVE_BEHAVIOR, getActivity());
+                    }else {
+                        // not checked means we ignore it for display and processing
+                        holder.group.setBehavior(ContactInfo.IGNORED);
+                    }
+
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    final ContactStatsContract statsDb =
+                                            new ContactStatsContract(getActivity());
+                                    final GroupStatsHelper groupStatsHelper =
+                                            new GroupStatsHelper(getActivity());
+
+                                    final long records_updated =
+                                            groupStatsHelper.updateGroupInfo(holder.group, statsDb);
+
+
+
+                                    getActivity().runOnUiThread(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            // in the UI thread update the group list
+                                            // from the database
+                                            getGroupStats();
+
+                                            Toast.makeText(getActivity(),
+                                                    Long.toString(records_updated)
+                                                            + " Record(s) Updated",
+                                                    Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    });
+                                }
+                            });
+
+                        }
+                    }).start();
+
+
+
+                }
+
+
+            });
 
 
             // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
@@ -921,46 +861,32 @@ public class ContactsListFragment extends ListFragment implements
             // Gets handles to individual view resources
             final ViewHolder holder = (ViewHolder) view.getTag();
 
+            holder.group = ContactStatsContract.getContactInfoFromCursor(cursor);
+
             // For Android 3.0 and later, gets the thumbnail image Uri from the current Cursor row.
             // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
             // generated from the other fields in the row.
-            final String photoUri = cursor.getString(ContactsQuery.PHOTO_THUMBNAIL_DATA);
+            final String photoUri = null; //cursor.getString(GroupsListQuery.PHOTO_THUMBNAIL_DATA);
 
-            final String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
+            final String displayName = cursor.getString(GroupsListStatsQuery.NAME);
 
-            final int startIndex = indexOfSearchQuery(displayName);
 
-            if (startIndex == -1) {
-                // If the user didn't do a search, or the search string didn't match a display
-                // name, show the display name without highlighting
-                holder.text1.setText(displayName);
+            // If the user didn't do a search, or the search string didn't match a display
+            // name, show the display name without highlighting
+            holder.text1.setText(displayName);
 
-                if (TextUtils.isEmpty(mSearchTerm)) {
-                    // If the search search is empty, hide the second line of text
-                    holder.text2.setVisibility(View.GONE);
-                } else {
-                    // Shows a second line of text that indicates the search string matched
-                    // something other than the display name
-                    holder.text2.setVisibility(View.VISIBLE);
-                }
-            } else {
-                // If the search string matched the display name, applies a SpannableString to
-                // highlight the search string with the displayed display name
+            // display the member count
+            holder.text2.setText(cursor.getString(GroupsListStatsQuery.MEMBER_COUNT)
+                    + " Connections");
 
-                // Wraps the display name in the SpannableString
-                final SpannableString highlightedName = new SpannableString(displayName);
+            // display the inclusion of the group with the checkbox
+            // according to weather it is ignored
+            holder.checkBox.setChecked(cursor.getInt(
+                    GroupsListStatsQuery.PRIMARY_BEHAVIOR) != ContactInfo.IGNORED);
 
-                // Sets the span to start at the starting point of the match and end at "length"
-                // characters beyond the starting point
-                highlightedName.setSpan(highlightTextSpan, startIndex,
-                        startIndex + mSearchTerm.length(), 0);
+            // only enable the check box if the group object is initialized
+            holder.checkBox.setEnabled(holder.group != null);
 
-                // Binds the SpannableString to the display name View object
-                holder.text1.setText(highlightedName);
-
-                // Since the search string matched the name, this hides the secondary message
-                holder.text2.setVisibility(View.GONE);
-            }
 
             // Processes the QuickContactBadge. A QuickContactBadge first appears as a contact's
             // thumbnail image with styling that indicates it can be touched for additional
@@ -971,22 +897,16 @@ public class ContactsListFragment extends ListFragment implements
 
             // Generates the contact lookup Uri
             final Uri contactUri = Contacts.getLookupUri(
-                    cursor.getLong(ContactsQuery.ID),
-                    cursor.getString(ContactsQuery.LOOKUP_KEY));
+                    cursor.getLong(GroupsListStatsQuery.GROUP_ID),
+                    ContactInfo.group_lookup_key);
 
             // Binds the contact's lookup Uri to the QuickContactBadge
-            holder.icon.assignContactUri(contactUri);
+            //holder.icon.assignContactUri(contactUri);
 
             // Loads the thumbnail image pointed to by photoUri into the QuickContactBadge in a
             // background worker thread
             mImageLoader.loadImage(photoUri, holder.icon);
 
-            //long lastTimeContacted = cursor.getLong(ContactsQuery.LAST_TIME_CONTACTED);
-            //According to some sources, this value isn't properly maintained on all handsets
-
-            // set the fraction view with current state of contact
-            // The view runs an asyncTask to pull contactStats data
-            holder.fractionView.setFraction(cursor.getString(ContactsQuery.LOOKUP_KEY), mContext);
         }
 
         /**
@@ -1051,7 +971,8 @@ public class ContactsListFragment extends ListFragment implements
             TextView text1;
             TextView text2;
             QuickContactBadge icon;
-            FractionView fractionView;
+            CheckBox checkBox;
+            ContactInfo group;
         }
     }
 
@@ -1060,142 +981,115 @@ public class ContactsListFragment extends ListFragment implements
      * interaction occurs, such as touching an item from the ListView, these callbacks will
      * be invoked to communicate the event back to the activity.
      */
-    public interface OnContactsInteractionListener {
+    public interface OnGroupsInteractionListener {
         /**
          * Called when a contact is selected from the ListView.
          *
-         * @param contactUri The contact Uri.
+         * @param groupID The contact Uri.
          */
-        public void onContactSelected(Uri contactUri, int groupID);
+        public void onGroupSelected(int groupID, String groupName);
 
         /**
          * Called when the ListView selection is cleared like when
-         * a contact search is taking place or is finishing.
+         * a contact search is taking place or is finishOnGroupsInteractionListenering.
          */
         public void onSelectionCleared();
     }
 
+
+
+    public void loadGoogleGroupsList(){
+        getLoaderManager().restartLoader(GroupsListQuery.QUERY_ID, null, this);
+    }
     /**
      * This interface defines constants for the Cursor and CursorLoader, based on constants defined
      * in the {@link android.provider.ContactsContract.Contacts} class.
      */
-    public interface ContactsQuery {
+    public interface GroupsListQuery {
 
         // An identifier for the loader
-        final static int QUERY_ID = 1;
+        final static int QUERY_ID = 313;
 
         // A content URI for the Contacts table
-        final static Uri CONTENT_URI = Contacts.CONTENT_URI;
+        final static Uri CONTENT_URI = ContactsContract.Groups.CONTENT_SUMMARY_URI;
 
-        // The search/filter query Uri
-        final static Uri FILTER_URI = Contacts.CONTENT_FILTER_URI;
 
         // The selection clause for the CursorLoader query. The search criteria defined here
         // restrict results to contacts that have a display name and are linked to visible groups.
         // Notice that the search on the string provided by the user is implemented by appending
         // the search string to CONTENT_FILTER_URI.
         @SuppressLint("InlinedApi")
-        final static String SELECTION =
-                (Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME) +
-                        "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
+        final static String SELECTION = ContactsContract.Groups.DELETED + "=0";
 
         // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
         // sort key allows for localization. In earlier versions. use the display name as the sort
         // key.
         @SuppressLint("InlinedApi")
-        final static String SORT_ORDER =
-                Utils.hasHoneycomb() ? Contacts.SORT_KEY_PRIMARY : Contacts.DISPLAY_NAME;
+        final static String SORT_ORDER = ContactsContract.Groups.TITLE + " ASC";
 
         // The projection for the CursorLoader query. This is a list of columns that the Contacts
         // Provider should return in the Cursor.
         @SuppressLint("InlinedApi")
         final static String[] PROJECTION = {
-
-                // The contact's row id
-                Contacts._ID, //extra collumn is to make this projection match up with that of ContactsGroupQuery
-                Contacts._ID,
-
-                // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
-                // a contact's current _ID value and LOOKUP_KEY, the Contacts Provider can generate
-                // a "permanent" contact URI.
-                Contacts.LOOKUP_KEY,
-
-                // In platform version 3.0 and later, the Contacts table contains
-                // DISPLAY_NAME_PRIMARY, which either contains the contact's displayable name or
-                // some other useful identifier such as an email address. This column isn't
-                // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
-                // instead.
-                Utils.hasHoneycomb() ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME,
-
-                // In Android 3.0 and later, the thumbnail image is pointed to by
-                // PHOTO_THUMBNAIL_URI. In earlier versions, there is no direct pointer; instead,
-                // you generate the pointer from the contact's ID value and constants defined in
-                // android.provider.ContactsContract.Contacts.
-                Utils.hasHoneycomb() ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID,
-
-                Contacts.LAST_TIME_CONTACTED,
-
-                // The sort order column for the returned Cursor, used by the AlphabetIndexer
-                SORT_ORDER,
+                ContactsContract.Groups._ID,
+                ContactsContract.Groups.TITLE,
+                ContactsContract.Groups.ACCOUNT_NAME,
+                ContactsContract.Groups.SUMMARY_COUNT,
+                ContactsContract.Groups.NOTES,
+                ContactsContract.Groups.AUTO_ADD
         };
 
         // The query column numbers which map to each value in the projection
-        final static int ID = 1;  // index 1 so as to be consistant with the groupQuery ID column
-        final static int LOOKUP_KEY = 2;
-        final static int DISPLAY_NAME = 3;
-        final static int PHOTO_THUMBNAIL_DATA = 4;
-        final static int LAST_TIME_CONTACTED = 5;
-        final static int SORT_KEY = 6;
+        final static int ID = 0;  // index 1 so as to be consistant with the groupQuery ID column
+        final static int TITLE = 1;
+        final static int ACCOUNT_NAME = 2;
+        final static int MEMBER_COUNT = 3;
+        final static int NOTES = 4;
+        final static int AUTO_ADD = 5;
     }
 
 
+    private void getGroupStats(){
+        getLoaderManager().restartLoader(GroupsListStatsQuery.QUERY_ID, null, this);
+    }
+    public interface GroupsListStatsQuery {
+
+        // An identifier for the loader
+        final static int QUERY_ID = 314;
+
+        // A content URI for the Contacts table
+        final static Uri CONTENT_URI = ContactStatsContentProvider.CONTACT_STATS_URI;
 
 
+        @SuppressLint("InlinedApi")
+        final static String SELECTION = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                + " = ?";
 
-    /*
-    * Start an external app for picking a contact.
-     */
-    private void addContactToGroup() {
+        final static String[] ARGS = {ContactInfo.group_lookup_key};
 
-        final Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
 
-        startActivityForResult(intent, PICK_CONTACT_REQUEST);
+        // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
+        // sort key allows for localization. In earlier versions. use the display name as the sort
+        // key.
+        @SuppressLint("InlinedApi")
+        final static String SORT_ORDER = ContactStatsContract.TableEntry.KEY_CONTACT_NAME
+                + " ASC";
+
+        final static String[] PROJECTION = null; /*{
+                ContactStatsContract.TableEntry.KEY_CONTACT_ID,
+                ContactStatsContract.TableEntry.KEY_CONTACT_NAME,
+                ContactStatsContract.TableEntry.KEY_MEMBER_COUNT,
+                ContactStatsContract.TableEntry.KEY_PRIMARY_BEHAVIOR,
+                ContactStatsContract.TableEntry.KEY_EVENT_INTERVAL_LIMIT
+        };*/
+
+        // The query column numbers which map to each value in the projection
+        final static int GROUP_ID = ContactStatsContract.TableEntry.CONTACT_ID;  // index 1 so as to be consistant with the groupQuery ID column
+        final static int NAME = ContactStatsContract.TableEntry.CONTACT_NAME;
+        final static int MEMBER_COUNT = ContactStatsContract.TableEntry.MEMBER_COUNT;
+        final static int PRIMARY_BEHAVIOR = ContactStatsContract.TableEntry.PRIMARY_BEHAVIOR;
+        final static int EVENT_INTERVAL_LIMIT = ContactStatsContract.TableEntry.EVENT_INTERVAL_LIMIT;
     }
 
 
-    /*
-    *  When the contact choosing activity concludes, we grab the contact uri and make it a member
-    *  of the current group.
-     */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode,
-                                 Intent data) {
-        if (requestCode == PICK_CONTACT_REQUEST) {
-            if (resultCode == Activity.RESULT_OK) {
-                // A contact was picked.  Here we will just display it
-                // to the user.
-                Uri uri = data.getData();
-
-                // get the contact lookupKey
-                List<String> path = uri.getPathSegments();
-                String contactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
-
-                String contactID = uri.getLastPathSegment();
-
-                ContactInfo contactInfo = new ContactInfo("",contactLookupKey,
-                        Long.parseLong(contactID) );
-
-                // remove the contact from the group
-                GroupMembership groupMembership = new GroupMembership(getActivity());
-
-                // if the remove action fails, throw out a Toast for the user
-                if (groupMembership.setContactGroupMembership(mGroupID, contactInfo)) {
-                    // notify user of the bad contact
-                    Toast.makeText(getActivity(), R.string.menu_accept,
-                            Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        }
-    }
 }

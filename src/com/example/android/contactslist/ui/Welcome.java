@@ -66,8 +66,17 @@ public class Welcome extends FragmentActivity {
         }
 
 
-        startNextActivity();
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        startNextActivity();
+
+    }
+
 
     private void startNextActivity(){
         final Intent intent = new Intent().setClass(mContext, ContactsListActivity.class);
