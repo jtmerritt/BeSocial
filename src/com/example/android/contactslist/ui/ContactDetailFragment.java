@@ -2237,20 +2237,20 @@ Set the FractionView with appropriate time data
             switch (eventInfo.getEventClass()){
                 case EventInfo.EMAIL_CLASS:
                     // set icon
-                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_email));
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_email_white_24dp));
                     break;
                 case EventInfo.PHONE_CLASS:
-                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_call));
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_call_white_24dp));
                     // set text
                     message_view.setText(minute + " mins " + second + " secs");
                     break;
                 case EventInfo.SMS_CLASS:
-                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_chat));
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_textsms_white_24dp));
 
                     break;
                 case EventInfo.MEETING_CLASS:
                     // set icon
-                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_map));
+                    eventTypeIconView.setImageDrawable(getResources().getDrawable(R.drawable.ic_place_white_24dp));
                     // set text
                     message_view.setText(minute + " mins " + second + " secs");
 
@@ -2418,12 +2418,12 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
         ImageView rlIcon5 = new ImageView(getActivity());
 
         //rlIcon1.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_add));
-        rlIcon2.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_call));
-        rlIcon3.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_chat));
-        rlIcon4.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_email));
-        rlIcon5.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_edit));
+        rlIcon2.setImageDrawable(getResources().getDrawable(R.drawable.ic_call_white_24dp));
+        rlIcon3.setImageDrawable(getResources().getDrawable(R.drawable.ic_textsms_white_24dp));
+        rlIcon4.setImageDrawable(getResources().getDrawable(R.drawable.ic_email_white_24dp));
+        rlIcon5.setImageDrawable(getResources().getDrawable(R.drawable.ic_edit_white_24dp));
 
-        rlIcon1.setImageResource(R.drawable.ic_action_add);
+        rlIcon1.setImageResource(R.drawable.ic_add_white_24dp);
 
         //FloatingActionMenu.MenuStateChangeListener menuStateChangeListener = new FloatingActionMenu.MenuStateChangeListener.
 

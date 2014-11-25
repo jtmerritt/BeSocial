@@ -283,7 +283,6 @@ public class ContactsListFragment extends ListFragment implements
 
                         mode.finish(); // Action picked, so close the CAB
                         return true;
-                    case R.id.menu_back:
                     default:
                         mode.finish(); // Action picked, so close the CAB
                         Toast.makeText(getActivity(), "End Action Mode",

@@ -19,31 +19,31 @@
     <item
         android:id="@+id/menu_imageButton_call"
         android:title="@string/menu_new_call"
-        android:icon="@drawable/ic_action_call"
+        android:icon="@drawable/ic_call_black_36dp"
         android:showAsAction="always"/>
 
     <item
         android:id="@+id/menu_imageButton_chat"
         android:title="@string/menu_new_sms"
-        android:icon="@drawable/ic_action_chat"
+        android:icon="@drawable/ic_textsms_black_36dp"
         android:showAsAction="always"/>
 
     <item
         android:id="@+id/menu_imageButton_email"
         android:title="@string/menu_new_email"
-        android:icon="@drawable/ic_action_email"
+        android:icon="@drawable/ic_email_black_36dp"
         android:showAsAction="always"/>
 
     <item
         android:id="@+id/menu_imageButton_new_event"
         android:title="@string/menu_new_event"
-        android:icon="@drawable/ic_action_new_event"
+        android:icon="@drawable/ic_add_black_36dp"
         android:showAsAction="ifRoom"/>
 
     <item
             android:id="@+id/menu_edit_contact"
             android:title="@string/menu_edit_contact"
-            android:icon="@drawable/ic_action_edit"
+            android:icon="@drawable/ic_edit_black_36dp"
             android:showAsAction="ifRoom"/>
 
     <item
@@ -56,6 +56,6 @@
     <item
         android:id="@+id/run_test"
         android:title="Test"
-        android:icon="@drawable/ic_action_accept"
+        android:icon="@drawable/ic_action_statistics"
         android:showAsAction="ifRoom"/>
 </menu>

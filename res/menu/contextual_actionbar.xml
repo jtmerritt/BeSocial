@@ -21,16 +21,11 @@
          collapseActionView in the showAsAction attribute. -->
 
 
-    <item
-        android:id="@+id/menu_back"
-        android:title="@string/menu_back"
-        android:icon="@drawable/ic_action_back"
-        android:showAsAction="always"/>
 
     <item
             android:id="@+id/menu_remove_contact"
             android:title="@string/menu_remove_contact"
-            android:icon="@drawable/ic_action_remove"
+            android:icon="@drawable/ic_remove_circle_outline_white_36dp"
             android:showAsAction="always"/>
 
 </menu>

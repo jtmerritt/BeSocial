@@ -125,7 +125,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/update_notes_icon"
-                            android:src="@drawable/ic_action_save"
+                            android:src="@drawable/ic_save_black_24dp"
                             android:alpha="0.5"
                             android:importantForAccessibility="yes"
                             android:layout_gravity="center_horizontal"

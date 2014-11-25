@@ -2,6 +2,20 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
+- redo data import to better support a per contact update
+- Update contact stats when a communication happens
++ Create class to estimate contact due date
++ Create routine for producing the long duration statistics:
+    - average time
+    - score over time
+- Have a nightly database maintenance routine
+- Method to edit contact settings
+- figure out what to do with the event notes
+
+- make groups editor show mosaic of contact photos of it's photo
+- re-evaluate what needs to be saved when a fragment goes into the background
+ - may be related to crashes
+
 - background images
     - from text messages
     - internet source
@@ -9,18 +23,10 @@ ___________________________________________________________________
         - facebook
     - display generic photo
 
-- activity for creating groups
-
 - make cards interface
-- figure out what to do with the event notes
 - flag for manually entered events?
 
 - contact detail plant animation
-- Update contact stats when a communication happens
-+ Create class to estimate contact due date
-+ Create routine for producing the long duration statistics:
-    - average time
-    - score over time
 
 - Access gmail through official API: https://developers.google.com/gmail/android/
 - Use ActionMode.callback to manually select multiple contacts to remove from a group
@@ -29,11 +35,10 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
-- Have a nightly database maintenance routine
-- Method to edit contact settings
 
 
 ***Bug List***
+- OnClick listener in the groupsEditor interface is broken
 - crashing when contact notes are updated
 - Crashing when flipping contacts
 - Is it a problem that the method that creates the master contact list for the update, is also
@@ -99,6 +104,8 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- activity for creating groups
+
 - view the last 6 communications
 
 + Event Entry Fragment

@@ -526,7 +526,7 @@
         <ImageView
             android:layout_width="@dimen/fab_icon_size"
             android:layout_height="@dimen/fab_icon_size"
-            android:src="@drawable/ic_action_view_as_list"
+            android:src="@drawable/ic_place_white_24dp"
             android:layout_gravity="center"
             android:duplicateParentState="true"/>
 

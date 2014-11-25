@@ -57,6 +57,7 @@
     </style>
 
 
+
     <style name="callDuration" parent="@android:style/TextAppearance.Small">
         <item name="android:fontFamily">sans-serif-light</item>
         <item name="android:textIsSelectable">true</item>
@@ -69,6 +70,7 @@
         <item name="android:alpha">10</item>
     </style>
 
+
     <style name="contactNameTitle" parent="@android:style/TextAppearance.Large">
         <item name="android:textSize">20sp</item>
         <item name="android:fontFamily">sans-serif</item>
@@ -76,6 +78,9 @@
     </style>
 
     <style name="addressButton"/>
+
+
+
 
     <!-- the theme applied to the application or activity -->
     <style name="CustomActionBarTheme"
@@ -86,7 +91,8 @@
     <!-- ActionBar styles -->
     <style name="MyActionBar"
         parent="@android:style/Widget.Holo.ActionBar">
-        <!--<item name="android:windowActionBarOverlay">true</item>-->
+        <item name="android:windowActionBarOverlay">false</item>
+
         <item name="android:colorBackground">@color/primary_500</item>
         <item name="android:colorForeground">@color/primary_500</item>
         <item name="android:color">@color/primary_500</item>
