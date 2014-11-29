@@ -110,6 +110,17 @@ public class WordCloudView extends View {
     }
 
 
+
+
+    public void clear(){
+        if(wordList.size() > 0){
+            wordList.clear();
+        }
+        invalidate();
+    }
+
+
+
     public void setWordList(ArrayList<Map.Entry<String,Integer>> word_list){
 
         classIsSet = true;
@@ -135,7 +146,7 @@ public class WordCloudView extends View {
         int i = 0;
 
         for(Map.Entry<String,Integer> entry:word_list){
-            Log.d(TAG, "Setting word");
+            //Log.d(TAG, "Setting word");
 
             setWord(entry.getKey(), entry.getValue(), colors[i%5]);
 
@@ -217,7 +228,7 @@ public class WordCloudView extends View {
 
         }while((i < MAX_PLACEMENT_ITERATIONS) && (collidesWithWordList(word)));
 
-        Log.d(TAG, "Word moves: " + Integer.toString(i));
+        //Log.d(TAG, "Word moves: " + Integer.toString(i));
 
         wordList.add(word);
     }
@@ -257,75 +268,79 @@ public class WordCloudView extends View {
 
     protected void onDraw(Canvas canvas) {
 
-       Log.d(TAG, "On Draw");
+       //Log.d(TAG, "On Draw");
         int i, y_pos;
 
        setPadding(7, 7, 7, 7);
 
+
         //canvas.drawLine(0,0,width, 0,mRedPaint);
         //canvas.drawLine(0,height-5,width, height-5,mRedPaint);
 
+        if(wordList.size() > 0 ) {
 
-        switch(primary_display%2){
-            case 0:
-            default:
-                for(Word entry:wordList){
-                    //canvas.drawRect(entry.box, mRedPaint);
 
-                    // set the display text
-                    //canvas.drawTextOnPath(entry.string, entry.getPath(),
-                    //       0, entry.getTextHeight(), entry.getPaint());
+            switch (primary_display % 2) {
+                case 0:
+                default:
+                    for (Word entry : wordList) {
+                        //canvas.drawRect(entry.box, mRedPaint);
 
-                    canvas.drawText(entry.string,
-                            entry.xLocation + (int)(word.textSize/10),
-                            entry.yLocation + (int)(entry.textSize*0.9),
-                            entry.getPaint());
-                }
-                break;
-            case 1:
-                y_pos = 10;
-                for(i=0; i< wordList.size();i++){
+                        // set the display text
+                        //canvas.drawTextOnPath(entry.string, entry.getPath(),
+                        //       0, entry.getTextHeight(), entry.getPaint());
 
-                    if(i%2 == 0){
-                        canvas.drawText(wordList.get(i).string,
-                                cx + 20
-                                        - (int)((wordList.get(i).string.toCharArray().length)
-                                        *wordList.get(i).textSize*0.25f),
-                                y_pos + (int)(wordList.get(i).textSize*0.9),
-                                wordList.get(i).getPaint());
-                        y_pos = y_pos + (int)(wordList.get(i).textSize*0.7);
+                        canvas.drawText(entry.string,
+                                entry.xLocation + (int) (word.textSize / 10),
+                                entry.yLocation + (int) (entry.textSize * 0.9),
+                                entry.getPaint());
+                    }
+                    break;
+                case 1:
+                    y_pos = 10;
+                    for (i = 0; i < wordList.size(); i++) {
 
-                    }else {
-
-                        if(i+1 < wordList.size()){
-                            canvas.drawText(wordList.get(i).string + " " + wordList.get(i+1).string,
-                                    cx + 20
-                                            - (int)((wordList.get(i).string.toCharArray().length +
-                                            wordList.get(i+1).string.toCharArray().length + 1)
-                                            *wordList.get(i).textSize*0.25f),
-                                    y_pos + (int)(wordList.get(i).textSize*0.9),
-                                    wordList.get(i).getPaint());
-                            i++;
-                        }else{
+                        if (i % 2 == 0) {
                             canvas.drawText(wordList.get(i).string,
                                     cx + 20
-                                            - (int)((wordList.get(i).string.toCharArray().length)
-                                            *wordList.get(i).textSize*0.25f),
-                                    y_pos + (int)(wordList.get(i).textSize*0.9),
+                                            - (int) ((wordList.get(i).string.toCharArray().length)
+                                            * wordList.get(i).textSize * 0.25f),
+                                    y_pos + (int) (wordList.get(i).textSize * 0.9),
                                     wordList.get(i).getPaint());
+                            y_pos = y_pos + (int) (wordList.get(i).textSize * 0.7);
+
+                        } else {
+
+                            if (i + 1 < wordList.size()) {
+                                canvas.drawText(wordList.get(i).string + " " + wordList.get(i + 1).string,
+                                        cx + 20
+                                                - (int) ((wordList.get(i).string.toCharArray().length +
+                                                wordList.get(i + 1).string.toCharArray().length + 1)
+                                                * wordList.get(i).textSize * 0.25f),
+                                        y_pos + (int) (wordList.get(i).textSize * 0.9),
+                                        wordList.get(i).getPaint());
+                                i++;
+                            } else {
+                                canvas.drawText(wordList.get(i).string,
+                                        cx + 20
+                                                - (int) ((wordList.get(i).string.toCharArray().length)
+                                                * wordList.get(i).textSize * 0.25f),
+                                        y_pos + (int) (wordList.get(i).textSize * 0.9),
+                                        wordList.get(i).getPaint());
+                            }
+
+
+                            y_pos = y_pos + (int) (wordList.get(i).textSize * 0.7);
+
                         }
 
 
-                        y_pos = y_pos + (int)(wordList.get(i).textSize*0.7);
-
                     }
+                    break;
 
-
-                }
-                break;
-
+            }
+            primary_display++;
         }
-        primary_display++;
 
     }
 

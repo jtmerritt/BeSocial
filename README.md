@@ -36,8 +36,12 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
 
+**** Need Help ****
+- Convert project to Gradle
 
 ***Bug List***
+- Blur.fastblur sometimes crashes after coming back to the app through the lockscreen
+- the runnable thread at the end of loading the background image crashes the app
 - OnClick listener in the groupsEditor interface is broken
 - crashing when contact notes are updated
 - Crashing when flipping contacts

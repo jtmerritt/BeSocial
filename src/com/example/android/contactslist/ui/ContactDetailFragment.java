@@ -289,23 +289,24 @@ public class ContactDetailFragment extends Fragment implements
             List<String> path = mContactUri.getPathSegments();
             mContactLookupKey = path.get(path.size() - 2);  // the lookup key is the second element in
 
-            // Get a bunch of data using the loaderManager
+            // Get the contact name and photo using the loaderManager
             setBasicContactInfo();
-
-            // get the contact stats from the database and set the times for the fraction view
-            getContactStats();
 
             // fetch basic contact info with queries based on contactLookupKey
             getVoiceNumber();
             getSMSNumber();
             getEmailAddress();
+            getContactNote();
 
-            if(lookBack_loaded == false) {
-                getContactDetailEventLookBack();
-                lookBack_loaded = true;
+
+            // get the contact stats from the database and set the times for the fraction view
+            getContactStats();
+
+
+            if(!wordCloudView.isSet()){
+                displayWordCloud();
             }
 
-            getContactNote();
 
         } else {
             // If contactLookupUri is null, then the method was called when no contact was selected
@@ -477,13 +478,11 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
-
-        mScrollView = (ObservableScrollView) detailView.findViewById(R.id.scrollView);
-
-
         contactDetailChartView = new ContactDetailChartView(mContext, detailView);
         contactDetailChartView.makeLineChart(R.id.tiny_chart);
 
+
+        mScrollView = (ObservableScrollView) detailView.findViewById(R.id.scrollView);
 
         /*
         This call to the scrollViewListener brings out the exposed onScrollChanged() method
@@ -532,9 +531,22 @@ public class ContactDetailFragment extends Fragment implements
                 mScrollingImageContactHeaderView.updateScroll(parallax);
 
                 //wordCloud Loading
-                if(!wordCloudView.isSet() && y > 50){
+                /*if(!wordCloudView.isSet() && y > 50){
                     displayWordCloud();
+                }*/
+
+
+                // load the look back on a scroll trigger
+                // when the lookback loads as part of setContact, the app crashes
+                // if the user flips to the next contact too fast.
+                // There is an attempt to run something on the UI thread, wich is gone.
+                // But if the user is scrolling down, the user is less
+                // likely to be flipping to the side
+                if(lookBack_loaded == false && y > 50) {
+                    getContactDetailEventLookBack();
+                    lookBack_loaded = true;
                 }
+
 
                 //message stats Loading
                 if(!message_stats_loaded && y > 450){
@@ -544,7 +556,7 @@ public class ContactDetailFragment extends Fragment implements
                 }
 
                 // chart loading
-                if(!contactDetailChartView.isSet() && y > 900){
+                if(!contactDetailChartView.isSet() && y > 450){
                     getContactDetailChart();
                 }
 
@@ -571,8 +583,6 @@ public class ContactDetailFragment extends Fragment implements
 
         setFloatingActionMenu();
 
-
-
         return detailView;
     }
 
@@ -583,20 +593,134 @@ public class ContactDetailFragment extends Fragment implements
         // If not being created from a previous state
         if (savedInstanceState == null) {
             // Sets the argument extra as the currently displayed contact
-            setContact(getArguments() != null ?
+            //setContact(getArguments() != null ?
+                    //(Uri) getArguments().getParcelable(EXTRA_CONTACT_URI) : null);
+
+            mContactUri =(getArguments() != null ?
                     (Uri) getArguments().getParcelable(EXTRA_CONTACT_URI) : null);
         } else {
             // If being recreated from a saved state, sets the contact from the incoming
             // savedInstanceState Bundle
-            setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
+            mContactUri = (Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI);
+            //setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI));
 
             mNumMonthsBackForMessageStats = savedInstanceState.getInt(EXTRA_NUM_MONTHS_BACK);
         }
 
 
-
         // Inflates the view containers with the new fragment.
         //mActionLayoutContainer.addView(buildActionLayout());
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // set the contact info as soon as we come into view
+        // refreshes the information
+        setContact(mContactUri);
+    }
+
+
+    /**
+     * When the Fragment is being saved in order to change activity state, save the
+     * currently-selected contact.
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Saves the contact Uri
+        outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
+
+        //save the display state of the stats
+        outState.putInt(EXTRA_NUM_MONTHS_BACK, mNumMonthsBackForMessageStats);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // When "edit" menu option selected
+            case R.id.menu_edit_contact:
+                startContactEdit();
+                return true;
+
+            case R.id.menu_imageButton_call:
+                startPhoneCall();
+                break;
+
+            case R.id.menu_imageButton_chat:
+                startSMS();
+                break;
+
+            case R.id.menu_imageButton_email:
+                startEmail();
+                break;
+
+            case R.id.menu_imageButton_new_event:
+                startNewEntry();
+                break;
+            case R.id.run_interval_stats:
+                runIntervalStats();
+                break;
+            case R.id.run_test:
+                //displayWordCloud();
+                break;
+            default:
+                // Display the fragment as the main content.
+                Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
+                // Make it a subactivity so we know when it returns
+                startActivity(launchPreferencesIntent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+
+    private void startContactEdit() {
+        // Standard system edit contact intent
+        Intent intent = new Intent(Intent.ACTION_EDIT, mContactUri);
+
+        // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
+        // People app doesn't return the user to your app; instead, it displays the People
+        // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
+        // to set a special flag in the extended data for the Intent you send to the People
+        // app. The issue is does not appear in versions prior to Android 4.0. You can use
+        // the flag with any version of the People app; if the workaround isn't needed,
+        // the flag is ignored.
+        intent.putExtra("finishActivityOnSaveCompleted", true);
+
+        // Start the edit activity
+        startActivity(intent);
+    }
+
+    private void runIntervalStats() {
+        mContactStats.setDecay_rate((float)0.5);
+        IntervalStats intervalStats = new IntervalStats(mContext, mContactStats);
+        intervalStats.getAllEventsForContact();
+        intervalStats.calculateLongStats();
+        mContactStats = intervalStats.getUpdatedContact();
+
+        intervalStats.close();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Inflates the options menu for this fragment
+        inflater.inflate(R.menu.contact_detail_menu, menu);
+
+        // Gets a handle to the "find" menu item
+        mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
+
+        // If contactUri is null the edit menu item should be hidden, otherwise
+        // it is visible.
+        mEditContactMenuItem.setVisible(mContactUri != null);
+
+        // add the last settings menu to the end of the action bar
+        MenuItem settingsItem = menu.add(R.string.action_bar_overflow_settings);
     }
 
     private void setBasicContactInfo(){
@@ -649,105 +773,6 @@ public class ContactDetailFragment extends Fragment implements
         getContactMessageStats();
     }
 
-    /**
-     * When the Fragment is being saved in order to change activity state, save the
-     * currently-selected contact.
-     */
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Saves the contact Uri
-        outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
-
-        //save the display state of the stats
-        outState.putInt(EXTRA_NUM_MONTHS_BACK, mNumMonthsBackForMessageStats);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // When "edit" menu option selected
-            case R.id.menu_edit_contact:
-                startContactEdit();
-                return true;
-
-            case R.id.menu_imageButton_call:
-                startPhoneCall();
-                break;
-
-            case R.id.menu_imageButton_chat:
-                startSMS();
-                break;
-
-            case R.id.menu_imageButton_email:
-                startEmail();
-                break;
-
-            case R.id.menu_imageButton_new_event:
-                startNewEntry();
-                break;
-            case R.id.run_interval_stats:
-                runIntervalStats();
-                break;
-            case R.id.run_test:
-                displayWordCloud();
-                break;
-            default:
-                // Display the fragment as the main content.
-                Intent launchPreferencesIntent = new Intent().setClass(getActivity(), UserPreferencesActivity.class);
-                // Make it a subactivity so we know when it returns
-                startActivity(launchPreferencesIntent);
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void startContactEdit() {
-        // Standard system edit contact intent
-        Intent intent = new Intent(Intent.ACTION_EDIT, mContactUri);
-
-        // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
-        // People app doesn't return the user to your app; instead, it displays the People
-        // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
-        // to set a special flag in the extended data for the Intent you send to the People
-        // app. The issue is does not appear in versions prior to Android 4.0. You can use
-        // the flag with any version of the People app; if the workaround isn't needed,
-        // the flag is ignored.
-        intent.putExtra("finishActivityOnSaveCompleted", true);
-
-        // Start the edit activity
-        startActivity(intent);
-    }
-
-    private void runIntervalStats() {
-        mContactStats.setDecay_rate((float)0.5);
-        IntervalStats intervalStats = new IntervalStats(mContext, mContactStats);
-        intervalStats.getAllEventsForContact();
-        intervalStats.calculateLongStats();
-        mContactStats = intervalStats.getUpdatedContact();
-
-        intervalStats.close();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
-        // Inflates the options menu for this fragment
-        inflater.inflate(R.menu.contact_detail_menu, menu);
-
-        // Gets a handle to the "find" menu item
-        mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
-
-        // If contactUri is null the edit menu item should be hidden, otherwise
-        // it is visible.
-        mEditContactMenuItem.setVisible(mContactUri != null);
-
-        // add the last settings menu to the end of the action bar
-        MenuItem settingsItem = menu.add(R.string.action_bar_overflow_settings);
-    }
-
-
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Long start_date;
@@ -756,7 +781,7 @@ public class ContactDetailFragment extends Fragment implements
         String where;
 
         switch (id) {
-            // main queries to load the required information
+            // GET BASIC INFO: name
             case ContactDetailQuery.QUERY_ID:
                 // This query loads main contact details, see
                 // ContactDetailQuery for more information.
@@ -766,43 +791,7 @@ public class ContactDetailFragment extends Fragment implements
                         null,//ContactDetailQuery.ARGS,
                         null);
 
-
-            case ContactSMSLogQuery.QUERY_ID:
-                // This query loads SMS logs
-
-                // specify the date range to query
-                cal = Calendar.getInstance();
-                end_date = cal.getTimeInMillis();
-
-                // lets look one year back
-                cal.add(Calendar.YEAR, -1);
-
-                start_date = cal.getTimeInMillis();
-
-                String[] whereArgsSMS = {Long.toString(start_date), Long.toString(end_date)};
-
-
-                return new CursorLoader(getActivity(),
-                        ContactSMSLogQuery.SMSLogURI,
-                        ContactSMSLogQuery.PROJECTION,
-                        ContactSMSLogQuery.WHERE,
-                        whereArgsSMS,
-                        ContactSMSLogQuery.SORT_ORDER);
-
-
-            case ContactStatsQuery.QUERY_ID:
-                // This query loads data from ContactStatsContentProvider.
-
-                //prepare the shere and args clause for the contact lookup key
-                where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
-                String[] whereArgs ={ mContactLookupKey };
-
-                return new CursorLoader(getActivity(),
-                        ContactStatsContentProvider.CONTACT_STATS_URI,
-                        null,
-                        where, whereArgs, null);
-
-
+            // GET BASIC INFO: phone number
             case ContactVoiceNumberQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
                 // https://android.googlesource.com/platform/development/+/gingerbread/samples/ApiDemos/src/com/example/android/apis/view/List7.java
@@ -824,6 +813,8 @@ public class ContactDetailFragment extends Fragment implements
                         null,
                     ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
                     */
+
+            // GET BASIC INFO: SMS number
             case ContactSMSNumberQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
 
@@ -837,6 +828,7 @@ public class ContactDetailFragment extends Fragment implements
                         new String[] { mContactLookupKey, Integer.toString(ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
+            // GET BASIC INFO: email address
             case ContactEmailAddressQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
 
@@ -849,6 +841,7 @@ public class ContactDetailFragment extends Fragment implements
                         new String[] { mContactLookupKey },
                         ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY + " DESC");
 
+            // GET BASIC INFO: contact notes
             case ContactNotesQuery.QUERY_ID:
                 // get all the phone numbers for this contact, sorted by whether it is super primary
                 // http://stackoverflow.com/questions/12524621/how-to-get-note-value-from-contact-book-in-android
@@ -865,6 +858,74 @@ public class ContactDetailFragment extends Fragment implements
                         where,
                         noteWhereParams,
                         null);
+
+
+            // Fraction View & Important for Stats View
+            case ContactStatsQuery.QUERY_ID:
+                // This query loads data from ContactStatsContentProvider.
+
+                //prepare the shere and args clause for the contact lookup key
+                where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+                String[] whereArgs ={ mContactLookupKey };
+
+                return new CursorLoader(getActivity(),
+                        ContactStatsContentProvider.CONTACT_STATS_URI,
+                        null,
+                        where, whereArgs, null);
+
+            // Get photo from file system based on contact's name
+            case ContactDetailPhotoQuery.QUERY_ID:
+
+                String[] projection=new String[]{MediaStore.Images.ImageColumns._ID,
+                        MediaStore.Images.ImageColumns.DATA,
+                        MediaStore.Images.ImageColumns.DATE_TAKEN};
+
+                //prepare the shere and args clause for the contact lookup key
+                where = MediaStore.Images.ImageColumns.TITLE + " Like ?";
+
+                // TODO replace with query of other photo sources
+                StringTokenizer stringTokenizer= new StringTokenizer(mContactNameString);
+
+                String[] whereArgs4 ={stringTokenizer.nextToken() + "%"};
+
+
+                return new CursorLoader(getActivity(),
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        where, whereArgs4,
+                        MediaStore.Images.ImageColumns.DATE_TAKEN+" DESC");
+
+
+
+
+
+
+            //Word Cloud
+            // GET RAW SMS LOGS for time range
+            case ContactSMSLogQuery.QUERY_ID:
+                // This query loads SMS logs
+
+                // specify the date range to query
+                cal = Calendar.getInstance();
+                end_date = cal.getTimeInMillis();
+
+                // lets look one year back
+                cal.add(Calendar.YEAR, -1);
+
+                start_date = cal.getTimeInMillis();
+
+                String[] whereArgsSMS = {Long.toString(start_date), Long.toString(end_date)};
+
+
+                // Results are processed into word cloud
+                return new CursorLoader(getActivity(),
+                        ContactSMSLogQuery.SMSLogURI,
+                        ContactSMSLogQuery.PROJECTION,
+                        ContactSMSLogQuery.WHERE,
+                        whereArgsSMS,
+                        ContactSMSLogQuery.SORT_ORDER);
+
+
 
             case ContactEventLogStatsQuery.QUERY_ID:
                 // This query loads data from SocialEventsContentPRovider.
@@ -906,26 +967,7 @@ public class ContactDetailFragment extends Fragment implements
                             where, whereArgs3,
                             SocialEventsContract.TableEntry.KEY_EVENT_TIME + " ASC");
                 }
-            case ContactDetailPhotoQuery.QUERY_ID:
 
-                String[] projection=new String[]{MediaStore.Images.ImageColumns._ID,
-                        MediaStore.Images.ImageColumns.DATA,
-                        MediaStore.Images.ImageColumns.DATE_TAKEN};
-
-                //prepare the shere and args clause for the contact lookup key
-                where = MediaStore.Images.ImageColumns.TITLE + " Like ?";
-
-                // TODO replace with query of other photo sources
-                StringTokenizer stringTokenizer= new StringTokenizer(mContactNameString);
-
-                String[] whereArgs4 ={stringTokenizer.nextToken() + "%"};
-
-
-                return new CursorLoader(getActivity(),
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        projection,
-                        where, whereArgs4,
-                        MediaStore.Images.ImageColumns.DATE_TAKEN+" DESC");
 
             case ContactChartEventLogQuery.QUERY_ID:
                 // This query loads data from SocialEventsContentPRovider.
@@ -1007,10 +1049,6 @@ public class ContactDetailFragment extends Fragment implements
                     // name field based on OS version.
                     mContactNameString = data.getString(ContactDetailQuery.DISPLAY_NAME);
 
-                    // retrieve the background image for the contact detail, based on contact name
-                    getContactDetailImage();
-
-
                     // if there is a two pane view then mContactNameView is null
                     // and we should set the title of the activity in the action bar
                     if (mContactNameView != null) {
@@ -1024,42 +1062,10 @@ public class ContactDetailFragment extends Fragment implements
                         getActivity().setTitle(mContactNameString);
                     }
 
-                    //  display other info relating to contact identity
-                    // such as the chart and stats
+                    // retrieve the background image for the contact detail, depends on contact name
+                    getContactDetailImage();
                 }
                 break;
-
-            // being the second case of this query_ID, this section will not get called.
-            //
-            case 88://LoadContactLogsTask.ContactCallLogQuery.QUERY_ID:
-                if (data != null && data.moveToFirst()) {
-                    // This query loads the contact call log details for the contact. More than
-                    // one log is possible, so move each one to a
-                    // LinearLayout in a Scrollview so multiple addresses can
-                    // be scrolled by the user.
-                }
-                break;
-            case ContactSMSLogQuery.QUERY_ID:
-                // check to see if the cursor contains any entries
-                if (data != null && data.moveToFirst()) {
-                    makeWordCloud(data);
-
-                }
-                break;
-            case ContactStatsQuery.QUERY_ID:
-
-                // set the content of mContactStats
-                if(data != null && data.moveToFirst()){
-                    mContactStats = ContactStatsContract.getContactInfoFromCursor(data);
-                }
-
-                // check to make sure the contact object exists
-                if(mContactStats != null){
-                    // set the fractionView with the contact times from mContactStats
-                    setFractionView(mContactStats);
-                }
-
-                    break;
             case ContactVoiceNumberQuery.QUERY_ID:
                 if(data.moveToFirst()){
                     //Select the first phone number in the list of phone numbers sorted by super_primary
@@ -1103,42 +1109,28 @@ public class ContactDetailFragment extends Fragment implements
                 }
                 break;
 
-            case ContactEventLogStatsQuery.QUERY_ID:
+            // Fraction View & Stats View
+            case ContactStatsQuery.QUERY_ID:
 
-                if (mContactStats != null) {
+                // set the content of mContactStats
+                if(data != null && data.moveToFirst()){
+                    mContactStats = ContactStatsContract.getContactInfoFromCursor(data);
+                }
 
-                    if(data != null && data.moveToFirst()){
-                        tallyStatsFromEventCursor(data);
-
-                    }else {
-                        zeroContactStatFields();
-                    }
-
-                    // put the stats up on display
-                    displayContactStatsInfo();
-
-                    //set the subtitle of the view based on the number of months
-                    switch (mNumMonthsBackForMessageStats) {
-                        case 1:
-                            mDetailsSubtitleView.setText(R.string.one_month_of_data);
-
-                            break;
-                        case 6:
-                            mDetailsSubtitleView.setText(R.string.six_months_of_data);
-
-                            break;
-                        default:
-                            mDetailsSubtitleView.setText(R.string.all_data);
-                    }
-
+                // check to make sure the contact object exists
+                if(mContactStats != null){
+                    // set the fractionView with the contact times from mContactStats
+                    setFractionView(mContactStats);
                 }
 
                 break;
 
+
             case ContactDetailPhotoQuery.QUERY_ID:
 
-                if(data.moveToFirst())
+                if(data != null && data.moveToFirst())
                 {
+                    //TODO be smarter over which photo is chosen
                     final String path=data.getString(1);
 
                     new Thread(new Runnable() {
@@ -1167,6 +1159,8 @@ public class ContactDetailFragment extends Fragment implements
                                             * ((float) screenWidth) /
                                             ( float) blurredBackgroundImage.getWidth()), false);
 
+
+                            // TODO figure out why starting the UI thread runnable crashes the program
                             getActivity().runOnUiThread(new Runnable() {
 
                                 @Override
@@ -1197,10 +1191,56 @@ public class ContactDetailFragment extends Fragment implements
 
                 break;
 
+
+            //Word Cloud
+            case ContactSMSLogQuery.QUERY_ID:
+                // check to see if the cursor contains any entries
+                if (data != null && data.moveToFirst()) {
+                    makeWordCloud(data);
+
+                }
+                break;
+
+
+
+            case ContactEventLogStatsQuery.QUERY_ID:
+
+                // this display uses the mContactStats as a data repository
+                if (mContactStats != null) {
+
+                    if(data != null && data.moveToFirst()){
+                        tallyStatsFromEventCursor(data);
+
+                    }else {
+                        zeroContactStatFields();
+                    }
+
+                    // put the stats up on display
+                    displayContactStatsInfo();
+
+                    //set the subtitle of the view based on the number of months
+                    switch (mNumMonthsBackForMessageStats) {
+                        case 1:
+                            mDetailsSubtitleView.setText(R.string.one_month_of_data);
+
+                            break;
+                        case 6:
+                            mDetailsSubtitleView.setText(R.string.six_months_of_data);
+
+                            break;
+                        default:
+                            mDetailsSubtitleView.setText(R.string.all_data);
+                    }
+
+                }
+
+                break;
+
+
+
             case ContactChartEventLogQuery.QUERY_ID:
 
-                if (mContactStats != null &&
-                        data != null &&
+                if ( data != null &&
                         data.moveToFirst() ){
                     // create an instance of the Events Contract for proper cursor interpretation
                     SocialEventsContract sec = new SocialEventsContract(mContext);
@@ -1294,7 +1334,12 @@ public class ContactDetailFragment extends Fragment implements
 
                     //grab only those events which match the current contact
                     final ArrayList<EventInfo> eventList =
-                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(mContactStats);
+                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(
+                                    /*mContactStats*/
+                            new ContactInfo(mContactNameString, mContactLookupKey,
+                                    //TODO the ID (below) may not be correct, but it probably does not matter for this word cloud
+                                    Long.parseLong(mContactUri.getLastPathSegment()))
+                            );
 
                     gatherSMSLog.closeSMSLog();
 
@@ -1313,6 +1358,9 @@ public class ContactDetailFragment extends Fragment implements
 
                         @Override
                         public void run() {
+                            // clear the word cloud, just in case this is a second run
+                            wordCloudView.clear();
+
                             // end by running the final method of the activity
                             //Now send the list to the word cloud generator
                             wordCloudView.setWordList(word_list);
@@ -2542,7 +2590,7 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
 
 
     private void startEditNotes() {
-        editEventNotesTextDialog();
+        editNotesTextDialog();
         /*
         Intent intent = new Intent(mContext, NotesEditorActivity.class);
         intent.setData(mContactUri);
@@ -2562,7 +2610,7 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
     }
 
 
-    private void editEventNotesTextDialog(){
+    private void editNotesTextDialog(){
 
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -2630,7 +2678,6 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             //Update the view
             mNotesView.setText(mContactNotes);
 
-            if(mContactStats != null){
                 new Thread(new Runnable() {
 
                     @Override
@@ -2641,11 +2688,16 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
                                 new ContactNotesInterface(mContext);
 
                         int updateCount =
-                                mContactNotesInterface.setContactNotes(mContactStats.getIDString(),
+                                mContactNotesInterface.setContactNotes(mContactLookupKey,
                                         mContactNotes);
 
                         final boolean insertComplete = updateCount > 0;
 
+                        if(insertComplete){
+
+                        }
+
+                        /*
                         getActivity().runOnUiThread(new Runnable() {
 
                             @Override
@@ -2661,13 +2713,12 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
                                 }
                             }
                         });
+                        */
 
                     }
                 }).start();
 
-            }else {
-                Toast.makeText(getActivity(), "Contact ID error", Toast.LENGTH_SHORT).show();
-            }
+
 
         }else {
             Toast.makeText(getActivity(), "Write something down", Toast.LENGTH_SHORT).show();
@@ -2710,9 +2761,13 @@ Return a formatted string for the date header
 
     public void closeFloatingMenu(boolean animated) {
         //first close the menu, animated
-        centerBottomMenu.close(animated);
+        if(centerBottomMenu != null) {
+            centerBottomMenu.close(animated);
+        }
         // toggle the button state
-        fab1.setChecked(false);
+        if(fab1 != null) {
+            fab1.setChecked(false);
+        }
     }
 
     /*
@@ -2740,7 +2795,9 @@ Return a formatted string for the date header
     {
         super.onDestroy();
 
+
         unbindDrawables(detailView); // <---This should be the ID of this fragments (ScreenSlidePageFragment) layout
+        clearFragmentData();
     }
 
     private void unbindDrawables(View view)
@@ -2757,6 +2814,16 @@ Return a formatted string for the date header
             }
             ((ViewGroup) view).removeAllViews();
         }
+    }
+
+    private void clearFragmentData(){
+        mEventLog.clear();
+        mContactNameString = mContactLookupKey =
+                mContactNotes = mVoiceNumber =
+                        mSMSNumber = mEmailAddress = "";
+        mContactStats = null;
+        mLookBackEventLog.clear();
+
     }
 }
 

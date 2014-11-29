@@ -31,7 +31,7 @@ public class ContactNotesInterface {
         return mContactNotes;
     }
 
-    public int setContactNotes(String contact_id_string, String newNotes){
+    public int setContactNotes(String contact_lookup_key, String newNotes){
         date = new Date();
         int updateCount = 0;
         // add notes back to the google contact
@@ -41,8 +41,8 @@ public class ContactNotesInterface {
         ContentValues values = new ContentValues();
 
         values.clear();
-        String noteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
-        String[] noteWhereParams = new String[]{contact_id_string,ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
+        String noteWhere = ContactsContract.Data.LOOKUP_KEY + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+        String[] noteWhereParams = new String[]{contact_lookup_key,ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
         values.put(ContactsContract.CommonDataKinds.Note.NOTE, newNotes);
 
         updateCount = cr.update(ContactsContract.Data.CONTENT_URI, values, noteWhere, noteWhereParams);
