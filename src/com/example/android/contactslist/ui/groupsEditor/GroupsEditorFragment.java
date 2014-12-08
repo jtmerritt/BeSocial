@@ -834,7 +834,7 @@ public class GroupsEditorFragment extends ListFragment implements
                                         public void run() {
                                             // in the UI thread update the group list
                                             // from the database
-                                            //getGroupStats();
+                                            getGroupStats();
 
                                             Toast.makeText(getActivity(),
                                                     Integer.toString(records_updated)

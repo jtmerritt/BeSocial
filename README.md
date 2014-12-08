@@ -6,7 +6,6 @@ ___________________________________________________________________
 - Test XML file import
 - deleting a group in google should delete on app
 - Update contact stats when a communication happens
-    - needs to check back to the marker for the class
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
@@ -53,7 +52,6 @@ ___________________________________________________________________
 - Blur.fastblur sometimes crashes after coming back to the app through the lockscreen
   - http://stackoverflow.com/questions/22144931/scriptintrinsicblur-produces-black-bitmaps
 - the runnable thread at the end of loading the background image crashes the app
-- OnClick listener in the groupsEditor interface is broken
 - crashing when contact notes are updated
 - Crashing when flipping contacts
 - Is it a problem that the method that creates the master contact list for the update, is also
@@ -119,12 +117,10 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- OnClick listener in the groupsEditor interface is broken
 - redo data import to better support a per contact update
-
-- activity for creating groups
-
+- activity for creating group
 - view the last 6 communications
-
 + Event Entry Fragment
     - [done] hook into event database
     - [done] add in human readable date

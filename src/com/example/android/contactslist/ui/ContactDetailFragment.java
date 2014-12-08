@@ -33,16 +33,16 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
-import android.provider.ContactsContract.Data;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.InputType;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
@@ -56,7 +56,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -76,6 +75,7 @@ import com.example.android.contactslist.contactStats.ContactStatsContentProvider
 import com.example.android.contactslist.contactStats.ContactStatsContract;
 import com.example.android.contactslist.contactStats.IntervalStats;
 import com.example.android.contactslist.dataImport.GatherSMSLog;
+import com.example.android.contactslist.dataImport.Imports;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
@@ -574,12 +574,6 @@ public class ContactDetailFragment extends Fragment implements
             @Override
             public void onClick(View view) {
 
-                final AsyncTask<Void, Integer, String> dbImport =
-                        new Imports(null, 3,"", mContext, mContactStats, EventInfo.SMS_CLASS);
-
-                dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-
-
                 Toast.makeText(getActivity(),
                         R.string.next_version, Toast.LENGTH_SHORT).show();
 
@@ -590,8 +584,38 @@ public class ContactDetailFragment extends Fragment implements
 
         setFloatingActionMenu();
 
+
+
+        final SwipeRefreshLayout swipeView = (SwipeRefreshLayout)
+                detailView.findViewById(R.id.swipe_container);
+        swipeView.setColorSchemeResources(R.color.primary_700, R.color.accent_400, R.color.primary_500, R.color.accent_200);
+        swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeView.setRefreshing(true);
+                getContactUpdate();
+
+                (new Handler()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeView.setRefreshing(false);
+                        setContact(mContactUri);
+                    }
+                }, 3000);
+            }
+        });
+        // http://www.survivingwithandroid.com/2014/05/android-swiperefreshlayout-tutorial.html
+
         return detailView;
     }
+
+
+    private void getContactUpdate(){
+        final AsyncTask<Void, Integer, String> dbImport =
+                new Imports(null, 3,"", mContext, mContactStats, EventInfo.ALL_CLASS);
+
+        dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
 
 
     @Override

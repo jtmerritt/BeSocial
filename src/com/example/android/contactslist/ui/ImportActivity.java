@@ -14,8 +14,7 @@ import android.widget.TextView;
 
 
 import com.example.android.contactslist.R;
-import com.example.android.contactslist.dataImport.Updates;
-import com.example.android.contactslist.notification.UpdateNotification;
+import com.example.android.contactslist.dataImport.Imports;
 
 import java.io.IOException;
 import java.io.InputStream;
