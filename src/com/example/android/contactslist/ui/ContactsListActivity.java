@@ -257,6 +257,9 @@ public class ContactsListActivity extends FragmentActivity implements
         }
 
 
+
+
+
     }
 
 
@@ -476,8 +479,17 @@ Send intent for opening the XML file import activity
         //passing the integer ID
         mContactsListFragment.setGroupQuery((int) mGroups.get(pos).getIDLong());
 
-        //update the group's contacts
-        getGroupContactsUpdate(mGroups.get(pos));
+
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //get the default behavior for startup updates
+        final Boolean updateDb = sharedPref.getBoolean("update_db_at_group_contact_list_checkbox_preference_key",
+                false);
+
+        if(updateDb) {
+            //update the group's contacts
+            getGroupContactsUpdate(mGroups.get(pos));
+        }
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(pos, true);
@@ -508,7 +520,7 @@ Send intent for opening the XML file import activity
 
         int i=0;
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         if(intentGroupName == null){
             //Read the preferences to get the default group for display
@@ -531,8 +543,15 @@ Send intent for opening the XML file import activity
                mDrawerList.setItemChecked(i, true);
                setTitle(group.getGroupSummary());
 
-               //update the group's contacts
-               getGroupContactsUpdate(group);
+
+               //get the default behavior for startup updates
+               final Boolean updateDb = sharedPref.getBoolean("update_db_at_group_contact_list_checkbox_preference_key",
+                       false);
+
+               if(updateDb) {
+                   //update the group's contacts
+                   getGroupContactsUpdate(group);
+               }
 
                return;
            }

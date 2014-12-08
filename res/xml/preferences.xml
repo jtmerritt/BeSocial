@@ -29,6 +29,12 @@
         android:defaultValue="false" />
 
 
+    <CheckBoxPreference
+        android:key="update_db_at_group_contact_list_checkbox_preference_key"
+        android:title="@string/update_db_at_group_contact_list_preference_title"
+        android:summary="@string/update_db_at_group_contact_list_preference_Summary"
+        android:defaultValue="false" />
+
     <!--
     <CheckBoxPreference
         android:dependency="update_db_checkbox_preference_key"

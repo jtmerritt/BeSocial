@@ -198,6 +198,12 @@
     <string name="update_db_at_startup_preference_summary"
         >Update communications data when app starts up?</string>
 
+    <string name="update_db_at_group_contact_list_preference_title"
+            >Contacts List Update</string>
+    <string name="update_db_at_group_contact_list_preference_Summary"
+        >Import event data for group when viewing its contact list?</string>
+
+
     <!--Default group -->
     <string name="choose_source_group_list_preference_title"
         >Default Contact Group</string>
