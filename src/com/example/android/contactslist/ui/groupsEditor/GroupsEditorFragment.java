@@ -201,6 +201,7 @@ public class GroupsEditorFragment extends ListFragment implements
         mImageLoader.addImageCache(getActivity().getSupportFragmentManager(), 0.1f);
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -314,7 +315,7 @@ public class GroupsEditorFragment extends ListFragment implements
         // Set up ListView, assign adapter and set some listeners. The adapter was previously
         // created in onCreate().
         setListAdapter(mAdapter);
-        getListView().setOnItemClickListener(this);
+        //getListView().setOnItemClickListener(this);
         getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int scrollState) {
@@ -337,8 +338,6 @@ public class GroupsEditorFragment extends ListFragment implements
             // the content shows in the second pane.
             getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         }
-
-        //getGroupStats();
         loadGoogleGroupsList();
     }
 
@@ -370,6 +369,12 @@ public class GroupsEditorFragment extends ListFragment implements
         mImageLoader.setPauseWork(false);
     }
 
+
+
+    // When the list has check boxes, this adapter click listener is disabled.
+    // But there is a way to get around that: placethe following in the root of the list item layout
+    // android:descendantFocusability="blocksDescendants"
+    // http://stackoverflow.com/questions/6936272/list-item-with-checkbox-not-clickable
     @Override
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         // Gets the Cursor object currently bound to the ListView
@@ -377,7 +382,7 @@ public class GroupsEditorFragment extends ListFragment implements
 
         // Moves to the Cursor row corresponding to the ListView item that was clicked
         cursor.moveToPosition(position);
-
+/*
         // get the id of the group to pass on to the contact list
         final int group_id = cursor.getInt(GroupsListStatsQuery.GROUP_ID);
         final String group_name = cursor.getString(GroupsListStatsQuery.NAME);
@@ -397,6 +402,7 @@ public class GroupsEditorFragment extends ListFragment implements
         if (mIsTwoPaneLayout) {
             getListView().setItemChecked(position, true);
         }
+        */
     }
 
 
@@ -783,9 +789,8 @@ public class GroupsEditorFragment extends ListFragment implements
             holder.text2 = (TextView) itemLayout.findViewById(android.R.id.text2);
             holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
 
+
             holder.checkBox = (CheckBox) itemLayout.findViewById(R.id.checkBox);
-
-
 
             holder.checkBox.setOnClickListener(new View.OnClickListener() {
                 // perform function when pressed
@@ -829,7 +834,7 @@ public class GroupsEditorFragment extends ListFragment implements
                                         public void run() {
                                             // in the UI thread update the group list
                                             // from the database
-                                            getGroupStats();
+                                            //getGroupStats();
 
                                             Toast.makeText(getActivity(),
                                                     Integer.toString(records_updated)
@@ -850,6 +855,7 @@ public class GroupsEditorFragment extends ListFragment implements
 
 
             });
+
 
 
             // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
@@ -888,6 +894,7 @@ public class GroupsEditorFragment extends ListFragment implements
 
             // display the inclusion of the group with the checkbox
             // according to weather it is ignored
+
             holder.checkBox.setChecked(cursor.getInt(
                     GroupsListStatsQuery.PRIMARY_BEHAVIOR) != ContactInfo.IGNORED);
 

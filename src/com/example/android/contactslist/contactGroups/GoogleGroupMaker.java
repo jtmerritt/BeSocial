@@ -43,6 +43,7 @@ public class GoogleGroupMaker {
 
     private void methodTwo(String group_name){
 
+        // http://stackoverflow.com/questions/18674548/how-do-i-create-a-group-with-a-source-id-reference
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
         ops.add(ContentProviderOperation.newInsert(ContactsContract.Groups.CONTENT_URI)
