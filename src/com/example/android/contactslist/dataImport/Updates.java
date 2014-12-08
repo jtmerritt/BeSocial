@@ -199,6 +199,93 @@ public class Updates {
     }
 
 
+
+    public void ImportDataUpdateForGroupContacts(ContactInfo group){
+
+        setUpdateNotificationName("General");
+
+        ArrayList<ContactInfo> group_list = new ArrayList<ContactInfo>();
+        group_list.add(group);
+
+        // Get the list of contacts pointed to by the list of Included Groups
+        // referencing the google database directly
+        final GroupMembership groupMembership = new GroupMembership(mContext);
+        List<ContactInfo> masterContactList =
+                groupMembership.getAllContactsInAppGroups(group_list,
+                        // get the complete stats info from the Contact stats database, if available
+                        GroupMembership.GET_COMPLETE_CONTACT_DATA_IF_AVAILABLE);
+
+        // only work with a non-empty list
+        if(!masterContactList.isEmpty()){
+
+            int contactCount = masterContactList.size();
+
+
+            // set up some of the special data gathering
+            // depending on whether this is an update from a call_log_xml file
+            if(mIsXMLPathStringSet){
+                // *** Get the XML Call Log File ****
+                // Get the earliest of the last update times for this list of contacts for XML Calls
+                //long earliestLastUpdateTime = getEarliestImportTimeForClass(masterContactList,
+                //       XML_CALL_CLASS);
+
+                // proceed with the method only if we are successful in gathering data
+                if(mGatherXMLCallLog.openXMLCallLog(mXMLFilePath, masterContactList) != 1){
+                    // exit method with failure
+                    return;
+                }
+                // openXMLCallLog stores the database access timestamp internally for later reference
+
+            }else {
+                // **** Get the SMS database ****
+                // Get the earliest of the last update times for this list of contacts for SMS
+                long earliestLastUpdateTime = getEarliestImportTimeForClass(masterContactList,
+                        EventInfo.SMS_CLASS);
+
+                //TODO Android < version 19
+
+                // proceed with the method only if we are successful in gathering data
+                if(mGatherSMSLog.openSMSLog(earliestLastUpdateTime) != 1){
+                    return;
+                }
+                // openSMSLog stores the database access timestamp internally for later reference
+            }
+
+
+            int i = 0;
+            for(ContactInfo contact:masterContactList){
+
+                // when the call is given, break the loop and exit
+                if(continueDBRead == false){
+                    return;
+                }
+
+                // Are we importing a XML file or from other data sources
+                if(mIsXMLPathStringSet) {
+                    //replace the current contact element of masterContactList
+                    // with the new version updated from the local events of all classes
+                    contact = updateDataBaseWithLocalContactEvents(contact, XML_CALL_CLASS);
+                }else{
+                    //replace the current contact element of masterContactList
+                    // with the new version updated from the local events of all classes
+                    contact = updateDataBaseWithLocalContactEvents(contact, EventInfo.ALL_CLASS);
+                }
+
+
+                // update the contact in the master list
+                masterContactList.set(i, contact);
+
+
+                //update the progress bar
+                i++;
+                updateProgress(i, contactCount);
+            }
+        }
+    }
+
+
+
+
     // only called from the outside
     // This method does not update the Marker Timestamps
     public ContactInfo updateDataBaseWithContactEvents(ContactInfo contact, ArrayList<EventInfo> eventList) {

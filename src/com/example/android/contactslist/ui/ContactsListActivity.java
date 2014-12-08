@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -44,6 +45,8 @@ import com.example.android.contactslist.BuildConfig;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.contactStats.ContactInfo;
+import com.example.android.contactslist.dataImport.Imports;
+import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.ui.groupsEditor.GroupsEditorActivity;
 import com.example.android.contactslist.util.Utils;
 import android.app.NotificationManager;
@@ -473,6 +476,9 @@ Send intent for opening the XML file import activity
         //passing the integer ID
         mContactsListFragment.setGroupQuery((int) mGroups.get(pos).getIDLong());
 
+        //update the group's contacts
+        getGroupContactsUpdate(mGroups.get(pos));
+
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(pos, true);
         setTitle(mGroups.get(pos).getGroupSummary());
@@ -525,6 +531,8 @@ Send intent for opening the XML file import activity
                mDrawerList.setItemChecked(i, true);
                setTitle(group.getGroupSummary());
 
+               //update the group's contacts
+               getGroupContactsUpdate(group);
 
                return;
            }
@@ -534,6 +542,16 @@ Send intent for opening the XML file import activity
 
     }
 
+
+    private void getGroupContactsUpdate(ContactInfo group){
+        //TODO set up a marker that keeps this frum running if the update has run recently on this group
+
+        final AsyncTask<Void, Integer, String> dbImport =
+                new Imports(null, Imports.IMPORT_CONTACT_CLASS, "",
+                            this, group, EventInfo.ALL_CLASS);
+
+        dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
 
     @Override
     public void setTitle(CharSequence title) {

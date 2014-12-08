@@ -610,14 +610,6 @@ public class ContactDetailFragment extends Fragment implements
     }
 
 
-    private void getContactUpdate(){
-        final AsyncTask<Void, Integer, String> dbImport =
-                new Imports(null, 3,"", mContext, mContactStats, EventInfo.ALL_CLASS);
-
-        dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        }
-
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -2857,6 +2849,14 @@ Return a formatted string for the date header
         mContactStats = null;
         mLookBackEventLog.clear();
 
+    }
+
+    private void getContactUpdate(){
+        final AsyncTask<Void, Integer, String> dbImport =
+                new Imports(null, Imports.IMPORT_CONTACT_CLASS, "",
+                        mContext, mContactStats, EventInfo.ALL_CLASS);
+
+        dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }
 

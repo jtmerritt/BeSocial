@@ -17,10 +17,11 @@ Class for asynchronously importing data
  */
 public class Imports extends AsyncTask<Void, Integer, String>
 {
-    final public int IMPORT_TEST = 0;
-    final public int IMPORT_LOCAL_DB = 1;
-    final public int IMPORT_XML_FILE = 2;
-    final public int IMPORT_CONTACT_CLASS = 3;
+    final static public int IMPORT_TEST = 0;
+    final static public int IMPORT_LOCAL_DB = 1;
+    final static public int IMPORT_XML_FILE = 2;
+    final static public int IMPORT_CONTACT_CLASS = 3;
+    final static public int IMPORT_CONTACT_GROUP = 4;
 
 
     private UpdateNotification updateNotification;
@@ -72,6 +73,14 @@ public class Imports extends AsyncTask<Void, Integer, String>
                     dbUpdates.updateDataBaseWithLocalContactEvents(contact, event_class);
                 }
                 break;
+
+            case IMPORT_CONTACT_GROUP:
+                if(contact != null) {
+                    // using contact to transmit a group info
+                    dbUpdates.ImportDataUpdateForGroupContacts(contact);
+                }
+                break;
+
             default:
                 //for testing
                 int i;

@@ -102,7 +102,7 @@ public class ImportActivity extends FragmentActivity {
         });
 
         final AsyncTask<Void, Integer, String> xmlImport =
-                new Imports(mXmlProgressBar, 2/*IMPORT_XML_FILE*/,
+                new Imports(mXmlProgressBar, Imports.IMPORT_XML_FILE,
                         xml_file_path, mContext, null, 0);
         mParseFile =(Button) findViewById(R.id.parse_file);
         mParseFile.setOnClickListener(new View.OnClickListener() {
@@ -135,7 +135,7 @@ public class ImportActivity extends FragmentActivity {
 
 
         final AsyncTask<Void, Integer, String> dbImport =
-                new Imports(mPhoneProgressBar, 1/*Imports.IMPORT_LOCAL_DB*/,
+                new Imports(mPhoneProgressBar, Imports.IMPORT_LOCAL_DB,
                         xml_file_path, mContext, null, 0);
 
         mGetLocalDb =(Button) findViewById(R.id.phone_sms_import);

@@ -2,10 +2,6 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- implement update of individual contacts when viewing the contact list
-- Test XML file import
-- deleting a group in google should delete on app
-- Update contact stats when a communication happens
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
@@ -37,6 +33,11 @@ ___________________________________________________________________
     - http://stackoverflow.com/questions/10598348/multiple-selection-in-custom-listview-with-cab/10598553#10598553
     - http://stackoverflow.com/questions/17635499/hide-items-in-context-action-bar-cab-dynamically-when-multiple-items-are-selec
     - http://stackoverflow.com/questions/17714124/how-to-add-contact-group-to-my-own-account-in-android-4-2
+
+- Update contact stats when a communication happens
+- Test XML file import
+- Keep group updates from running too often in the contactsListActivity
+- deleting a group in google should delete on app
 
 **** Need Help ****
 - Convert project to Gradle
@@ -117,6 +118,8 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- implement update of individual contacts when viewing the contact list
+
 - OnClick listener in the groupsEditor interface is broken
 - redo data import to better support a per contact update
 - activity for creating group
