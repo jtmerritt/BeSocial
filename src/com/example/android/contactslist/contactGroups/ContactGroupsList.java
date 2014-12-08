@@ -18,9 +18,7 @@ import java.util.Map;
 /**
  * Created by Tyson Macdonald on 2/24/14.
  */
-public class ContactGroupsList extends ArrayList<ContactInfo>{
-
-    final long ONE_DAY = 86400000;
+public class ContactGroupsList{
 
     public ArrayList<ContactInfo> mGroups;
 
@@ -66,7 +64,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
     http://stackoverflow.com/questions/14097582/get-a-contacts-groups
      */
     public ArrayList<ContactInfo> loadGroupsFromContactID(String contact_key){
-        ContactInfo g = null;
+        ContactInfo g;
 
         final String where = ContactsContract.Data.MIMETYPE + " = ? AND " +
                 ContactsContract.Contacts.LOOKUP_KEY  + " = ?";
@@ -109,7 +107,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
 
     private ContactInfo getGroupInfoByID(String groupID) {
-        ContactInfo g = null;// = new GroupInfo();
+        ContactInfo g = null;
 
         String where = ContactsContract.Groups._ID + " = ? ";
         String[] whereArgs = { groupID };
@@ -141,6 +139,8 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
     }
 
     public ArrayList<ContactInfo> loadIncludedGroupsFromDB() {
+
+        // look for groups in the contactStats database that are not IGNORED
         final String[] GROUP_PROJECTION = null;
         final String SELECTION = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
                 + " = ? AND " +
@@ -162,7 +162,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         if(c != null && c.moveToFirst()) {
             ContactInfo g;
             do {
-
+                // for each cursor position, get the full set of group stats
                 g = ContactStatsContract.getContactInfoFromCursor(c);
 
                 mGroups.add(g);
@@ -172,9 +172,79 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         c.close();
         return mGroups;
     }
-    
 
-    // TODO fix this miss, it even skipps the first cursor position
+
+    /*
+ Method takes a contact ID and returns a group list for the contact.
+ Sadly, this is a two step process to get all the group information, including the title
+
+ could return an empty list as constructed
+
+ http://stackoverflow.com/questions/14097582/get-a-contacts-groups
+  */
+    public ArrayList<ContactInfo> loadDBGroupsFromContactKey(String contact_key){
+        ContactInfo g;
+
+        loadIncludedGroupsFromDB(); // set mGroups to the list of Included groups in the DB
+
+
+        // Get a list of group IDs associated with the contact from the Google servers
+        final String where = ContactsContract.Data.MIMETYPE + " = ? AND " +
+                ContactsContract.Contacts.LOOKUP_KEY  + " = ?";
+        final String[] whereArgs = {
+                ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE,
+                contact_key};
+
+        Cursor cursor = mContentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                // this projection will just have the groupID
+                new String[]{ ContactsContract.Data.DATA1, ContactsContract.Data.CONTACT_ID },
+                where,
+                whereArgs,
+                null
+        );
+
+        if(cursor != null) {
+            final int IDX_ID = 0;
+            boolean id_found;
+
+            long group_id;
+            final int size = mGroups.size();
+
+            // For each group, search through the cursor to see if its ID is represented
+            // If the ID isn't represented, remove that group from the list
+            // It's important to proceed through the group list backwards
+            // so that indixies aren't shifted back into focus
+            for (int i = size - 1; i >= 0; i--) {
+                id_found = false;
+
+                // search through the cursor
+                if (cursor.moveToFirst()) {
+                    do {
+
+                        group_id = cursor.getLong(IDX_ID);
+
+                        // set flag if a matching group ID is found in the cursor
+                        if(mGroups.get(i).getIDLong() == group_id){
+                            id_found = true;
+                        }
+                    } while (cursor.moveToNext());
+                }
+
+                // if the flag was never set, remove that group from the list mGroups
+                if(!id_found){
+                    mGroups.remove(i);
+                }
+            }
+        }
+
+        cursor.close();
+        return mGroups;
+    }
+
+
+
+    // TODO Evaluate uses of this method
     public ArrayList<ContactInfo> loadGroups() {
         final String[] GROUP_PROJECTION = new String[] {
                 ContactsContract.Groups._ID,
@@ -192,7 +262,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
         final int IDX_TITLE = c.getColumnIndex(ContactsContract.Groups.TITLE);
 
         if(c != null && c.moveToFirst()) {
-            while (c.moveToNext()) {
+            do {
                 ContactInfo g = new ContactInfo(c.getString(IDX_TITLE), ContactInfo.group_lookup_key,
                         Long.parseLong(c.getString(IDX_ID)));
 
@@ -213,7 +283,7 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
                         largestGroup = g;
                     }
                 }
-            }
+            }while (c.moveToNext());
         }
         c.close();
         return mGroups;
@@ -249,38 +319,5 @@ public class ContactGroupsList extends ArrayList<ContactInfo>{
 
 
 
-    public void getShortestTermGroup(){
 
-        for(ContactInfo group:mGroups){
-            if(shortestTermGroup == null){
-                shortestTermGroup = group;
-                continue;
-            }
-
-            switch (group.getBehavior()){
-                case ContactInfo.COUNTDOWN_BEHAVIOR:
-
-                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
-                            (shortestTermGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
-                        shortestTermGroup = group;
-                    }
-                    if((shortestTermGroup.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR) &&
-                            (group.getEventIntervalLimit() < shortestTermGroup.getEventIntervalLimit() )){
-                        shortestTermGroup = group;
-                    }
-                    break;
-                case ContactInfo.AUTOMATIC_BEHAVIOR:
-                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR)) {
-                        shortestTermGroup = group;
-                    }
-                    break;
-                case ContactInfo.RANDOM_BEHAVIOR:
-                    break;
-                default:
-            }
-
-        }
-
-
-    }
 }

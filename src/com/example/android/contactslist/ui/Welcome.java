@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.notification.SetAlarm;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class Welcome extends FragmentActivity {
 
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
+/*
         //get the default behavior for startup updates
         Boolean updateDb = sharedPref.getBoolean("update_db_at_startup_checkbox_preference_key",
                 false);
@@ -61,9 +62,11 @@ public class Welcome extends FragmentActivity {
         if(updateDb) {
             // setup an async task to read local and web data sources into the database
             final AsyncTask<Void, Integer, String> dbImport =
-                    new Imports(null, 1/*Imports.IMPORT_LOCAL_DB*/, "", mContext);
+                    new Imports(null, 1, "", mContext,
+                            null, EventInfo.ALL_CLASS);
             dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         }
+    */
 
 
     }

@@ -91,6 +91,7 @@ public class ImportActivity extends FragmentActivity {
         mXmlProgressBar.setVisibility(View.INVISIBLE);
         mXmlProgressBar.setMax(100);
         mXmlProgressBar.setProgress(0);
+        mXmlProgressBar.setSecondaryProgress(0);
 
         mChooseFile =(Button) findViewById(R.id.select_file);
         mChooseFile.setOnClickListener(new View.OnClickListener() {
@@ -103,7 +104,7 @@ public class ImportActivity extends FragmentActivity {
 
         final AsyncTask<Void, Integer, String> xmlImport =
                 new Imports(mXmlProgressBar, 2/*IMPORT_XML_FILE*/,
-                        xml_file_path, mContext);
+                        xml_file_path, mContext, null, 0);
         mParseFile =(Button) findViewById(R.id.parse_file);
         mParseFile.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed
@@ -131,10 +132,12 @@ public class ImportActivity extends FragmentActivity {
         mPhoneProgressBar.setVisibility(View.INVISIBLE);
         mPhoneProgressBar.setMax(100);
         mPhoneProgressBar.setProgress(0);
+        mPhoneProgressBar.setSecondaryProgress(0);
+
 
         final AsyncTask<Void, Integer, String> dbImport =
                 new Imports(mPhoneProgressBar, 1/*Imports.IMPORT_LOCAL_DB*/,
-                        xml_file_path, mContext);
+                        xml_file_path, mContext, null, 0);
 
         mGetLocalDb =(Button) findViewById(R.id.phone_sms_import);
         mGetLocalDb.setOnClickListener(new View.OnClickListener() {

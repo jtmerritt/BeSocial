@@ -346,7 +346,7 @@ preferred contact method
         int count = 0;
 
         // Only bother if the contact record update flag is set to true.
-        if((contact != null) && (contact.getUpdatedFlag() == true)){
+        if((contact != null) && (contact.isUpdated())){
 
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
 

@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.content.Context;
 
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.dataImport.Updates;
 import com.example.android.contactslist.notification.UpdateNotification;
 
@@ -19,39 +20,57 @@ public class Imports extends AsyncTask<Void, Integer, String>
     final public int IMPORT_TEST = 0;
     final public int IMPORT_LOCAL_DB = 1;
     final public int IMPORT_XML_FILE = 2;
+    final public int IMPORT_CONTACT_CLASS = 3;
+
 
     private UpdateNotification updateNotification;
     private ProgressBar progressBar;
     private Updates dbUpdates;
     private int asyncTask;
-    Context mContext;
-    String xml_file_path;
+    private Context mContext;
+    private String xml_file_path;
+    private ContactInfo contact;
+    private int event_class;
 
-    public Imports(ProgressBar bar, int task, String file_path, Context context) {
+
+    public Imports(ProgressBar bar, int task, String file_path, Context context,
+                   ContactInfo contact, int event_class) {
         mContext = context;
         xml_file_path = file_path;
         // using the task number as the notification ID
         updateNotification = new UpdateNotification(mContext, (task+11));
         progressBar = bar;
         this.asyncTask = task;
-        dbUpdates = new Updates(mContext, progressBar, updateNotification);
+        this.contact = contact;
+        this.event_class = event_class;
     }
 
 
     @Override
     protected String doInBackground(Void... v1) {
+        dbUpdates = new Updates(mContext, progressBar, updateNotification);
+
 
         switch (asyncTask){
             case IMPORT_XML_FILE:
+                // set the file path string
                 if(xml_file_path != null){
-                    dbUpdates.localXMLRead(xml_file_path);
-                    //TODO: figure out how to return progress from the read method
+                    dbUpdates.setXMLFilePath(xml_file_path);
+                }else {
+                    break;
                 }
-                break;
+                // spill over into the next case if the file path is good
             case IMPORT_LOCAL_DB:
                 //TODO: figure out how to return progress from the read method
-                dbUpdates.localSourceRead();
+                dbUpdates.ImportDataUpdateForAllIncludedGroups();
 
+                break;
+
+            case IMPORT_CONTACT_CLASS:
+                //TODO: figure out how to return progress from the read method
+                if(contact != null) {
+                    dbUpdates.updateDataBaseWithLocalContactEvents(contact, event_class);
+                }
                 break;
             default:
                 //for testing
@@ -86,12 +105,13 @@ public class Imports extends AsyncTask<Void, Integer, String>
 
     protected void onProgressUpdate(Integer... progress) {
         // do something
-
+/*
         if(progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(progress[0]);
         }
-        updateNotification.updateNotification(progress[0]);
+        updateNotification.updateNotification(progress[0], "");
+        */
     }
 
 

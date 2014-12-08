@@ -15,6 +15,7 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
 import android.provider.ContactsContract.Data;
 import android.content.Context;
+import android.text.format.Time;
 import android.util.Log;
 import android.content.ContentValues;
 import java.util.HashSet;
@@ -40,12 +41,15 @@ public class GroupMembership {
     ContactStatsContract statsDb;
     String where;
     String whereArg;
-    ArrayList<ContactInfo> mGroups;
 
 
     final static public  int BASE_GROUP = 1;
     final static public  int STAR_GROUP = 2;
     final static public  int MISSES_YOU_GROUP = 3;
+
+    final static public boolean GET_COMPLETE_CONTACT_DATA_IF_AVAILABLE = true;
+    final static public boolean GET_CURSORY_CONTACT_DATA = false;
+
 
     public GroupMembership(Context context){
         mContext = context;
@@ -62,17 +66,34 @@ public class GroupMembership {
         return setContactGroupMembership((int) groupId, contact);
     }
 
+
+    // update the contact's membership in the Misses You Group
+    // by the contact's due date
+    public void updateContactMembershipInGroupMissesYou(ContactInfo contact){
+
+        Time now = new Time();
+
+        now.setToNow();
+
+        //if the due date for this contact was in the past,
+        // set membership to misses you group
+        if(contact.getDateEventDue() < now.toMillis(true)){
+            setContactGroupMembership_flag(contact, GroupMembership.MISSES_YOU_GROUP);
+        }else {
+            //if the date is in the future, remove membership to the misses you group
+            removeContactFromGroup_flag(contact, GroupMembership.MISSES_YOU_GROUP);
+        }
+    }
+
     private int getGroupIDFromFlag(int group_flag) {
         int groupId = 0;
         String groupName;
 
-        // one of the other methods may have retrieved the list of groups
-        if(mGroups == null){
-            ContactGroupsList contactGroupsList = new ContactGroupsList();
-            // collect list of applicable gmail contact groups
-            contactGroupsList.setGroupsContentResolver(mContext);
-            mGroups = contactGroupsList.loadGroups();
-        }
+        ContactGroupsList contactGroupsList = new ContactGroupsList();
+        // collect list of applicable gmail contact groups
+        contactGroupsList.setGroupsContentResolver(mContext);
+        ArrayList<ContactInfo> group_list = contactGroupsList.loadGroups();
+
 
         // match the group flag to the group name
         switch (group_flag){
@@ -89,7 +110,7 @@ public class GroupMembership {
 
 
         // find the group wih a matching name and grab the id to pass on
-        for(ContactInfo group:mGroups){
+        for(ContactInfo group:group_list){
             if(group.getName().equals(groupName)){
                 groupId = (int) group.getIDLong();
                 break;
@@ -394,29 +415,25 @@ public class GroupMembership {
 /*
 Method to create the full list of contacts represented by the groups used in this app
  */
-    public ArrayList<ContactInfo> getAllContactsInAppGroups(Boolean getCompleteInfo){
+    public ArrayList<ContactInfo> getAllContactsInAppGroups(ArrayList<ContactInfo> group_list,
+                                                            Boolean getCompleteContactInfo){
+
         ContactInfo contact;
-        ContactInfo temp;
+        ContactInfo temp = null;
         mContacts = new ArrayList<ContactInfo>();
 
 
-        // one of the other methods may have retrieved the list of groups
-        if(mGroups == null) {
-            ContactGroupsList contactGroupsList = new ContactGroupsList();
-            // collect list of applicable gmail contact groups
-            contactGroupsList.setGroupsContentResolver(mContext);
-            mGroups = contactGroupsList.loadGroups();
-        }
+
 
         // initialize the database, if its going to be used
-        if(getCompleteInfo){
+        if(getCompleteContactInfo){
             statsDb = new ContactStatsContract(mContext);
         }
 
 
         // query a list of contacts per group
-        Uri contentUri = ContactsGroupQuery.CONTENT_URI;
-        for(ContactInfo group: mGroups){
+        final Uri contentUri = ContactsGroupQuery.CONTENT_URI;
+        for(ContactInfo group: group_list){
 
             Cursor cursor = mContext.getContentResolver().query(
                     contentUri,
@@ -442,8 +459,8 @@ Method to create the full list of contacts represented by the groups used in thi
                     if(!isContactAlreadyInMasterList(contact)){
 
                         // get the complete contact info from the database, if desired
-                        if(getCompleteInfo){
-                            temp = getContactStatsFromBasic(contact);
+                        if(getCompleteContactInfo){
+                            temp = getFullContactFromContactStatsDataBase(contact);
 
                             //IF there is a matching contact from the database, substitute it into the list
                             if(temp != null){
@@ -451,9 +468,15 @@ Method to create the full list of contacts represented by the groups used in thi
                             }
                         }
 
-                        //TODO Solve the problem of where the weird IDs are coming from
-                        //grab the real contactID from the contactsProvider
-                        contact.setIDLong(getContactIDFromLookupKey(contact.getKeyString()));
+                        //TODO Fix: The weird IDs are coming from any query of the groups members
+                        // The following is a patch to the problem
+
+                        // entries from the contactStats database already have the correct contactID
+                        // If there is no entry in the database, dig up the correct number
+                        if(temp == null) {
+                            //grab the real contactID from the contactsProvider
+                            contact.setIDLong(getContactIDFromLookupKey(contact.getKeyString()));
+                        }
 
                         mContacts.add(contact);
                     }
@@ -465,7 +488,7 @@ Method to create the full list of contacts represented by the groups used in thi
 
 
         // make sure to close the database, if it was initialized
-        if(getCompleteInfo){
+        if(getCompleteContactInfo){
             statsDb.close();
         }
 
@@ -495,7 +518,7 @@ Method to create the full list of contacts represented by the groups used in thi
         return false;
     }
 
-    public ContactInfo getContactStatsFromBasic(ContactInfo contactInfo) {
+    public ContactInfo getFullContactFromContactStatsDataBase(ContactInfo contactInfo) {
 
         // Select All Query
         where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ?";

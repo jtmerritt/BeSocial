@@ -167,7 +167,9 @@ Method to update the notification window and the activity progress bar, if avail
             // for the phone number reverse lookup
             ContactPhoneNumbers contactPhoneNumbers = new ContactPhoneNumbers(mContentResolver);
             // get single reverse lookup contact that matches a contact from the master list
-            ContactInfo reverseLookupContact = contactPhoneNumbers.getReverseContactOnMasterList(eventContactAddress, mMasterContactList);
+            ContactInfo reverseLookupContact =
+                    contactPhoneNumbers.getReverseContactOnMasterList(eventContactAddress,
+                            mMasterContactList);
 
 
             if(reverseLookupContact != null){

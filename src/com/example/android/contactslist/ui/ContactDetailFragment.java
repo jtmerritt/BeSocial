@@ -30,6 +30,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -573,6 +574,12 @@ public class ContactDetailFragment extends Fragment implements
             @Override
             public void onClick(View view) {
 
+                final AsyncTask<Void, Integer, String> dbImport =
+                        new Imports(null, 3,"", mContext, mContactStats, EventInfo.SMS_CLASS);
+
+                dbImport.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+
+
                 Toast.makeText(getActivity(),
                         R.string.next_version, Toast.LENGTH_SHORT).show();
 
@@ -927,6 +934,7 @@ public class ContactDetailFragment extends Fragment implements
 
 
 
+            // gathering data for the contact stats display
             case ContactEventLogStatsQuery.QUERY_ID:
                 // This query loads data from SocialEventsContentPRovider.
 
@@ -1011,9 +1019,11 @@ public class ContactDetailFragment extends Fragment implements
 
                 //prepare the shere and args clause for the contact lookup key
                 where = SocialEventsContract.TableEntry.KEY_CONTACT_KEY + " = ? AND "
+                        + SocialEventsContract.TableEntry.KEY_TYPE +  " != ? AND " // don't bring out the Markers
                         + SocialEventsContract.TableEntry.KEY_EVENT_TIME + " BETWEEN ? AND ? ";
 
                 String[] whereArgs6 ={ mContactLookupKey,
+                        Integer.toString(EventInfo.RECORD_UPDATE_MARKER),
                         Long.toString(start_date), Long.toString(end_date)};
 
                 return new CursorLoader(getActivity(),
@@ -1320,8 +1330,7 @@ public class ContactDetailFragment extends Fragment implements
     private void makeWordCloud(Cursor data) {
 
         if (data != null && data.moveToFirst()) {
-            final GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext.getContentResolver(),
-                    mContext, null, null);
+            final GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext, null, null);
 
             gatherSMSLog.insertEventLog(data);
 

@@ -447,10 +447,11 @@ public class EventEntryFragment extends Fragment implements
                             eventList.add(mNewEventInfo);
 
                             // add event to the database and update the contact
-                            updateCount = contactUpdate.updateContactWithEvents(mContactStats, eventList);
+                            mContactStats = contactUpdate.updateDataBaseWithContactEvents(
+                                    mContactStats, eventList);
                             contactUpdate.close();
 
-                            final boolean insertComplete = updateCount > 0;
+                            final boolean insertComplete = (mContactStats != null);
 
                             getActivity().runOnUiThread(new Runnable() {
 

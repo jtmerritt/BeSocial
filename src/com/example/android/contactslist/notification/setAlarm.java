@@ -33,6 +33,11 @@ import com.example.android.contactslist.util.Utils;
  */
 public class SetAlarm {
 
+
+    /*
+*
+* Set up the Automated data importing
+ */
     public void setAutoUpdate(Context context)
     {
         Context appContext = context.getApplicationContext();
@@ -90,6 +95,74 @@ public class SetAlarm {
         //alarmManager.cancel(pintent);
     }
 
+
+    /*
+Class for asynchronously importing data
+*/
+    public class AutoImports extends AsyncTask<Void, Integer, String> {
+
+        private UpdateNotification updateNotification;
+        private Updates dbUpdates;
+        private Context mContext;
+
+        public AutoImports(Context context) {
+            mContext = context;
+            updateNotification = new UpdateNotification(mContext, 111);
+            dbUpdates = new Updates(mContext, null, updateNotification);
+        }
+
+
+        @Override
+        protected String doInBackground(Void... v1) {
+
+            dbUpdates.ImportDataUpdateForAllIncludedGroups();
+            dbUpdates.close();
+
+            return "done";
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            updateNotification.setNotification();
+
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+
+            //updateNotification.updateNotification(progress[0]);
+        }
+
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            updateNotification.cancelNotification();
+        }
+
+
+        @Override
+        protected void onCancelled(String result) {
+            // TODO Auto-generated method stub
+            super.onCancelled(result);
+
+            //TODO Fix cancel function - it doesn't appear to work at all
+
+            dbUpdates.cancelReadDB();
+
+            updateNotification.cancelNotification();
+        }
+    }
+
+
+
+
+
+    /*
+    *
+    * Set up the Status Notification
+     */
     public void setContactStatusCheck(Context context)
     {
         Context appContext = context.getApplicationContext();
@@ -140,69 +213,7 @@ public class SetAlarm {
 
 
     /*
-Class for asynchronously importing data
- */
-    public class AutoImports extends AsyncTask<Void, Integer, String> {
-
-        private UpdateNotification updateNotification;
-        private Updates dbUpdates;
-        private Context mContext;
-
-        public AutoImports(Context context) {
-            mContext = context;
-            updateNotification = new UpdateNotification(mContext, 111);
-            dbUpdates = new Updates(mContext, null, updateNotification);
-        }
-
-
-        @Override
-        protected String doInBackground(Void... v1) {
-
-            dbUpdates.localSourceRead();
-            dbUpdates.close();
-
-            return "done";
-        }
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-            updateNotification.setNotification();
-
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-            // do something
-
-            updateNotification.updateNotification(progress[0]);
-        }
-
-
-        @Override
-        protected void onPostExecute(String result) {
-            // TODO Auto-generated method stub
-            super.onPostExecute(result);
-            updateNotification.cancelNotification();
-        }
-
-
-        @Override
-        protected void onCancelled(String result) {
-            // TODO Auto-generated method stub
-            super.onCancelled(result);
-
-            //TODO Fix cancel function - it doesn't appear to work at all
-
-            dbUpdates.cancelReadDB();
-
-            updateNotification.cancelNotification();
-        }
-    }
-
-
-    /*
-Class for asynchronously importing data
+Class for displaying contact status notification
  */
     public class ContactStatusNotification extends AsyncTask<Void, Integer, String> {
         private Notification notification;

@@ -94,7 +94,7 @@ public class GroupsEditorActivity extends FragmentActivity implements
 
         // Checks to see if fragment has already been added, otherwise adds a new
         // ContactDetailFragment with the Uri provided in the intent
-        if (getSupportFragmentManager().findFragmentByTag(TAG) == null) {
+       if (getSupportFragmentManager().findFragmentByTag(TAG) == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
             // Adds a newly created EventEntryFragment that is instantiated with the
@@ -102,6 +102,11 @@ public class GroupsEditorActivity extends FragmentActivity implements
             ft.add(android.R.id.content, GroupsEditorFragment.newInstance(), TAG);
             ft.commit();
         }
+
+       // GroupsEditorFragment groupsEditorFragment = (GroupsEditorFragment)
+        //        getSupportFragmentManager().findFragmentById(R.id.contact_list);
+
+
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         // For OS versions honeycomb and higher use action bar

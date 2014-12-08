@@ -50,7 +50,7 @@ public class ContactInfo {
 
 
 
-
+// NOT in DataBase
     private int callDurationTotal = 0; //seconds // -
     private int callDurationAvg = 0; // seconds //-
     private int wordCountIn = 0; // -
@@ -255,7 +255,7 @@ public class ContactInfo {
     }
 
 
-    public boolean getUpdatedFlag(){
+    public boolean isUpdated(){
         return Updated;
     }
 

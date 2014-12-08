@@ -66,34 +66,81 @@ public class GroupStatsHelper {
         return  contactStatsDb.updateContact(groupInfo);
     }
 
-    // returns the number of records added
-    public long addGroupToDBIfNew(ContactInfo groupInfo, ContactStatsContract contactStatsDb){
-        return contactStatsDb.addIfNewContact(groupInfo);
-    }
 
-    public long updateGroupListInDB(ArrayList<ContactInfo> list, ContactStatsContract contactStatsDb){
+    public int updateGroupListInDB(ArrayList<ContactInfo> list, ContactStatsContract contactStatsDb){
         int records_updated = 0;
+        ContactInfo group_info_from_db = null;
 
+        // the list is assumed to be the updated list of groups from google
+        // with all the updated names and member counts
         for(ContactInfo group: list){
 
             // try adding the group to the database
-            if(addGroupToDBIfNew(group, contactStatsDb) == 0){
+            // if the group already existed
+            if(contactStatsDb.addIfNewContact(group) == -1)// -1 for existing contact
+            {
+                // we assume that the updated list has the pertanent group behavior info
 
-                // if the group isn't added, try updating an existing record.
-                records_updated += updateGroupInfo(group, contactStatsDb);
+                // grab the info for the same group from the contactStats database from the ID
+                group_info_from_db = getGroupInfoFromGroupID(group.getIDLong(), contactStatsDb);
+
+
+                // If group attributes have changed in the google source, update the local database
+
+                // update name
+                if(!group_info_from_db.getName().equals(group.getName())) {
+                    group_info_from_db.setName(group.getName());
+                }
+
+                // update member count
+                if(group_info_from_db.getMemberCount() != group.getMemberCount() ){
+                    group_info_from_db.setMemberCount(group.getMemberCount());
+                }
+
+                // TODO figure out a better way to update the behavior of the group from google
+                // update group behavior
+                if(group_info_from_db.getBehavior() != group.getBehavior()){
+
+                    // if the group in the local database is Included,
+                    // update the behavior to anything but ignored
+                    if(group_info_from_db.getBehavior() != ContactInfo.IGNORED){
+
+                        switch (group.getBehavior()){
+
+                            case ContactInfo.AUTOMATIC_BEHAVIOR:
+                            case ContactInfo.PASSIVE_BEHAVIOR:
+                                group_info_from_db.setBehavior(group.getBehavior());
+                                break;
+                            case ContactInfo.COUNTDOWN_BEHAVIOR:
+                            case ContactInfo.RANDOM_BEHAVIOR:
+                                group_info_from_db.setBehavior(group.getBehavior());
+                                group_info_from_db.setEventIntervalLimit(group.getEventIntervalLimit());
+                                break;
+
+                            case ContactInfo.IGNORED:
+                                // the google group should not be able to set the DB group to Ignore
+                            default:
+                        }
+                    }
+
+
+
+                    if(group.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR ||
+                            group.getBehavior() == ContactInfo.RANDOM_BEHAVIOR){
+                        group_info_from_db.setEventIntervalLimit(group.getEventIntervalLimit());
+                    }
+                }
+
+
+
+                    // try updating an existing record.
+                    records_updated += contactStatsDb.updateContact(group_info_from_db);
+
+
             }else {
+                // otherwise imcrement the count, because the record was inserted
                 records_updated++;
             }
-        }
-        return records_updated;
-    }
-    public long addGroupListToDB(ArrayList<ContactInfo> list, ContactStatsContract contactStatsDb){
-        int records_updated = 0;
-
-        for(ContactInfo group: list){
-
-            // try adding the group to the database
-            records_updated += addGroupToDBIfNew(group, contactStatsDb);
         }
         return records_updated;
     }

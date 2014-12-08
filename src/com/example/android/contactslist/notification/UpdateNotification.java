@@ -23,6 +23,8 @@ public class UpdateNotification {
     int mId = 2;
     String ns = Context.NOTIFICATION_SERVICE;
     NotificationCompat.Builder mBuilder;
+    final String content_text = "Importing Events";
+    private String mName;
 
     public UpdateNotification(Context context, int notificationID){
         mContext = context;
@@ -39,7 +41,8 @@ public class UpdateNotification {
                         .setSmallIcon(R.drawable.ic_action_statistics)
                         .setProgress(100, 0, false)
                         .setContentTitle(mContext.getString(R.string.app_name))
-                        .setContentText("Updating Database");
+                        .setContentText(content_text)
+                        .setUsesChronometer(true);
 
         //TODO: set text into Strings File
 
@@ -74,10 +77,15 @@ public class UpdateNotification {
 
     }
 
+    public void setName(String name){
+        mName = name;
+    }
+
     public void updateNotification(int progress){
         if (Context.NOTIFICATION_SERVICE!=null) {
             NotificationManager nMgr = (NotificationManager) mContext.getSystemService(ns);
             mBuilder.setProgress(100, progress, false);
+            mBuilder.setContentText(mName + ": " + content_text);
 
             nMgr.notify(mId, mBuilder.build());
         }

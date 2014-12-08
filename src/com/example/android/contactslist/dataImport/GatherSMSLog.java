@@ -39,19 +39,26 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
     private UpdateNotification updateNotification;
     final long ONE_HOUR = 3600000;
     private Cursor mSMSLogCursor;
-    private int mCursorCount;
+    private int mCursorCount = 0;
+    private long data_base_read_time = 0;
+    private boolean smsLogOpened = false;
 
 
 
-    public GatherSMSLog(ContentResolver contentResolver,
-                        Context context,  // only added so this class can call on the event database
-                        ProgressBar activity_progress_bar,
+
+    public GatherSMSLog(Context context, ProgressBar activity_progress_bar,
                         UpdateNotification updateNotification) {
-        mContentResolver = contentResolver;
+        mContentResolver = context.getContentResolver();
         mContext = context;
         this.activity_progress_bar = activity_progress_bar;
         this.updateNotification = updateNotification;
+    }
 
+    public GatherSMSLog(Context context) {
+        mContentResolver = context.getContentResolver();
+        mContext = context;
+        this.activity_progress_bar = null;
+        this.updateNotification = null;
     }
 
     public void insertEventLog(Cursor newCursor){
@@ -60,14 +67,13 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
         mCursorCount = mSMSLogCursor.getCount();
     }
 
-    public void openSMSLog(Long lastUpdateTime){
+    // return the time_ms of the database getting accessed
+    public int openSMSLog(Long lastUpdateTime){
+        int success = -1;
+
         Time now = new Time();
         now.setToNow();
-        Long date_now = now.toMillis(true);
-
-        // subtracting an hour just to give a margine of error. messages could come in during update
-        lastUpdateTime -= ONE_HOUR;
-
+        data_base_read_time = now.toMillis(true);
 
                 /*
         This version of 'where' would be great if I had a fully internally referenced time
@@ -77,7 +83,7 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
         http://www.sqlite.org/lang_datefunc.html
          */
         String where = ContactSMSLogQuery.WHERE;
-        String[] whereArgs = {Long.toString(lastUpdateTime), Long.toString(date_now)};
+        String[] whereArgs = {Long.toString(lastUpdateTime), Long.toString(data_base_read_time)};
 
         //but if the date is less than 1, it means there has been no previous update
         // so we get the whole database by setting the query arguments to null
@@ -87,6 +93,7 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
         }
 
         Log.d("GatherSMSLog: ", "Begin SMS log acquisition");
+
 
 
         /*Query SMS Log Content Provider*/
@@ -101,16 +108,32 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
 
         Log.d("GatherSMSLog: ", "End SMS log acquisition");
 
-        // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
+        // success if the cursor isn't null!
+        if(mSMSLogCursor != null){
+            // get the cursor count
+            mCursorCount = mSMSLogCursor.getCount();
+            // set the flag for the opening of the sms log
+            smsLogOpened = true;
 
-        mCursorCount = mSMSLogCursor.getCount();
+            success = 1;
+        }
 
+        return success;
+    }
+
+    public boolean isSmsLogOpened(){
+        return smsLogOpened;
+    }
+
+    public long getReadTime_SMS(){
+        return data_base_read_time;
     }
 
     public void closeSMSLog(){
             /*Close the cursor  for this iteration of the loop*/
         if(mSMSLogCursor != null){
             mSMSLogCursor.close();
+            smsLogOpened = false;
         }
     }
 
@@ -138,18 +161,18 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
     /*
 Method to update the notification window and the activity progress bar, if available
 */
-    private void updateProgress(int progress, int total){
-        progress = (int)(((float)progress/(float)total)*100);
+    private void updateSecondaryProgress(int secondary_progress, int total){
+        secondary_progress = (int)(((float)secondary_progress/(float)total)*100);
+
 
         //update progress out of 100
         if(activity_progress_bar != null){
-            activity_progress_bar.setProgress(progress);
+            activity_progress_bar.setSecondaryProgress(secondary_progress);
         }
 
         if(updateNotification != null){
-            updateNotification.updateNotification(progress);
+            updateNotification.updateNotification(secondary_progress);
         }
-
     }
 
 
@@ -179,6 +202,7 @@ Method to update the notification window and the activity progress bar, if avail
 
         Log.d("GatherSMSLog: ", "Begin contact phone number acquisition");
 
+        // TODO: need to handle multiple contacts to a phone number more smartly, such as preferentially do the starred lookup, or the one that's in the beSocial group
 
         // get the phone numbers for the contact.
         // If none abort.
@@ -291,7 +315,7 @@ Method to update the notification window and the activity progress bar, if avail
 
                 //update the progressBar if it's being used.
                 updateCount++;
-                updateProgress(updateCount, mCursorCount);
+                updateSecondaryProgress(updateCount, mCursorCount);
 
 
 
@@ -302,206 +326,4 @@ Method to update the notification window and the activity progress bar, if avail
 
         return true;
     }
-
-
-
-
-    /*
-    This method grabs the content of the entire SMS database and uses a reverse lookup to filter out
-    un-named events, as well as append the contact information.
-     */
-
-    private void loadSMSLogForContactList(List<ContactInfo> masterContactList) {
-
-        ContactInfo reverseLookupContact;
-        ImportLog importLog = new ImportLog(mContext);
-
-        // for the phone number reverse lookup
-        ContactPhoneNumbers contactPhoneNumbers = new ContactPhoneNumbers(mContentResolver);
-        List<ContactInfo> reverseLookupContacts;
-
-
-        Long lastUpdateTime = importLog.getImportTime(EventInfo.SMS_CLASS);
-        Time now = new Time();
-        now.setToNow();
-        Long date_now = now.toMillis(true);
-
-        // subtracting 10 milliseconds just to give a margine of error. messages could come in during update
-        lastUpdateTime -= 10;
-        // Select All Query
-
-        /*
-        This version of 'where' would be great if I had a fully internally referenced time
-         where = "datetime(date/1000, 'unixepoch') between date('now', '-1 day') and date('now')";
-
-        http://stackoverflow.com/questions/15130280/how-to-count-last-date-inbox-sms-in-android
-        http://www.sqlite.org/lang_datefunc.html
-         */
-        String where = "date BETWEEN ? AND ? ";  // all comparrisons in milliseconds
-        String[] whereArgs = {Long.toString(lastUpdateTime), Long.toString(date_now)};
-
-        //but if the date is less than 1, it means there has been no previous update
-        // so we get the whole database by setting the query arguments to null
-        if(lastUpdateTime <= 0){
-            where = null;
-            whereArgs = null;
-        }
-
-        /*Query SMS Log Content Provider*/
-        /* Method inspired by comment at http://stackoverflow.com/questions/9217427/how-can-i-retrieve-sms-logs */
-        Cursor SMSLogCursor = mContentResolver.query(
-                ContactSMSLogQuery.SMSLogURI,
-                ContactSMSLogQuery.PROJECTION,
-                where,
-                whereArgs,
-                ContactSMSLogQuery.SORT_ORDER);
-
-
-        // Maybe if(PhoneNumberUtils.compare(sender, phoneNumber)) {
-
-        int count = SMSLogCursor.getCount();
-        /*Check if cursor is not null*/
-        if (SMSLogCursor != null
-                && SMSLogCursor.moveToFirst()
-                ) {
-
-
-            String eventID = null;
-            Long eventDate;
-            String smsBody = null;
-            int eventType;
-
-            int i = 0;
-
-            //initialize the language analysis package
-            LanguageAnalysis languageAnalysis = new LanguageAnalysis();
-
-        /*Loop through the cursor*/
-            do{
-                //Long eventContactId = SMSLogCursor.getLong(ContactSMSLogQuery.CONTACT_ID);
-                String eventContactAddress = SMSLogCursor.getString(ContactSMSLogQuery.ADDRESS);
-                eventID = SMSLogCursor.getString(ContactSMSLogQuery.ID);
-                eventDate = SMSLogCursor.getLong(ContactSMSLogQuery.DATE);
-                smsBody = SMSLogCursor.getString(ContactSMSLogQuery.BODY);
-                eventType = SMSLogCursor.getInt(ContactSMSLogQuery.TYPE);
-
-                //set the working string with the language analysis package
-                languageAnalysis.setString(smsBody, languageAnalysis.CONSUME_STRING);
-
-                //get list of contacts for reverse phone number lookup
-                reverseLookupContacts = contactPhoneNumbers.getContactsFromPhoneNumber(eventContactAddress);
-
-                // it we are operating with ta master list to compare to...
-                if(masterContactList != null){
-                    // get single reverse lookup contact that matches a contact from the master list
-                    reverseLookupContact = getReverseContactOnMasterList(reverseLookupContacts, masterContactList);
-
-                    // If we have a valid contact derived from the current SMS event,
-                    // then add that event to the eventLog
-                    if(reverseLookupContact != null){
-
-
-
-                        EventInfo eventInfo = new EventInfo(
-                                reverseLookupContact.getName(),// use the name of the first contact
-                                reverseLookupContact.getKeyString(), //use the lookup key of the first contact
-                                eventContactAddress,
-                                EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                languageAnalysis.countWordsInString(), smsBody.length(),
-                                EventInfo.NOT_SENT_TO_CONTACT_STATS);
-
-                        //count the number of special sub strings in the sms message
-                        eventInfo.setSmileyCount(languageAnalysis.countSmileysInString());
-                        eventInfo.setHeartCount(languageAnalysis.countHeartsInString());
-                        eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
-                        eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
-                        eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
-
-
-                        eventInfo.setContactID(reverseLookupContact.getIDLong());  //use the ID of the first contact
-                        eventInfo.setEventID(eventID);
-
-                        // This is a temporary record of the smsBody, not sent to the event DB
-                        eventInfo.eventNotes = smsBody;
-
-                        //Add the new event to the ArrayList
-                        mEventLog.add(eventInfo);
-                    }
-
-                }else{
-                    // if there is a contact in the list, grab the first one and attribute the event to that contact
-                    // TODO: need to handle multiple contacts to a phone number more smartly, such as preferentially do the starred lookup, or the one that's in the beSocial group
-                    // But it's not very likely that we'd have multiple contacts for an SMS event - would probably be due to a duplicated contact
-                    if(!reverseLookupContacts.isEmpty()){
-                        EventInfo eventInfo = new EventInfo(
-                                reverseLookupContacts.get(0).getName(),// use the name of the first contact
-                                reverseLookupContacts.get(0).getKeyString(), //use the lookup key of the first contact
-                                eventContactAddress,
-                                EventInfo.SMS_CLASS,  eventType, eventDate, "", 0,
-                                languageAnalysis.countWordsInString(), smsBody.length(),
-                                EventInfo.NOT_SENT_TO_CONTACT_STATS);
-
-                        //count the number of special sub strings in the sms message
-                        eventInfo.setSmileyCount(languageAnalysis.countSmileysInString());
-                        eventInfo.setHeartCount(languageAnalysis.countHeartsInString());
-                        eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
-                        eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
-                        eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
-
-
-                        eventInfo.setContactID(reverseLookupContacts.get(0).getIDLong());  //use the ID of the first contact
-                        eventInfo.setEventID(eventID);
-
-                        // This is a temporary record of the smsBody, not sent to the event DB
-                        eventInfo.eventNotes = smsBody;
-
-                        //Add the new event to the ArrayList
-                        mEventLog.add(eventInfo);
-                    }
-                }
-
-                //update the progressBar if it's being used.
-                i++;
-                updateProgress(i, count);
-
-            }while (SMSLogCursor.moveToNext());
-
-        }
-    /*Close the cursor  for this iteration of the loop*/
-        SMSLogCursor.close();
-    }
-
-
-
-    /*
-    Returns the first reverse lookup contact that is on the master contact list,
-    by testing the contacts lookup key
-        It's not very likely that we'd have multiple contacts for an SMS event - would probably be due to a duplicated contact
-
-     */
-    private ContactInfo getReverseContactOnMasterList(List<ContactInfo> reverseLookupContacts,
-                                           List<ContactInfo> masterContactList){
-
-        if(reverseLookupContacts.isEmpty()){
-            return null;
-        }
-
-        // if there is no master list, return the first contact in the reverse lookup list as default behavior
-        if(masterContactList == null){
-            return reverseLookupContacts.get(0);
-        }
-
-        // iterate through the list of provided contacts
-        for( ContactInfo reverseContactItem:reverseLookupContacts){
-            for( ContactInfo masterContactItem:masterContactList){
-                if(masterContactItem.getKeyString().equals(reverseContactItem.getKeyString())){
-                    return reverseContactItem;
-                }
-            }
-        }
-        return null;
-    }
-
-
-
 }

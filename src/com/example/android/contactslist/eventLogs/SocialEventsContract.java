@@ -327,7 +327,7 @@ public class SocialEventsContract {
                 } while (cursor.moveToNext());
             }
         }catch (Exception e){
-            Log.d(" Check Event Exists", "Dead Cursor");
+            Log.e(" Check Event Exists", "Dead Cursor");
             cursor.close();
             db.close();
             return 0;  // There is an error
@@ -446,15 +446,34 @@ public class SocialEventsContract {
     }
 
 
-    public void deleteEvent(int rowId){
+    public int deleteEvent(int rowId){
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Define 'where' part of query.
-        String selection = TableEntry.KEY_ANDROID_EVENT_ID + " LIKE ?";
+        String selection = TableEntry._ID + " =?";
 // Specify arguments in placeholder order.
-        String[] selectionArgs = { String.valueOf(rowId) }; //TODO: Review what is needed
+        String[] selectionArgs = { String.valueOf(rowId) };
 // Issue SQL statement.
-        db.delete(TableEntry.TABLE_NAME, selection, selectionArgs);
+        final int value = db.delete(TableEntry.TABLE_NAME, selection, selectionArgs);
+
+        db.close();
+
+        return value;    }
+
+
+    public int deleteEvent(EventInfo event){
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Define 'where' part of query.
+        String selection = TableEntry._ID + " =?";
+// Specify arguments in placeholder order.
+        String[] selectionArgs = { String.valueOf(event.getRowId()) };
+// Issue SQL statement.
+        final int value = db.delete(TableEntry.TABLE_NAME, selection, selectionArgs);
+
+        db.close();
+
+        return value;
     }
 
     public void deleteAllEvents(){

@@ -278,6 +278,7 @@ public class GroupsEditorFragment extends ListFragment implements
             }
         };
 
+
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
             @Override
@@ -541,6 +542,8 @@ public class GroupsEditorFragment extends ListFragment implements
         switch (loader.getId()) {
 
             case GroupsListQuery.QUERY_ID:
+                String acc_name;
+                String acc_type;
 
                 if(data != null && data.moveToFirst()){
                     final ArrayList<ContactInfo> list = new ArrayList<ContactInfo>();
@@ -558,6 +561,9 @@ public class GroupsEditorFragment extends ListFragment implements
                                         ContactInfo.PASSIVE_BEHAVIOR : ContactInfo.IGNORED,
                                 getActivity());
 
+
+                        acc_name = data.getString(GroupsListQuery.ACCOUNT_NAME);
+                        acc_type = data.getString(GroupsListQuery.ACCOUNT_TYPE);
                         list.add(group);
 
                     }while(data.moveToNext());
@@ -577,7 +583,9 @@ public class GroupsEditorFragment extends ListFragment implements
                             // adds each group to the database,if they aren't already there
                             // any new group that has a prescribed behavior is opted in
                             // That is, it's checked by default
-                            groupStatsHelper.addGroupListToDB(list, statsDb);
+                            groupStatsHelper.updateGroupListInDB(list, statsDb);
+
+                            statsDb.close();
 
                             getActivity().runOnUiThread(new Runnable() {
 
@@ -810,10 +818,10 @@ public class GroupsEditorFragment extends ListFragment implements
                                     final GroupStatsHelper groupStatsHelper =
                                             new GroupStatsHelper(getActivity());
 
-                                    final long records_updated =
+                                    final int records_updated =
                                             groupStatsHelper.updateGroupInfo(holder.group, statsDb);
 
-
+                                    statsDb.close();
 
                                     getActivity().runOnUiThread(new Runnable() {
 
@@ -824,7 +832,7 @@ public class GroupsEditorFragment extends ListFragment implements
                                             getGroupStats();
 
                                             Toast.makeText(getActivity(),
-                                                    Long.toString(records_updated)
+                                                    Integer.toString(records_updated)
                                                             + " Record(s) Updated",
                                                     Toast.LENGTH_SHORT).show();
 
@@ -1035,7 +1043,8 @@ public class GroupsEditorFragment extends ListFragment implements
                 ContactsContract.Groups.ACCOUNT_NAME,
                 ContactsContract.Groups.SUMMARY_COUNT,
                 ContactsContract.Groups.NOTES,
-                ContactsContract.Groups.AUTO_ADD
+                ContactsContract.Groups.AUTO_ADD,
+                ContactsContract.Groups.ACCOUNT_TYPE
         };
 
         // The query column numbers which map to each value in the projection
@@ -1045,6 +1054,8 @@ public class GroupsEditorFragment extends ListFragment implements
         final static int MEMBER_COUNT = 3;
         final static int NOTES = 4;
         final static int AUTO_ADD = 5;
+        final static int ACCOUNT_TYPE = 5;
+
     }
 
 

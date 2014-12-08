@@ -2,8 +2,11 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-- redo data import to better support a per contact update
+- implement update of individual contacts when viewing the contact list
+- Test XML file import
+- deleting a group in google should delete on app
 - Update contact stats when a communication happens
+    - needs to check back to the marker for the class
 + Create class to estimate contact due date
 + Create routine for producing the long duration statistics:
     - average time
@@ -38,9 +41,17 @@ ___________________________________________________________________
 
 **** Need Help ****
 - Convert project to Gradle
+ -http://tools.android.com/tech-docs/new-build-system/migrating-from-eclipse-projects
+- Get Support Library v7
+ -http://developer.android.com/tools/support-library/setup.html
+ - http://developer.android.com/tools/support-library/index.html
+ - http://developer.android.com/tools/support-library/features.html
+-Update to Material Design
+ - https://developer.android.com/training/material/theme.html
 
 ***Bug List***
 - Blur.fastblur sometimes crashes after coming back to the app through the lockscreen
+  - http://stackoverflow.com/questions/22144931/scriptintrinsicblur-produces-black-bitmaps
 - the runnable thread at the end of loading the background image crashes the app
 - OnClick listener in the groupsEditor interface is broken
 - crashing when contact notes are updated
@@ -108,6 +119,8 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- redo data import to better support a per contact update
+
 - activity for creating groups
 
 - view the last 6 communications

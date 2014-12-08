@@ -42,7 +42,6 @@ public class GoogleGroupMaker {
     }
 
     private void methodTwo(String group_name){
-        //http://stackoverflow.com/questions/13529427/add-a-contact-in-a-specific-group-by-id-of-group/16677666#16677666
 
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -50,9 +49,10 @@ public class GoogleGroupMaker {
 
                 // the id should be assigned automatically .withValue(ContactsContract.Groups._ID, ANY LONG UNIQUE VALUE)
                 .withValue(ContactsContract.Groups.TITLE, group_name)
-                        //shouldn't have to declair group visibility
-                //.withValue(ContactsContract.Groups.ACCOUNT_TYPE, CONTACT_GROUP_ACCOUNT_TYPE)
-                //.withValue(ContactsContract.Groups.ACCOUNT_NAME, CONTACT_GROUP_ACCOUNT_NAME)
+                .withValue(ContactsContract.Groups.ACCOUNT_TYPE, "com.google")
+                // TODO create a resource for the account Name
+                .withValue(ContactsContract.Groups.ACCOUNT_NAME, "tmacdona@gmail.com")
+                .withValue(ContactsContract.Groups.GROUP_VISIBLE,1)
                 .build());
 
 

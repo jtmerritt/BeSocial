@@ -5,6 +5,8 @@ import android.content.Context;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 
+import java.util.ArrayList;
+
 /**
  * Created by Tyson Macdonald on 11/21/2014.
  */
@@ -23,8 +25,11 @@ public class GroupBehavior {
                 group.setBehavior(ContactInfo.IGNORED);
                 break;
 
-            // There's no way to set the countdown limit, so default to passive
             case ContactInfo.COUNTDOWN_BEHAVIOR:
+                group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
+                group.setEventIntervalLimit(365);
+                break;
+
             case ContactInfo.PASSIVE_BEHAVIOR:
                 group.setBehavior(ContactInfo.PASSIVE_BEHAVIOR);
                 break;
@@ -81,10 +86,48 @@ public class GroupBehavior {
                 group.setBehavior(ContactInfo.COUNTDOWN_BEHAVIOR);
             }
         }
-
-
-
-
         return group;
+    }
+
+    static public ContactInfo getRestrictiveGroupFromList(ArrayList<ContactInfo> groups){
+        ContactInfo shortestTermGroup = null;
+
+        for(ContactInfo group:groups){
+            if(shortestTermGroup == null){
+                shortestTermGroup = group;
+                continue;
+            }
+
+            switch (group.getBehavior()){
+                case ContactInfo.COUNTDOWN_BEHAVIOR:
+
+                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR) ||
+                            (shortestTermGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
+                        shortestTermGroup = group;
+                    }
+                    if((shortestTermGroup.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR) &&
+                            (group.getEventIntervalLimit() < shortestTermGroup.getEventIntervalLimit() )){
+                        shortestTermGroup = group;
+                    }
+                    break;
+                case ContactInfo.AUTOMATIC_BEHAVIOR:
+                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
+                        shortestTermGroup = group;
+                    }
+                    break;
+                case ContactInfo.RANDOM_BEHAVIOR:
+                    if((shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
+                        shortestTermGroup = group;
+                    }
+                    break;
+                case ContactInfo.PASSIVE_BEHAVIOR:
+                    break;
+                default:
+            }
+
+        }
+        return shortestTermGroup;
     }
 }

@@ -38,6 +38,8 @@ public class EventInfo {
     final public static int FACEBOOK = 5;
     final public static int GOOGLE_HANGOUTS = 6;
     final public static int SKYPE = 7;
+
+
     final public static int NOT_SENT_TO_CONTACT_STATS = 0;
     final public static int SENT_TO_CONTACT_STATS = 1;
 
@@ -78,6 +80,7 @@ public class EventInfo {
     final public static int OUTGOING_TYPE = 2;
     final public static int INCOMING_TYPE = 1;
     final public static int MISSED_DRAFT = 3;
+    final public static int RECORD_UPDATE_MARKER = 4;  // Used in the keeping track of database updates
 
 
     //constructor

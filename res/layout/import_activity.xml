@@ -83,7 +83,9 @@
             android:indeterminate="false"
             android:layout_below="@+id/parse_file"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:secondaryProgressTint="@color/accent_200"
+            android:progressTint="@color/primary_400" />
 
         <Space
             android:layout_width="match_parent"
@@ -133,7 +135,9 @@
             android:layout_below="@+id/phone_sms_import"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true"
+            android:secondaryProgressTint="@color/accent_200"
+            android:progressTint="@color/primary_400" />
     </RelativeLayout>
 
 </LinearLayout>
