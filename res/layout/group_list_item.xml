@@ -36,12 +36,12 @@
         android:layout_alignParentStart="true"
         android:gravity="center_vertical">
 
-        <QuickContactBadge android:id="@android:id/icon"
-                           android:layout_height="@dimen/avatar_width"
-                           android:layout_width="@dimen/avatar_width"
-                           android:scaleType="centerCrop"
-                           style="@style/quickContactBadgeStyle"
-                           android:src="@drawable/ic_contact_picture_holo_light"/>
+        <ImageView
+            android:layout_width="@dimen/avatar_width"
+            android:layout_height="@dimen/avatar_width"
+            android:id="@+id/imageView2"
+            android:src="@drawable/ic_group_grey600_48dp" />
+
     </LinearLayout>
 
     <TextView android:id="@android:id/text2"

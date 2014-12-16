@@ -50,6 +50,7 @@ ___________________________________________________________________
  - https://developer.android.com/training/material/theme.html
 
 ***Bug List***
+- not entering a number in the wordcount dialog of the event entry fragment, hitting OK, causes crash
 - Blur.fastblur sometimes crashes after coming back to the app through the lockscreen
   - http://stackoverflow.com/questions/22144931/scriptintrinsicblur-produces-black-bitmaps
 - the runnable thread at the end of loading the background image crashes the app

@@ -372,45 +372,26 @@
             </ScrollView>
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_row="4"
-            android:layout_column="0"
-            android:layout_marginLeft="@dimen/listview_item_padding"
-            android:layout_marginRight="@dimen/listview_item_padding">
-
-            <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/save_button"
-                android:baselineAlignBottom="false"
-                android:contentDescription="Save New Event"
-                android:cropToPadding="true"
-                android:src="@android:drawable/ic_input_add"
-                android:clickable="true"
-                android:layout_weight=".5"
-                android:layout_marginTop="@dimen/padding"
-                android:layout_marginBottom="@dimen/padding"
-                android:layout_marginRight="@dimen/padding" />
-
-            <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/cancel_button"
-                android:cropToPadding="false"
-                android:contentDescription="Cancel New Event"
-                android:clickable="true"
-                android:src="@android:drawable/ic_delete"
-                android:layout_weight=".5"
-                android:layout_marginTop="@dimen/padding"
-                android:layout_marginBottom="@dimen/padding"
-                android:layout_marginLeft="@dimen/padding" />
-
-        </LinearLayout>
     </LinearLayout>
 
+    <com.example.android.contactslist.FloatingActionButton.FloatingActionButton2
+        android:id="@+id/fab_1"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_marginTop="26dp"
+        android:background="@drawable/circle"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="@dimen/fab_icon_size"
+            android:layout_height="@dimen/fab_icon_size"
+            android:src="@drawable/ic_search_black_48dp"
+            android:layout_gravity="center"
+            android:duplicateParentState="true"/>
+
+    </com.example.android.contactslist.FloatingActionButton.FloatingActionButton2>
 </FrameLayout>
 
 

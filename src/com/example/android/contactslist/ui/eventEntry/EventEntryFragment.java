@@ -42,6 +42,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -71,6 +72,7 @@ import android.text.InputType;
 
 
 import com.example.android.contactslist.BuildConfig;
+import com.example.android.contactslist.FloatingActionButton.FloatingActionButton2;
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
@@ -145,8 +147,10 @@ public class EventEntryFragment extends Fragment implements
     static Long mEventDate;
     private Long mDuration = (long)0;
     private int mWordCount = 0;
-    private final int MAX_SEEK_BAR_WORD_COUNT = 150;
+    private final int MAX_SEEK_BAR_WORD_COUNT = 500;
     private boolean mDurationViewIsDirty = false;
+    private FloatingActionButton2 fab1;
+
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
 
@@ -173,14 +177,11 @@ public class EventEntryFragment extends Fragment implements
     private RadioGroup radioGroup;
     private RadioButton mIncomingButton;
     private RadioButton mOutgoingButton;
-    private ImageButton mSubmitButton;
-    private ImageButton mCancelButton;
     private LinearLayout mEventDurationLayout;
     private LinearLayout mEventWordCountLayout;
     private SeekBar mWordCountSeekBar;
 
 
-    private MenuItem mEditContactMenuItem;
     private String mContactNameString;
 
     private Context mContext;
@@ -256,11 +257,6 @@ public class EventEntryFragment extends Fragment implements
 
             mEmptyView.setVisibility(View.GONE);
 
-            // Shows the edit contact action/menu item
-            if (mEditContactMenuItem != null) {
-                mEditContactMenuItem.setVisible(true);
-            }
-
             // Set the contact lookup key
             // Parse the contact uri to get the lookup key for the contact
             List<String> path = mContactUri.getPathSegments();
@@ -288,9 +284,6 @@ public class EventEntryFragment extends Fragment implements
 
             if (mContactNameView != null) {
                 mContactNameView.setText("");
-            }
-            if (mEditContactMenuItem != null) {
-                mEditContactMenuItem.setVisible(false);
             }
         }
     }
@@ -384,9 +377,6 @@ public class EventEntryFragment extends Fragment implements
         mWordCountViewButton = (Button) detailView.findViewById(R.id.word_count_button);
         mIncomingButton = (RadioButton) detailView.findViewById(R.id.radio_incoming_event_type);
         mOutgoingButton = (RadioButton) detailView.findViewById(R.id.radio_outgoing_event_type);
-        mSubmitButton = (ImageButton) detailView.findViewById(R.id.save_button);
-        mCancelButton = (ImageButton) detailView.findViewById(R.id.cancel_button);
-
 
         if (mIsTwoPaneLayout) {
             // If this is a two pane view, the following code changes the visibility of the contact
@@ -420,66 +410,6 @@ public class EventEntryFragment extends Fragment implements
                         break;
 
                 }
-            }
-        });
-
-
-        mSubmitButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-
-
-
-                // if the event is complete, save to the database and return
-                if(completenessCheck()){
-                    // create the new eventInfo based on this data
-                    generateNewEvent();
-
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            int updateCount = 0;
-
-                            Updates contactUpdate = new Updates(mContext);
-                            ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
-                            eventList.add(mNewEventInfo);
-
-                            // add event to the database and update the contact
-                            mContactStats = contactUpdate.updateDataBaseWithContactEvents(
-                                    mContactStats, eventList);
-                            contactUpdate.close();
-
-                            final boolean insertComplete = (mContactStats != null);
-
-                            getActivity().runOnUiThread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    // end by running the final method of the activity
-                                    finishActivity(insertComplete);
-                                }
-                            });
-
-                        }
-                    }).start();
-
-                }
-                //TODO: do other stuff for tablet
-
-            }
-        });
-
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), R.string.entry_discarded, Toast.LENGTH_SHORT).show();
-
-                //Return to last activity
-                getActivity().finish();  // same as hitting back button
-                //TODO: do other stuff for tablet
             }
         });
 
@@ -531,6 +461,53 @@ public class EventEntryFragment extends Fragment implements
             }
 
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
+
+
+        fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
+        fab1.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View view) {
+
+                // if the event is complete, save to the database and return
+                if(completenessCheck()){
+                    // create the new eventInfo based on this data
+                    generateNewEvent();
+
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            int updateCount = 0;
+
+                            Updates contactUpdate = new Updates(mContext);
+                            ArrayList<EventInfo> eventList = new ArrayList<EventInfo>();
+                            eventList.add(mNewEventInfo);
+
+                            // add event to the database and update the contact
+                            mContactStats = contactUpdate.updateDataBaseWithContactEvents(
+                                    mContactStats, eventList);
+                            contactUpdate.close();
+
+                            final boolean insertComplete = (mContactStats != null);
+
+                            getActivity().runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    // end by running the final method of the activity
+                                    finishActivity(insertComplete);
+                                }
+                            });
+
+                        }
+                    }).start();
+
+                }
+                //TODO: do other stuff for tablet
+
             }
         });
 
@@ -904,13 +881,6 @@ public class EventEntryFragment extends Fragment implements
 
         // Inflates the options menu for this fragment
         inflater.inflate(R.menu.event_entry_menu, menu);
-
-        // Gets a handle to the "find" menu item
-        mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
-
-        // If contactUri is null the edit menu item should be hidden, otherwise
-        // it is visible.
-        mEditContactMenuItem.setVisible(mContactUri != null);
 
         // add the last settings menu to the end of the action bar
         MenuItem settingsItem =
@@ -1574,10 +1544,7 @@ And displays that time.
                 return false;
         }
     }
-
-
-
-}
+ }
 
 
 

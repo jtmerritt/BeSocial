@@ -4,10 +4,12 @@ package com.example.android.contactslist.util;
         import android.content.Context;
         import android.graphics.Bitmap;
         import android.os.Build.VERSION;
-        import android.renderscript.Allocation;
-        import android.renderscript.Element;
-        import android.renderscript.RenderScript;
-        import android.renderscript.ScriptIntrinsicBlur;
+        //import android.renderscript.Allocation;
+        //import android.renderscript.Element;
+        //import android.renderscript.RenderScript;
+        //import android.renderscript.ScriptIntrinsicBlur;
+
+        //import android.support.v8.renderscript.*;
         import android.util.Log;
 
 public class Blur {
@@ -22,21 +24,30 @@ public class Blur {
             radius = 25;
         }
 
+
+        /*   WARNING!!!
+        *   This renderscript class is not well supported without sipport library 8.
+        *   However support library 8 is not supported in Android studio
+        *   https://developer.android.com/guide/topics/renderscript/compute.html#access-rs-apis
+
+
         if (VERSION.SDK_INT > 16) {
             Bitmap bitmap = sentBitmap.copy(sentBitmap.getConfig(), true);
 
             final RenderScript rs = RenderScript.create(context);
-            final Allocation input = Allocation.createFromBitmap(rs, sentBitmap, Allocation.MipmapControl.MIPMAP_NONE,
+            final Allocation input = Allocation.createFromBitmap(rs, sentBitmap,
+                    Allocation.MipmapControl.MIPMAP_NONE,
                     Allocation.USAGE_SCRIPT);
+
             final Allocation output = Allocation.createTyped(rs, input.getType());
             final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-            script.setRadius(radius /* e.g. 3.f */);
+            script.setRadius(radius); //e.g. 3.f
             script.setInput(input);
             script.forEach(output);
             output.copyTo(bitmap);
             return bitmap;
         }
-
+*/
         // Stack Blur v1.0 from
         // http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
         //
@@ -75,7 +86,7 @@ public class Blur {
         int h = bitmap.getHeight();
 
         int[] pix = new int[w * h];
-        Log.e("pix", w + " " + h + " " + pix.length);
+        Log.d("pix", w + " " + h + " " + pix.length);
         bitmap.getPixels(pix, 0, w, 0, 0, w, h);
 
         int wm = w - 1;
@@ -261,7 +272,7 @@ public class Blur {
             }
         }
 
-        Log.e("pix", w + " " + h + " " + pix.length);
+        Log.d("pix", w + " " + h + " " + pix.length);
         bitmap.setPixels(pix, 0, w, 0, 0, w, h);
         return (bitmap);
     }
