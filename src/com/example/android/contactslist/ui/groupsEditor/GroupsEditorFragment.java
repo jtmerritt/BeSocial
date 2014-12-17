@@ -813,36 +813,28 @@ public class GroupsEditorFragment extends ListFragment implements
                         @Override
                         public void run() {
 
+                            final ContactStatsContract statsDb =
+                                    new ContactStatsContract(getActivity());
+                            final GroupStatsHelper groupStatsHelper =
+                                    new GroupStatsHelper(getActivity());
+
+                            final int records_updated =
+                                    groupStatsHelper.updateGroupInfo(holder.group, statsDb);
+
+                            statsDb.close();
+
                             getActivity().runOnUiThread(new Runnable() {
 
                                 @Override
                                 public void run() {
+                                    // in the UI thread update the group list
+                                    // from the database
+                                    getGroupStats();
 
-                                    final ContactStatsContract statsDb =
-                                            new ContactStatsContract(getActivity());
-                                    final GroupStatsHelper groupStatsHelper =
-                                            new GroupStatsHelper(getActivity());
-
-                                    final int records_updated =
-                                            groupStatsHelper.updateGroupInfo(holder.group, statsDb);
-
-                                    statsDb.close();
-
-                                    getActivity().runOnUiThread(new Runnable() {
-
-                                        @Override
-                                        public void run() {
-                                            // in the UI thread update the group list
-                                            // from the database
-                                            getGroupStats();
-
-                                            Toast.makeText(getActivity(),
-                                                    Integer.toString(records_updated)
-                                                            + " Record(s) Updated",
-                                                    Toast.LENGTH_SHORT).show();
-
-                                        }
-                                    });
+                                    Toast.makeText(getActivity(),
+                                            Integer.toString(records_updated)
+                                                    + " Record(s) Updated",
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             });
 
@@ -919,7 +911,7 @@ public class GroupsEditorFragment extends ListFragment implements
 
             // Loads the thumbnail image pointed to by photoUri into the QuickContactBadge in a
             // background worker thread
-            mImageLoader.loadImage(photoUri, holder.icon);
+            //mImageLoader.loadImage(photoUri, holder.icon);
 
         }
 

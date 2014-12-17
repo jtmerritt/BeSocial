@@ -18,6 +18,7 @@ package com.example.android.contactslist.ui;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -90,6 +91,7 @@ import com.example.android.contactslist.util.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -202,7 +204,7 @@ public class ContactDetailFragment extends Fragment implements
     private boolean message_stats_loaded = false;
     private boolean lookBack_loaded = false;
 
-
+    private wordCloudMakerThread mWordCloudMakerThread;
 
 
 
@@ -1187,15 +1189,18 @@ public class ContactDetailFragment extends Fragment implements
 
 
                             // TODO figure out why starting the UI thread runnable crashes the program
-                            getActivity().runOnUiThread(new Runnable() {
+                            try {
+                                getActivity().runOnUiThread(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    updateViewImageBackground(backgroundImage,
-                                            croppedBlurredBackgroundImage);
-
-                                }
-                            });
+                                    @Override
+                                    public void run() {
+                                            updateViewImageBackground(backgroundImage,
+                                                    croppedBlurredBackgroundImage);
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
                         }
                     }).start();
@@ -1211,8 +1216,6 @@ public class ContactDetailFragment extends Fragment implements
                         data.moveToNext(); //Add this so we don't get an infinite loop if the first image from
                         //the cursor is not from DCIM
                     }*/
-                }else {
-
                 }
 
                 break;
@@ -1346,58 +1349,120 @@ public class ContactDetailFragment extends Fragment implements
     private void makeWordCloud(Cursor data) {
 
         if (data != null && data.moveToFirst()) {
-            final GatherSMSLog gatherSMSLog = new GatherSMSLog(mContext, null, null);
-
-            gatherSMSLog.insertEventLog(data);
-
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    // use the GatherSMSLog class to process the cursor
-
-
-                    //grab only those events which match the current contact
-                    final ArrayList<EventInfo> eventList =
-                            (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(
-                                    /*mContactStats*/
-                            new ContactInfo(mContactNameString, mContactLookupKey,
-                                    //TODO the ID (below) may not be correct, but it probably does not matter for this word cloud
-                                    Long.parseLong(mContactUri.getLastPathSegment()))
-                            );
-
-                    gatherSMSLog.closeSMSLog();
-
-                    String[] words_to_ignore =
-                            getResources().getStringArray(R.array.array_of_prepositions);
-
-                    //tally word counts
-                    GatherWordCounts gatherWordCounts = new GatherWordCounts();
-                    gatherWordCounts.addEventList(eventList);
-
-                    //get the sorted list of words
-                    final ArrayList<Map.Entry<String, Integer>> word_list =
-                            gatherWordCounts.getWordList(words_to_ignore);
-
-                    getActivity().runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // clear the word cloud, just in case this is a second run
-                            wordCloudView.clear();
-
-                            // end by running the final method of the activity
-                            //Now send the list to the word cloud generator
-                            wordCloudView.setWordList(word_list);
-
-                            // clear the internal event list
-                            eventList.clear();
-                        }
-                    });
-                }
-            }).start();
+            mWordCloudMakerThread = new wordCloudMakerThread();
+            mWordCloudMakerThread.setCursor(data);
+            mWordCloudMakerThread.setWordsToIgnore(
+                    getResources().getStringArray(R.array.array_of_prepositions));
+            mWordCloudMakerThread.setContext(getActivity());
+            mWordCloudMakerThread.setContact(new ContactInfo(mContactNameString, mContactLookupKey,
+                    //TODO the ID (below) may not be correct, but it probably does not matter for this word cloud
+                    Long.parseLong(mContactUri.getLastPathSegment())));
+            mWordCloudMakerThread.setView(wordCloudView);
+            mWordCloudMakerThread.start();
         }
     }
+
+
+    /**
+     * Static inner classes don't hold implicit references to their
+     * enclosing class, so the Activity instance won't be leaked across
+     * configuration changes.
+     */
+    private static class wordCloudMakerThread extends Thread {
+        private boolean mRunning = false;
+        private Cursor data = null;
+        private String[] words_to_ignore = null;
+        private Context context;
+        private Activity activity = null;
+        private ContactInfo contact = null;
+        private WordCloudView wordCloudView = null;
+
+
+
+        public void setCursor(Cursor cursor){
+            this.data = cursor;
+        }
+
+        public void setWordsToIgnore(String[] list){
+            this.words_to_ignore = list;
+        }
+
+        public void setContext(Context context){
+            final WeakReference activityWeakReference = new WeakReference(context);
+            this.context = context;
+            activity = (Activity) activityWeakReference.get();
+        }
+
+        public void setContact(ContactInfo contact){
+            this.contact = contact;
+        }
+
+        public void setView(WordCloudView wordCloudView){
+            this.wordCloudView = wordCloudView;
+        }
+
+        @Override
+        public void run() {
+            mRunning = true;
+
+            final GatherSMSLog gatherSMSLog = new GatherSMSLog(context, null, null);
+
+            // use the GatherSMSLog class to process the cursor
+            gatherSMSLog.insertEventLog(data);
+
+            if(!mRunning){
+                gatherSMSLog.closeSMSLog();
+                return;
+            }
+
+            //grab only those events which match the current contact
+            final ArrayList<EventInfo> eventList =
+                    (ArrayList<EventInfo>) gatherSMSLog.getSMSLogsForContact(contact);
+
+            gatherSMSLog.closeSMSLog();
+
+            if(!mRunning){
+                return;
+            }
+
+            //tally word counts
+            final  GatherWordCounts gatherWordCounts = new GatherWordCounts();
+            gatherWordCounts.addEventList(eventList);
+
+            if(!mRunning){
+                return;
+            }
+
+            //get the sorted list of words
+            final ArrayList<Map.Entry<String, Integer>> word_list =
+                    gatherWordCounts.getWordList(words_to_ignore);
+
+            if(mRunning) {
+                activity.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // clear the word cloud, just in case this is a second run
+                        wordCloudView.clear();
+
+                        // end by running the final method of the activity
+                        //Now send the list to the word cloud generator
+                        wordCloudView.setWordList(word_list);
+
+                        // clear the internal event list
+                        eventList.clear();
+                    }
+                });
+            }
+        }
+
+        public void close() {
+            mRunning = false;
+        }
+    }
+
+
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -2820,6 +2885,10 @@ Return a formatted string for the date header
     {
         super.onDestroy();
 
+        // close down the long running thread
+        if(mWordCloudMakerThread != null) {
+            mWordCloudMakerThread.close();
+        }
 
         unbindDrawables(detailView); // <---This should be the ID of this fragments (ScreenSlidePageFragment) layout
         clearFragmentData();

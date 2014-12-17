@@ -139,7 +139,11 @@ public class GatherSMSLog //extends AsyncTask<Void, Void, List<EventInfo>>
 
     public List<EventInfo> getSMSLogsForContact(ContactInfo contact) {
         mEventLog.clear();
-        loadSMSLogForContact(contact);
+        try {
+            loadSMSLogForContact(contact);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return mEventLog;
     }
 

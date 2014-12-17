@@ -276,18 +276,39 @@ public class ContactsListActivity extends FragmentActivity implements
     protected void onResume() {
         super.onResume();
 
+
         // get the new set of groups from the DB
         final ContactGroupsList contactGroupsList = new ContactGroupsList();
 
         // collect list of applicable gmail contact groups
         contactGroupsList.setGroupsContentResolver(this);
-        mGroups = contactGroupsList.loadIncludedGroupsFromDB();
 
-        // then populate the navigation drawer with the list of groups
-        populateNavigationDrawer();
+        new Thread(new Runnable() {
 
-        // then the default group setting requires that the navigation drawer be fully set up
-        setDefaultContactGroup(mGroupName);
+            @Override
+            public void run() {
+
+                // stuff to do in the background
+                contactGroupsList.loadIncludedGroupsFromDB();
+
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //finalize with stuff to do on the UI thread
+
+                        mGroups = contactGroupsList.getGroupList();
+                        // then populate the navigation drawer with the list of groups
+                        populateNavigationDrawer();
+
+                        // then the default group setting requires that the navigation drawer be fully set up
+                        setDefaultContactGroup(mGroupName);
+                    }
+                });
+
+            }
+        }).start();
     }
 
 

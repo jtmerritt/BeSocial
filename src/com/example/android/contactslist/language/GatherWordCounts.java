@@ -30,11 +30,12 @@ public class GatherWordCounts {
 
     public void addEventList(ArrayList<EventInfo> log){
 
-        // cycle through the list of events and analyze the text body
-        for(EventInfo eventInfo:log){
-            addStringToTally(eventInfo.eventNotes);
+        if(log != null) {
+            // cycle through the list of events and analyze the text body
+            for (EventInfo eventInfo : log) {
+                addStringToTally(eventInfo.eventNotes);
+            }
         }
-
     }
 
 
