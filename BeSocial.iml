@@ -23,6 +23,7 @@
     <orderEntry type="library" exported="" name="gson-2.1" level="project" />
     <orderEntry type="library" exported="" name="google-api-client-appengine-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="android-support-v4" level="project" />
+    <orderEntry type="library" name="picasso-2.4.0" level="project" />
   </component>
 </module>
 

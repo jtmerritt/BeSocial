@@ -131,6 +131,15 @@ public abstract class ImageLoader {
      */
     protected abstract Bitmap processBitmap(Object data);
 
+
+    /**
+     * Subclasses should override this to define any processing or work that must happen after
+     * the final bitmap completed.
+     * @param bitmap
+     */
+    protected abstract void postProcess(Bitmap bitmap);
+
+
     /**
      * Cancels any pending work attached to the provided ImageView.
      */
@@ -251,11 +260,14 @@ public abstract class ImageLoader {
             }
 
             final ImageView imageView = getAttachedImageView();
-            if (bitmap != null && imageView != null) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "onPostExecute - setting bitmap");
+            if (bitmap != null) {
+                if (imageView != null) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "onPostExecute - setting bitmap");
+                    }
+                    setImageBitmap(imageView, bitmap);
                 }
-                setImageBitmap(imageView, bitmap);
+                postProcess(bitmap);
             }
         }
 

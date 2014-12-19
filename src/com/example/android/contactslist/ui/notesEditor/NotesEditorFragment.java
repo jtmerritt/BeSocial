@@ -284,6 +284,9 @@ public class NotesEditorFragment extends Fragment implements
                 return loadContactPhoto((Uri) data, getImageSize());
 
             }
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+            }
         };
 
 

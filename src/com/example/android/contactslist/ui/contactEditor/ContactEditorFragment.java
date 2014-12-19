@@ -267,6 +267,9 @@ public class ContactEditorFragment extends Fragment implements
                 return loadContactPhoto((Uri) data, getImageSize());
 
             }
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+            }
         };
 
 

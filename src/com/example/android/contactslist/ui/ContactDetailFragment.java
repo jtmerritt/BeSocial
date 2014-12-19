@@ -84,11 +84,16 @@ import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
 import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
 import com.example.android.contactslist.util.Blur;
+import com.example.android.contactslist.util.BlurTransform;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
 import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
 
+import com.squareup.picasso.*;
+import android.graphics.Bitmap.Config;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -145,11 +150,14 @@ public class ContactDetailFragment extends Fragment implements
     private boolean mIsTwoPaneLayout;
 
     private ImageLoader mImageLoader; // Handles loading the contact image in a background thread
+    private ImageLoader mBackgroundImageLoader;
+    private ImageLoader mBlurredBackgroundImageLoader;
+
 
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
-    private ImageView mContactDetailImage;
-    private ImageView mBlurredContactDetailImage;
+    private ImageView mContactDetailImageView;
+    private ImageView mBlurredContactDetailImageView;
 
     private ImageView mImageView;
     private ImageView mEditNotesButton;
@@ -299,7 +307,7 @@ public class ContactDetailFragment extends Fragment implements
             getVoiceNumber();
             getSMSNumber();
             getEmailAddress();
-            getContactNote();
+            //getContactNote();
 
 
             // get the contact stats from the database and set the times for the fraction view
@@ -360,6 +368,10 @@ public class ContactDetailFragment extends Fragment implements
                 return loadContactPhoto((Uri) data, getImageSize());
 
             }
+
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+            }
         };
 
         // Set a placeholder loading image for the image loader
@@ -369,19 +381,56 @@ public class ContactDetailFragment extends Fragment implements
         // rather than fading in
         mImageLoader.setImageFadeIn(false);
 
-        mContext = getActivity().getApplicationContext();
 
-/*
-        // reference to the actionBar ImageView
-        mActionBarIcon = (ImageView) getActivity().findViewById(android.R.id.home);
+        mBackgroundImageLoader = new ImageLoader(getActivity(), getLargestScreenDimension()) {
+            @Override
+            protected Bitmap processBitmap(Object data) {
+                // This gets called in a background thread and passed the data from
+                // ImageLoader.loadImage().
+                return loadBackgroundPhoto((String) data, getImageSize());
 
-        // set the margins for the actionbar imageView  http://stackoverflow.com/questions/18671231/how-to-add-padding-margin-between-icon-and-up-button-of-the-actionbar
-        FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) mActionBarIcon.getLayoutParams();
-        iconLp.topMargin = iconLp.bottomMargin = 0;
-        iconLp.leftMargin = 10;
-        iconLp.rightMargin = 10;
-        mActionBarIcon.setLayoutParams(iconLp);
-*/
+            }
+
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+            }
+        };
+
+        // Set a placeholder loading image for the image loader
+        mBackgroundImageLoader.setLoadingImage(R.drawable.ic_contact_picture_180_holo_light);
+
+        // Tell the image loader to set the image directly when it's finished loading
+        // rather than fading in
+        mBackgroundImageLoader.setImageFadeIn(false);
+
+
+        mBlurredBackgroundImageLoader = new ImageLoader(getActivity(), getLargestScreenDimension()) {
+            @Override
+            protected Bitmap processBitmap(Object data) {
+                // This gets called in a background thread and passed the data from
+
+                return loadBlurredBackgroundPhoto((String) data, getImageSize());
+            }
+
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+
+                mScrollingImageContactHeaderView.setBackgroundImage(bitmap);
+
+            }
+        };
+
+        // Set a placeholder loading image for the image loader
+        mBlurredBackgroundImageLoader.setLoadingImage(R.drawable.ic_contact_picture_180_holo_light);
+
+        // Tell the image loader to set the image directly when it's finished loading
+        // rather than fading in
+        mBlurredBackgroundImageLoader.setImageFadeIn(false);
+
+
+
+        mContext = getActivity();//.getApplicationContext();
+
         // Get the screen width
         screenWidth = ImageUtils.getScreenWidth(getActivity());
         getScreenHeight = ImageUtils.getScreenHeight(getActivity());
@@ -475,11 +524,9 @@ public class ContactDetailFragment extends Fragment implements
         mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
 
         //initialize the image view for the main contact detail image
-        mContactDetailImage = (ImageView) detailView.findViewById(R.id.contact_detail_image);
+        mContactDetailImageView = (ImageView) detailView.findViewById(R.id.contact_detail_image);
         // and the blurred image
-        mBlurredContactDetailImage = (ImageView) detailView.findViewById(R.id.blurred_contact_detail_image);
-
-
+        mBlurredContactDetailImageView = (ImageView) detailView.findViewById(R.id.blurred_contact_detail_image);
 
         contactDetailChartView = new ContactDetailChartView(mContext, detailView);
         contactDetailChartView.makeLineChart(R.id.tiny_chart);
@@ -526,17 +573,12 @@ public class ContactDetailFragment extends Fragment implements
 
                 //Log.i("Scrolling", "Y to ["+y+"], Alpha to [" + alpha +"]");
 
-                mContactDetailImage.setAlpha(alpha);
-                mContactDetailImage.setTop(parallax);
-                mBlurredContactDetailImage.setTop(parallax);
+                mContactDetailImageView.setAlpha(alpha);
+                mContactDetailImageView.setTop(parallax);
+                mBlurredContactDetailImageView.setTop(parallax);
 
                 // update the image header
                 mScrollingImageContactHeaderView.updateScroll(parallax);
-
-                //wordCloud Loading
-                /*if(!wordCloudView.isSet() && y > 50){
-                    displayWordCloud();
-                }*/
 
 
                 // load the look back on a scroll trigger
@@ -689,7 +731,6 @@ public class ContactDetailFragment extends Fragment implements
                 runIntervalStats();
                 break;
             case R.id.run_test:
-                //displayWordCloud();
                 break;
             default:
                 // Display the fragment as the main content.
@@ -1161,50 +1202,8 @@ public class ContactDetailFragment extends Fragment implements
                     //TODO be smarter over which photo is chosen
                     final String path=data.getString(1);
 
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-
-                            // No image found => let's generate it!
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            BitmapRegionDecoder decoder = null;
-
-                            //TODO take care of margin at the bottom of the photo
-                            options.outHeight = getScreenHeight + 200;
-                            options.inSampleSize = 2;
-
-                            final Bitmap backgroundImage = BitmapFactory.decodeFile(path, options);
-
-                            //run the blur method on this bitmap
-                            // not allowed to blur more than 25
-                            final Bitmap blurredBackgroundImage = Blur.fastblur(mContext, backgroundImage, 25);
-
-                            // trim the blurred image down to size
-                            final Bitmap croppedBlurredBackgroundImage = Bitmap.createScaledBitmap(
-                                    blurredBackgroundImage, screenWidth,
-                                    (int) (blurredBackgroundImage.getHeight()
-                                            * ((float) screenWidth) /
-                                            ( float) blurredBackgroundImage.getWidth()), false);
-
-
-                            // TODO figure out why starting the UI thread runnable crashes the program
-                            try {
-                                getActivity().runOnUiThread(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                            updateViewImageBackground(backgroundImage,
-                                                    croppedBlurredBackgroundImage);
-                                    }
-                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }).start();
-
+                   mBackgroundImageLoader.loadImage(path, mContactDetailImageView);
+                   mBlurredBackgroundImageLoader.loadImage(path, mBlurredContactDetailImageView);
 
                    /* while(!isOK)
                     {
@@ -1217,7 +1216,6 @@ public class ContactDetailFragment extends Fragment implements
                         //the cursor is not from DCIM
                     }*/
                 }
-
                 break;
 
 
@@ -1225,7 +1223,7 @@ public class ContactDetailFragment extends Fragment implements
             case ContactSMSLogQuery.QUERY_ID:
                 // check to see if the cursor contains any entries
                 if (data != null && data.moveToFirst()) {
-                    makeWordCloud(data);
+                   makeWordCloud(data);
 
                 }
                 break;
@@ -1738,6 +1736,41 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         return height > width ? height : width;
     }
 
+
+    // Load the blurred image of the contact detail background image in conjunction with the imageLoader
+    private Bitmap loadBlurredBackgroundPhoto(String path, int imageSize) {
+
+        final Bitmap backgroundImage = loadBackgroundPhoto(path, imageSize);
+
+        //run the blur method on this bitmap
+        // not allowed to blur more than 25
+        final Bitmap blurredBackgroundImage = Blur.fastblur(mContext,
+                backgroundImage, 25);
+
+        // trim the blurred image down to size
+        final Bitmap croppedBlurredBackgroundImage = Bitmap.createScaledBitmap(
+                blurredBackgroundImage, screenWidth,
+                (int) (blurredBackgroundImage.getHeight()
+                        * ((float) screenWidth) /
+                        ( float) blurredBackgroundImage.getWidth()), false);
+
+        return croppedBlurredBackgroundImage;
+    }
+
+    // load the contact detail background image in conjunction with the imageLoader
+    private Bitmap loadBackgroundPhoto(String path, int imageSize) {
+
+        // No image found => let's generate it!
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        BitmapRegionDecoder decoder = null;
+
+        //TODO take care of margin at the bottom of the photo
+        options.outHeight = getScreenHeight + 200;
+        options.inSampleSize = 2;
+
+        return BitmapFactory.decodeFile(path, options);
+    }
+
     /**
      * Decodes and returns the contact's thumbnail image.
      * @param contactUri The Uri of the contact containing the image.
@@ -1806,11 +1839,11 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         try {
             // Constructs the image Uri from the contact Uri and the directory twig from the
             // Contacts.Photo table
-            Uri imageUri = Uri.withAppendedPath(contactUri, Photo.CONTENT_DIRECTORY);
+                Uri imageUri = Uri.withAppendedPath(contactUri, Photo.CONTENT_DIRECTORY);
 
-            // Retrieves an AssetFileDescriptor from the Contacts Provider, using the constructed
-            // Uri
-            afd = getActivity().getContentResolver().openAssetFileDescriptor(imageUri, "r");
+                // Retrieves an AssetFileDescriptor from the Contacts Provider, using the constructed
+                // Uri
+                afd = getActivity().getContentResolver().openAssetFileDescriptor(imageUri, "r");
 
             // If the file exists
             if (afd != null) {
@@ -2532,8 +2565,8 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
  */
     private void updateViewImageBackground(Bitmap backgroundImage, Bitmap blurredBackgroundImage) {
         // set the activity background image
-        mContactDetailImage.setImageBitmap(backgroundImage);
-        mBlurredContactDetailImage.setImageBitmap(blurredBackgroundImage);
+        mContactDetailImageView.setImageBitmap(backgroundImage);
+        mBlurredContactDetailImageView.setImageBitmap(blurredBackgroundImage);
 
         // set the header background image
         mScrollingImageContactHeaderView.setBackgroundImage(blurredBackgroundImage);

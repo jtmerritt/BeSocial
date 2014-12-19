@@ -226,6 +226,10 @@ public class ContactsListFragment extends ListFragment implements
                 // ImageLoader.loadImage().
                 return loadContactPhotoThumbnail((String) data, getImageSize());
             }
+
+            @Override
+            protected void postProcess(Bitmap bitmap) {
+            }
         };
 
         // Set a placeholder loading image for the image loader
