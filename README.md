@@ -51,11 +51,7 @@ ___________________________________________________________________
 
 ***Bug List***
 - not entering a number in the wordcount dialog of the event entry fragment, hitting OK, causes crash
-- Blur.fastblur sometimes crashes after coming back to the app through the lockscreen
-  - http://stackoverflow.com/questions/22144931/scriptintrinsicblur-produces-black-bitmaps
-- the runnable thread at the end of loading the background image crashes the app
 - crashing when contact notes are updated
-- Crashing when flipping contacts
 - Is it a problem that the method that creates the master contact list for the update, is also
     reading from the Misses You list?
 + [bug] the scroll position for the current detail view affects the chart loading for the next page

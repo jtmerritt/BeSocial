@@ -47,6 +47,7 @@ public class ContactNotesInterface {
 
         updateCount = cr.update(ContactsContract.Data.CONTENT_URI, values, noteWhere, noteWhereParams);
 
+
         if(updateCount > 0){
             mContactNotes = newNotes;
 

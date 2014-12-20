@@ -307,7 +307,7 @@ public class ContactDetailFragment extends Fragment implements
             getVoiceNumber();
             getSMSNumber();
             getEmailAddress();
-            //getContactNote();
+            getContactNote();
 
 
             // get the contact stats from the database and set the times for the fraction view
@@ -816,8 +816,8 @@ public class ContactDetailFragment extends Fragment implements
         getLoaderManager().restartLoader(ContactEmailAddressQuery.QUERY_ID, null, this);
     }
     private void getContactNote(){
-        loadContactNotes();
-        //getLoaderManager().restartLoader(ContactNotesQuery.QUERY_ID, null, this);
+        //loadContactNotes();
+        getLoaderManager().restartLoader(ContactNotesQuery.QUERY_ID, null, this);
     }
     private void getContactMessageStats(){
         getLoaderManager().restartLoader(ContactEventLogStatsQuery.QUERY_ID, null, this);
@@ -2560,23 +2560,10 @@ Set the FractionView with appropriate time data
         return statsLayout;
     }
 
-/*
-https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/src/com/npi/blureffect/MainActivity.java
- */
-    private void updateViewImageBackground(Bitmap backgroundImage, Bitmap blurredBackgroundImage) {
-        // set the activity background image
-        mContactDetailImageView.setImageBitmap(backgroundImage);
-        mBlurredContactDetailImageView.setImageBitmap(blurredBackgroundImage);
-
-        // set the header background image
-        mScrollingImageContactHeaderView.setBackgroundImage(blurredBackgroundImage);
-    }
-
-
 
     /*
     * set floating action menu
-*/
+    */
     private void setFloatingActionMenu(){
 
         SubActionButton.Builder rLSubBuilder = new SubActionButton.Builder(getActivity())
@@ -2801,48 +2788,41 @@ https://github.com/PomepuyN/BlurEffectForAndroidDesign/blob/master/BlurEffect/sr
             //Update the view
             mNotesView.setText(mContactNotes);
 
+
                 new Thread(new Runnable() {
 
                     @Override
                     public void run() {
 
                         // open the interface to write out the notes
-                        ContactNotesInterface mContactNotesInterface =
+                        final ContactNotesInterface mContactNotesInterface =
                                 new ContactNotesInterface(mContext);
 
-                        int updateCount =
+                        final int updateCount =
                                 mContactNotesInterface.setContactNotes(mContactLookupKey,
                                         mContactNotes);
 
-                        final boolean insertComplete = updateCount > 0;
+                        final boolean insertComplete = (updateCount > 0);
 
-                        if(insertComplete){
+                            getActivity().runOnUiThread(new Runnable() {
 
-                        }
-
-                        /*
-                        getActivity().runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if(insertComplete){
-                                    Toast.makeText(getActivity(),
-                                            "Notes Saved",
-                                            Toast.LENGTH_SHORT).show();
-                                }else {
-                                    Toast.makeText(getActivity(),
-                                            "Could not update database notes",
-                                            Toast.LENGTH_SHORT).show();
+                                @Override
+                                public void run() {
+                                    if (insertComplete) {
+                                        Toast.makeText(getActivity(),
+                                                "Notes Saved",
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getActivity(),
+                                                "Could not update database notes",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
                                 }
-                            }
-                        });
-                        */
+                            });
+
 
                     }
                 }).start();
-
-
-
         }else {
             Toast.makeText(getActivity(), "Write something down", Toast.LENGTH_SHORT).show();
         }
