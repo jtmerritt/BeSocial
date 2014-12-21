@@ -163,7 +163,7 @@
                                 style="?android:attr/buttonStyleSmall"
                                 android:layout_width="@dimen/listed_input_item_width"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/word_count_button"
+                                android:id="@+id/decay_rate_button"
                                 android:layout_weight=".66"
                                 android:background="@android:drawable/alert_light_frame"
                                 android:textAlignment="center"
@@ -184,7 +184,7 @@
                         <SeekBar
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/word_count_seek_bar"
+                            android:id="@+id/decay_factor_seek_bar"
                             android:layout_marginTop="@dimen/padding"
                             android:layout_marginBottom="@dimen/padding" />
 

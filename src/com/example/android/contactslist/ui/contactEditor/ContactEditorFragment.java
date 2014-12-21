@@ -139,7 +139,7 @@ public class ContactEditorFragment extends Fragment implements
 
     private Context mContext;
 
-    private TextView mEventNoteCharacterCount;
+    private TextView mGroupIntervalLimitView;
 
 
 
@@ -307,20 +307,13 @@ public class ContactEditorFragment extends Fragment implements
         //mDetailsLayout = (LinearLayout) detailView.findViewById(R.id.contact_details_layout);
         //mImageView = (ImageView) detailView.findViewById(R.id.contact_image);
         mEmptyView = (TextView) detailView.findViewById(android.R.id.empty);
-        mEventNoteCharacterCount = (TextView) detailView.findViewById(R.id.event_note_character_count_view);
-        mGroupPrimaryBehaviorView = (TextView) detailView.findViewById(R.id.event_type_title);
-        mDecayRateSeekBar = (SeekBar) detailView.findViewById(R.id.word_count_seek_bar);
-
+        mGroupIntervalLimitView = (TextView) detailView.findViewById(R.id.group_interval_limit_text_view);
+        mGroupPrimaryBehaviorView = (TextView) detailView.findViewById(R.id.group_primary_behavior_text_view);
+        mDecayRateSeekBar = (SeekBar) detailView.findViewById(R.id.decay_factor_seek_bar);
+        mGroupNameView = (TextView) detailView.findViewById(R.id.group_name_text_view);
 
         //bUTTONS
-        mDecayRateViewButton = (Button) detailView.findViewById(R.id.word_count_button);
-
-        if (mIsTwoPaneLayout) {
-            // If this is a two pane view, the following code changes the visibility of the contact
-            // name in details. For a one-pane view, the contact name is displayed as a title.
-            mGroupNameView = (TextView) detailView.findViewById(R.id.contact_name);
-            mGroupNameView.setVisibility(View.VISIBLE);
-        }
+        mDecayRateViewButton = (Button) detailView.findViewById(R.id.decay_rate_button);
 
         mDecayRateViewButton.setOnClickListener(new View.OnClickListener() {
             // perform function when pressed

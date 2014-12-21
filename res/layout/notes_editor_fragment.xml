@@ -91,7 +91,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textMultiLine"
-                        android:id="@+id/event_notes"
+                        android:id="@+id/new_notes"
                         android:layout_gravity="center_horizontal"
                         android:hint="Say something positive."
                         android:gravity="start"
@@ -120,16 +120,6 @@
                             android:layout_gravity="right"
                             android:layout_marginTop="@dimen/nibble"
                             android:layout_marginLeft="@dimen/padding" />
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/update_notes_icon"
-                            android:src="@drawable/ic_save_black_24dp"
-                            android:alpha="0.5"
-                            android:importantForAccessibility="yes"
-                            android:layout_gravity="center_horizontal"
-                            android:contentDescription="Save update text to contact notes" />
 
                         <CheckBox
                             android:layout_width="wrap_content"
@@ -180,16 +170,6 @@
                             android:padding="@dimen/padding"
                             android:longClickable="true" />
 
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/save_notes_button"
-                            android:src="@drawable/ic_action_edit"
-                            android:alpha="0.5"
-                            android:importantForAccessibility="yes"
-                            android:layout_gravity="right"
-                            android:padding="10dp"
-                            android:visibility="gone" />
                     </FrameLayout>
                 </LinearLayout>
             </LinearLayout>

@@ -20,6 +20,8 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.support.v4.app.DialogFragment;
+//import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,6 +42,7 @@ import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Contacts.Photo;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+//import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -83,6 +86,7 @@ import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
 import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
+import com.example.android.contactslist.ui.notesEditor.NotesEditorDialogFragment;
 import com.example.android.contactslist.util.Blur;
 import com.example.android.contactslist.util.BlurTransform;
 import com.example.android.contactslist.util.ImageLoader;
@@ -122,7 +126,8 @@ import java.util.concurrent.TimeUnit;
  * Uri for the contact you want to display.
  */
 public class ContactDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>
+        LoaderManager.LoaderCallbacks<Cursor>,
+       NotesEditorDialogFragment.NotesEditorDialogListener
 {
     private ContactDetailAdapter mContactDetailAdapter;
 
@@ -2699,139 +2704,88 @@ Set the FractionView with appropriate time data
 
 
 
+    final static int NOTES_EDITOR_DIALOG_REQUEST_CODE = 135;
     private void startEditNotes() {
-        editNotesTextDialog();
-        /*
-        Intent intent = new Intent(mContext, NotesEditorActivity.class);
-        intent.setData(mContactUri);
+        // Create an instance of the dialog fragment and show it
+        NotesEditorDialogFragment dialog = new NotesEditorDialogFragment().
+                newInstance(mContactNameString, mContactNotes,
+                        NOTES_EDITOR_DIALOG_REQUEST_CODE);
 
-        //intent.setDataAndType(uri, "text/plain");
-
-        // Because of an issue in Android 4.0 (API level 14), clicking Done or Back in the
-        // People app doesn't return the user to your app; instead, it displays the People
-        // app's contact list. A workaround, introduced in Android 4.0.3 (API level 15) is
-        // to set a special flag in the extended data for the Intent you send to the People
-        // app. The issue is does not appear in versions prior to Android 4.0. You can use
-        // the flag with any version of the People app; if the workaround isn't needed,
-        // the flag is ignored.
-        //intent.putExtra(Intent.EXTRA_TEXT, mNotesView.getText());
-        startActivity(intent);
-        */
+        dialog.setTargetFragment(this, NOTES_EDITOR_DIALOG_REQUEST_CODE);
+        dialog.show(getFragmentManager(), "NotesEditorDialogFragment");
     }
 
 
-    private void editNotesTextDialog(){
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the NotesEditorDialogFragment.NotesEditorDialogListener interface
 
+    @Override
+    public void onNotesEditorDialogPositiveClick(String newNotes) {
+        // User touched the dialog's positive button
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.event_notes_title);
+        // set the notes string and display
+        mContactNotes = newNotes + "\n\n" + mContactNotes;
 
-// Set up the input
-        final EditText input = new EditText(getActivity());
+        mNotesView.setText(mContactNotes);
 
-        input.setText("");
-        input.setMinHeight(200);
-
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-        builder.setView(input);
-
-
-// Set up the buttons
-        builder.setNeutralButton("Update", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Do something with the new text
-                updateContactNotes(input.getText().toString());
-            }
-        });
-
-        builder.setPositiveButton("Update with Date", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Do something with the new text
-
-                String newNotes =  input.getText().toString();
-
-                // proceed with the contact notes update only if there's content
-                if (!newNotes.isEmpty()) {
-                    updateContactNotes(getDateHeaderString() + newNotes);
-                }else{
-                    // makes a message appear to the user
-                    updateContactNotes(newNotes);
-                }
-            }
-        });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
+        // update the contacts database with the notes
+        updateContactNotes(mContactNotes);
     }
 
 
-    /*
+       /*
     Update contact notes
      */
 
-    private void updateContactNotes(String newNotes){
+    private void updateContactNotes(final String notes){
         // only make updates if there is new next
-        if (!newNotes.isEmpty()) {
-            // add the new "event" text to the top of the contact notes and clear the event notes
-            // if the add date checkbox is checked, append the update under a date header
-
-            mContactNotes = newNotes + "\n\n" + mContactNotes;
+        if (!notes.isEmpty()) {
 
             //Update the view
-            mNotesView.setText(mContactNotes);
+            mNotesView.setText(notes);
+
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    // open the interface to write out the notes
+                    final ContactNotesInterface mContactNotesInterface =
+                            new ContactNotesInterface(getActivity());
+
+                    final int updateCount =
+                            mContactNotesInterface.setContactNotes(mContactLookupKey, notes);
+
+                    final boolean insertComplete = (updateCount > 0);
+
+                    getActivity().runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (insertComplete) {
+                                Toast.makeText(getActivity(),
+                                        "Notes Saved",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getActivity(),
+                                        "Could not update database notes",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
 
 
-                new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        // open the interface to write out the notes
-                        final ContactNotesInterface mContactNotesInterface =
-                                new ContactNotesInterface(mContext);
-
-                        final int updateCount =
-                                mContactNotesInterface.setContactNotes(mContactLookupKey,
-                                        mContactNotes);
-
-                        final boolean insertComplete = (updateCount > 0);
-
-                            getActivity().runOnUiThread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    if (insertComplete) {
-                                        Toast.makeText(getActivity(),
-                                                "Notes Saved",
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(getActivity(),
-                                                "Could not update database notes",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-
-
-                    }
-                }).start();
+                }
+            }).start();
         }else {
             Toast.makeText(getActivity(), "Write something down", Toast.LENGTH_SHORT).show();
         }
     }
 
-
     /*
 Return a formatted string for the date header
- */
+*/
     private String getDateHeaderString(){
         // return only the date string
         return "*****  " + getDateAndTimeStrings((long)0)[0] + "  *****\n";
