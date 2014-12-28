@@ -2,14 +2,11 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
-+ Create class to estimate contact due date
-+ Create routine for producing the long duration statistics:
-    - average time
-    - score over time
 - Have a nightly database maintenance routine
-- Method to edit contact settings
 - figure out what to do with the event notes
-
+- When the contact list is in search mode, there needs to be something to stop the contact updtes
+    -- adds everyone to the database!
+- stop the updater from including the misses you group
 - make groups editor show mosaic of contact photos of it's photo
 - re-evaluate what needs to be saved when a fragment goes into the background
  - may be related to crashes
@@ -115,8 +112,12 @@ Get library for mpandroidchartlibrary https://github.com/PhilJay/MPAndroidChart
 
 Done
 ___________________________________________________________________
+- Method to edit contact decay setting
++ Create class to estimate contact due date
++ Create routine for producing the long duration statistics:
+    - average time
+    - score over time
 - implement update of individual contacts when viewing the contact list
-
 - OnClick listener in the groupsEditor interface is broken
 - redo data import to better support a per contact update
 - activity for creating group
@@ -125,7 +126,6 @@ ___________________________________________________________________
     - [done] hook into event database
     - [done] add in human readable date
     - [done but for address] Make values persist with screen rotation
-
 - created interface for adding to the contact notes
 - charts instead of numbers in Detail stats
 - contact detail activity header bar

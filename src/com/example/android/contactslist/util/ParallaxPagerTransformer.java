@@ -10,17 +10,14 @@ import com.example.android.contactslist.FloatingActionButton.FloatingActionButto
  */
 public class ParallaxPagerTransformer implements ViewPager.PageTransformer {
 
-    private int id_1, id_2, fab_id, fab2_id;
+    private int id_1, id_2, fab_id;
     private int border = 0;
     private float speed = 0.5f;
 
-    public ParallaxPagerTransformer(int id_1, int id_2, int fab_id, int fab2_id) {
+    public ParallaxPagerTransformer(int id_1, int id_2, int fab_id) {
         this.id_1 = id_1;
         this.id_2 = id_2;
         this.fab_id = fab_id;
-        this.fab2_id = fab2_id;
-
-
     }
 
     @Override
@@ -29,8 +26,6 @@ public class ParallaxPagerTransformer implements ViewPager.PageTransformer {
         View parallaxView_1 = view.findViewById(id_1);
         View parallaxView_2 = view.findViewById(id_2);
         FloatingActionButton2 fabView = (FloatingActionButton2) view.findViewById(fab_id);
-        FloatingActionButton2 fab2View = (FloatingActionButton2) view.findViewById(fab2_id);
-
 
         if (parallaxView_1 != null || parallaxView_2 != null) {
             if (position > -1 && position < 1) {
@@ -42,8 +37,6 @@ public class ParallaxPagerTransformer implements ViewPager.PageTransformer {
 
                 // keep the floating action button in the in place on the screen during side scroll
                 fabView.setTranslationX(-(position * width_2));
-                fab2View.setTranslationX(-(position * width_2));
-
 
                 float sc = ((float)view.getWidth() - border)/ view.getWidth();
                 if (position == 0) {

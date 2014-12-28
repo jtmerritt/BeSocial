@@ -34,6 +34,10 @@ public class GroupBehavior {
                 group.setBehavior(ContactInfo.PASSIVE_BEHAVIOR);
                 break;
 
+            case ContactInfo.EXPONENTIAL_BEHAVIOR:
+                group.setBehavior(ContactInfo.EXPONENTIAL_BEHAVIOR);
+                break;
+
             // we can set a countdown limit for the random group, but it doesn't mean anything
             case ContactInfo.RANDOM_BEHAVIOR:
                 group.setBehavior(ContactInfo.PASSIVE_BEHAVIOR);
@@ -54,8 +58,8 @@ public class GroupBehavior {
 
         }
         if(group.getName().equals(context.getResources().getString(R.string.group_app_name))){
-            group.setBehavior(ContactInfo.PASSIVE_BEHAVIOR);
-
+            group.setBehavior(ContactInfo.EXPONENTIAL_BEHAVIOR);
+            // This is the special behavior of the app, so it gets the special group name
         }
         if(group.getName().equals(context.getResources().getString(R.string.group_misses_you))){
             group.setBehavior(ContactInfo.PASSIVE_BEHAVIOR);
@@ -90,36 +94,46 @@ public class GroupBehavior {
     }
 
     static public ContactInfo getRestrictiveGroupFromList(ArrayList<ContactInfo> groups){
-        ContactInfo shortestTermGroup = null;
+        ContactInfo rankingGroup = null;
 
         for(ContactInfo group:groups){
-            if(shortestTermGroup == null){
-                shortestTermGroup = group;
+            if(rankingGroup == null){
+                rankingGroup = group;
                 continue;
             }
 
             switch (group.getBehavior()){
                 case ContactInfo.COUNTDOWN_BEHAVIOR:
 
-                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
-                            (shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR) ||
-                            (shortestTermGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
-                        shortestTermGroup = group;
+                    if((rankingGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.EXPONENTIAL_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
+                        rankingGroup = group;
                     }
-                    if((shortestTermGroup.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR) &&
-                            (group.getEventIntervalLimit() < shortestTermGroup.getEventIntervalLimit() )){
-                        shortestTermGroup = group;
+                    if((rankingGroup.getBehavior() == ContactInfo.COUNTDOWN_BEHAVIOR) &&
+                            (group.getEventIntervalLimit() < rankingGroup.getEventIntervalLimit() )){
+                        rankingGroup = group;
                     }
                     break;
+                case ContactInfo.EXPONENTIAL_BEHAVIOR:
+                    if((rankingGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.AUTOMATIC_BEHAVIOR)) {
+                        rankingGroup = group;
+                    }
+                    // There is only one group that yields this behavior, the group with the app name
+
+                    break;
                 case ContactInfo.AUTOMATIC_BEHAVIOR:
-                    if((shortestTermGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
-                            (shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
-                        shortestTermGroup = group;
+                    if((rankingGroup.getBehavior() == ContactInfo.RANDOM_BEHAVIOR) ||
+                            (rankingGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
+                        rankingGroup = group;
                     }
                     break;
                 case ContactInfo.RANDOM_BEHAVIOR:
-                    if((shortestTermGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
-                        shortestTermGroup = group;
+                    if((rankingGroup.getBehavior() == ContactInfo.PASSIVE_BEHAVIOR)) {
+                        rankingGroup = group;
                     }
                     break;
                 case ContactInfo.PASSIVE_BEHAVIOR:
@@ -128,6 +142,6 @@ public class GroupBehavior {
             }
 
         }
-        return shortestTermGroup;
+        return rankingGroup;
     }
 }

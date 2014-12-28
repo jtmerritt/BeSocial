@@ -11,6 +11,7 @@ import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 
 import com.example.android.contactslist.ContactSMSLogQuery;
+import com.example.android.contactslist.R;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.language.LanguageAnalysis;
@@ -192,6 +193,10 @@ Method to update the notification window and the activity progress bar, if avail
 
     private boolean loadSMSLogForContact(ContactInfo contact) {
 
+        int eventScore;
+        final int conversion_ratio = mContext.getResources().getInteger(R.integer.conversion_text_over_voice);
+
+
         if(contact == null){
             return false;
         }
@@ -291,6 +296,8 @@ Method to update the notification window and the activity progress bar, if avail
                             EventInfo.NOT_SENT_TO_CONTACT_STATS);
 
 
+                    eventScore = (int)((float)languageAnalysis.countWordsInString()/(float)conversion_ratio);
+
                     //Log.d("GatherSMSLog: ", "Begin language count");
 
                     //count the number of special sub strings in the sms message
@@ -299,6 +306,7 @@ Method to update the notification window and the activity progress bar, if avail
                     eventInfo.setQuestionCount(languageAnalysis.countQuestionsInString());
                     eventInfo.setFirstPersonWordCount(languageAnalysis.countFirstPersonPronounsInString());
                     eventInfo.setSecondPersonWordCount(languageAnalysis.countSecondPersonPronounsInString());
+                    eventInfo.setScore(eventScore);
                     //Log.d("GatherSMSLog: ", "End language count");
 
                     // This is a temporary record of the smsBody, not sent to the event DB

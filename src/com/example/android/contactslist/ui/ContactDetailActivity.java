@@ -101,7 +101,7 @@ public class ContactDetailActivity extends FragmentActivity
                 // add all the views that need to be altered upon side scroll
                 ParallaxPagerTransformer pt =
                         new ParallaxPagerTransformer(R.id.contact_detail_image,
-                                R.id.blurred_contact_detail_image, R.id.fab_1, R.id.fab_2);
+                                R.id.blurred_contact_detail_image, R.id.fab_1);
 
                 mPager.setPageTransformer(false, pt);
 

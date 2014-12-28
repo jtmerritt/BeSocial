@@ -12,7 +12,6 @@ import com.example.android.contactslist.eventLogs.EventInfo;
  * Methods assume the same contact is in play.
  */
 public class ContactStatsHelper {
-    Context mContext;
     ContactInfo mContact;
     int count;
     long date_millis;

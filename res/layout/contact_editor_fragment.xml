@@ -27,196 +27,114 @@
          layout mode and no contact is currently selected and therefore the this fragment will
          simply show a text message instead of contact details. -->
 
-    <TextView android:id="@+id/android:empty"
-        android:gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/no_contact_selected"
-        android:fontFamily="sans-serif-light"
-        android:visibility="gone"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-    <TextView android:id="@+id/contact_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/padding"
-        android:paddingRight="@dimen/padding"
-        android:paddingTop="@dimen/padding"
-        android:visibility="gone"
-        style="@style/contactNameTitle"
-        android:layout_weight="0.05" />
-
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/nibble"
+        android:layout_marginRight="@dimen/nibble">
+
+        <!--android:inputType="phone"
+        android:inputType="textEmailAddress"-->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+            android:text="Group Behavior"
+            android:id="@+id/group_name_text_view"
+            android:layout_gravity="center_horizontal" />
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/alert_light_frame">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/group_function_image"
+                android:src="@drawable/ic_visibility_off_black_48dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".20" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/class_layout"
+                android:gravity="center"
+                android:layout_weight=".8"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Prime Behavior"
+                    android:id="@+id/group_primary_behavior_text_view" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Interval Limit"
+                    android:id="@+id/group_interval_limit_text_view" />
+
+            </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight=".9">
+            android:layout_height="fill_parent"
+            android:id="@+id/event_word_count_layout">
 
-            <ScrollView
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:text="Decay Constant"
+                android:id="@+id/word_count_title"
+                android:layout_weight=".34"
+                android:layout_gravity="center_horizontal" />
+
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/scrollView"
-                android:layout_row="0"
-                android:layout_column="0"
-                android:layout_rowSpan="4"
-                android:fillViewport="false"
-                android:layout_marginLeft="@dimen/listview_item_padding"
-                android:layout_marginRight="@dimen/listview_item_padding">
+                android:id="@+id/event_word_count_inner_layout"
+                android:focusableInTouchMode="false"
+                android:layout_marginTop="10dp"
+                android:background="@android:drawable/alert_light_frame"
+                android:divider="@android:drawable/divider_horizontal_dark"
+                android:showDividers="middle">
 
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
+                <SeekBar
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:divider="@android:drawable/divider_horizontal_textfield"
-                    android:showDividers="beginning|middle">
+                    android:id="@+id/decay_factor_seek_bar"
+                    android:layout_weight=".80"
+                    android:layout_gravity="center_vertical"
+                    android:splitTrack="false" />
 
-                    <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:id="@+id/address_layout"
-                        android:layout_marginTop="10dp"
-                        android:weightSum="1">
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:ems="10"
+                    android:id="@+id/decay_rate_button"
+                    android:layout_weight="0.2"
+                    android:selectAllOnFocus="false" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-                            android:text="Primary Group"
-                            android:id="@+id/address_title"
-                            android:layout_weight=".33" />
-
-                        <LinearLayout
-                            android:orientation="vertical"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/class_layout"
-                            android:layout_marginTop="10dp"
-                            android:gravity="center"
-                            android:layout_weight=".66"
-                            android:background="@android:drawable/alert_light_frame">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:text="Group Name"
-                                android:id="@+id/group_name_text_view"
-                                android:layout_gravity="center_horizontal" />
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/group_type_icon_view"
-                                android:src="@drawable/ic_search_black_48dp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:text="Prime Behavior"
-                                android:id="@+id/group_primary_behavior_text_view" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:text="Interval Limit"
-                                android:id="@+id/group_interval_limit_text_view" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <!--android:inputType="phone"
-                    android:inputType="textEmailAddress"-->
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:id="@+id/event_word_count_layout">
-
-                        <LinearLayout
-                            android:orientation="horizontal"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/event_word_count_inner_layout"
-                            android:focusableInTouchMode="false"
-                            android:layout_marginTop="10dp">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-                                android:text="Decay Rate"
-                                android:id="@+id/word_count_title"
-                                android:layout_weight=".34" />
-
-                            <Button
-                                style="?android:attr/buttonStyleSmall"
-                                android:layout_width="@dimen/listed_input_item_width"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/decay_rate_button"
-                                android:layout_weight=".66"
-                                android:background="@android:drawable/alert_light_frame"
-                                android:textAlignment="center"
-                                android:shadowColor="#fff5f5f5"
-                                android:singleLine="false"
-                                android:paddingTop="5dp"
-                                android:paddingBottom="5dp"
-                                android:paddingLeft="@dimen/padding"
-                                android:minHeight="@dimen/listed_setting_item_height"
-                                android:minLines="1"
-                                android:maxLines="2"
-                                android:inputType="number"
-                                android:layout_marginLeft="@dimen/padding"
-                                android:hint="0" />
-
-                        </LinearLayout>
-
-                        <SeekBar
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/decay_factor_seek_bar"
-                            android:layout_marginTop="@dimen/padding"
-                            android:layout_marginBottom="@dimen/padding" />
+            </LinearLayout>
 
 
-                    </LinearLayout>
-
-
-                </LinearLayout>
-            </ScrollView>
         </LinearLayout>
+
 
     </LinearLayout>
 
-    <com.example.android.contactslist.FloatingActionButton.FloatingActionButton2
-        android:id="@+id/fab_1"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"
-        android:layout_marginTop="26dp"
-        android:background="@drawable/circle"
-        android:layout_gravity="bottom|right"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp">
-
-        <ImageView
-            android:layout_width="@dimen/fab_icon_size"
-            android:layout_height="@dimen/fab_icon_size"
-            android:src="@drawable/ic_save_white_24dp"
-            android:layout_gravity="center"
-            android:duplicateParentState="true"
-            android:baselineAlignBottom="false" />
-
-    </com.example.android.contactslist.FloatingActionButton.FloatingActionButton2>
 </FrameLayout>
 
 

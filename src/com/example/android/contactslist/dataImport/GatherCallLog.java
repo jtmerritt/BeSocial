@@ -16,6 +16,7 @@ import com.example.android.contactslist.notification.UpdateNotification;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 /*
     Loading event logs (phone and SMS) from the android phone and SMS database
@@ -156,6 +157,7 @@ public class GatherCallLog //extends AsyncTask<Void, Void, List<EventInfo>>
                     //TODO: why do phone calls not have eventID?
 
                     eventInfo.setContactID(mContactId);
+                    eventInfo.setScore((int)secondsToDecimalMinutes(eventDuration));
 
     		        /*Add it into the ArrayList*/
                     mEventLog.add(eventInfo);
@@ -171,6 +173,13 @@ public class GatherCallLog //extends AsyncTask<Void, Void, List<EventInfo>>
         callLogCursor.close();
     }
 
+    private double secondsToDecimalMinutes(long duration){
+        double minute = TimeUnit.SECONDS.toMinutes(duration);
+        double second = TimeUnit.SECONDS.toSeconds(duration) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.SECONDS.toMinutes(duration));
+
+        return  (minute + second/60);
+    }
 
     public interface ContactCallLogQuery {
         // A unique query ID to distinguish queries being run by the

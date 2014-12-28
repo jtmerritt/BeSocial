@@ -134,7 +134,8 @@ public class NotesEditorDialogFragment extends DialogFragment {
         characterCountView.setText(Integer.toString((int)newNotesView.getText().length()) + "/140");
 
 
-        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        // Specify the type of input expected; this, for example,
+        // sets the input as a password, and will mask the text
         newNotesView.setInputType(InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
 
         final CheckBox checkBox = (CheckBox) view.findViewById(R.id.add_date_check_box);

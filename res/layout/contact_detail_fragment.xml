@@ -67,31 +67,30 @@
                     android:id="@+id/filler_layout_container"></LinearLayout>
 
                 <LinearLayout
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:id="@+id/basic_stats_layout_container">
 
-                    <LinearLayout
+                    <com.example.android.contactslist.ui.FractionView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:id="@+id/fraction"
+                        android:paddingBottom="5dp"
                         android:orientation="vertical"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentTop="true" />
+
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:weightSum="1"
-                        android:id="@+id/a"
-                        android:layout_weight="1">
-
-                        <com.example.android.contactslist.ui.FractionView
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
-                            android:id="@+id/fraction"
-                            android:paddingBottom="5dp"
-                            android:orientation="vertical"
-                            android:layout_alignParentRight="true"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentBottom="true"
-                            android:layout_alignParentTop="true" />
-
-                    </LinearLayout>
+                        android:id="@+id/group_function_image"
+                        android:layout_gravity="bottom"
+                        android:paddingLeft="@dimen/listview_item_padding"
+                        android:src="@drawable/ic_visibility_off_white_36dp"
+                        android:clickable="true" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -510,24 +509,6 @@
             android:layout_width="@dimen/fab_icon_size"
             android:layout_height="@dimen/fab_icon_size"
             android:src="@drawable/fab_action_selector"
-            android:layout_gravity="center"
-            android:duplicateParentState="true"/>
-
-    </com.example.android.contactslist.FloatingActionButton.FloatingActionButton2>
-
-    <com.example.android.contactslist.FloatingActionButton.FloatingActionButton2
-        android:id="@+id/fab_2"
-        android:layout_width="@dimen/fab_size"
-        android:layout_height="@dimen/fab_size"
-        android:layout_marginTop="26dp"
-        android:background="@drawable/circle"
-        android:layout_gravity="left"
-        android:layout_marginLeft="16dp">
-
-        <ImageView
-            android:layout_width="@dimen/fab_icon_size"
-            android:layout_height="@dimen/fab_icon_size"
-            android:src="@drawable/ic_place_white_24dp"
             android:layout_gravity="center"
             android:duplicateParentState="true"/>
 

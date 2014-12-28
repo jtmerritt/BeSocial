@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
 
+import com.example.android.contactslist.TimeInMilliseconds;
 import com.example.android.contactslist.contactGroups.ContactGroupsList;
 import com.example.android.contactslist.contactGroups.GroupBehavior;
 import com.example.android.contactslist.contactGroups.GroupMembership;
@@ -334,8 +335,11 @@ public class Updates {
         //replace the current contact with the updated version
         contact = mContactStatsHelper.getUpdatedContactStats();
 
+        // set the interval stats and due dates
+        contact = setContactDueDate(contact);
+
         // update contact behavior and contact database
-        contact = setContact(contact, eventCount);
+        contact = setContact(contact);
 
         return contact;
     }
@@ -401,8 +405,11 @@ public class Updates {
         //replace the current contact with the updated version
         contact = mContactStatsHelper.getUpdatedContactStats();
 
+        // set the interval stats and due dates
+        contact = setContactDueDate(contact);
+
         // update contact behavior and contact database
-        contact = setContact(contact, eventCount);
+        contact = setContact(contact);
 
         return contact;
     }
@@ -658,38 +665,58 @@ public class Updates {
         return contact;
     }
 
-    private ContactInfo setContact(ContactInfo contact, int eventCount){
 
-        final long ONE_DAY = 86400000;
-        Long newInterval;
+
+    private ContactInfo setContactDueDate(ContactInfo contact){
+
+        // collect the interval stats for the contact
+        IntervalStats intervalStats = new IntervalStats(mContext, contact);
+        intervalStats.getAllEventsForContact();
+        //intervalStats.setFlagRecordDataToFile();
+        intervalStats.calculateLongStats();
+
+        // get the new contact with the updated stats
+        contact = intervalStats.getUpdatedContact();
 
         //Only update contactMasterList and the contact due date if there was a new event.
         if(contact.isUpdated()) {
 
-           // after the last event dates have been set, set the due date
-            // as dictated by the last outgoing contact date and the set behavior
-            newInterval = ONE_DAY;
+            Long newInterval = 0l;
 
+            // after the last event dates have been set, set the due date
+            // as dictated by the last outgoing contact date and the set behavior
             switch (contact.getBehavior()) {
-                // TODO Figure out what to do about updating behaviors when the XML file is imported
                 case ContactInfo.COUNTDOWN_BEHAVIOR:
                     //pull the set interval out of the stats
-                    newInterval = (long) contact.getEventIntervalLimit() * ONE_DAY;
+                    newInterval = (long) contact.getEventIntervalLimit() * TimeInMilliseconds.ONE_DAY;
                     break;
                 case ContactInfo.AUTOMATIC_BEHAVIOR:
                     //calculate the time to decay from current score
                     break;
+                case ContactInfo.EXPONENTIAL_BEHAVIOR:
+                    //calculate the time to decay from current score
+                    newInterval = (long)((double)intervalStats.getNewInterval_days()
+                            * (double)TimeInMilliseconds.ONE_DAY);
+                    break;
                 case ContactInfo.RANDOM_BEHAVIOR:
-                    //pick a random number in the range [1:365]
+                    //pick a random number in the range [1:183] half a year
                     Random r = new Random();
-                    newInterval = ONE_DAY * (long) r.nextInt(366);
+                    newInterval = TimeInMilliseconds.ONE_DAY * (long) r.nextInt(183);
                     // nextInt returns random int >= 0 and < n
                     break;
                 default:
+                case ContactInfo.PASSIVE_BEHAVIOR:
+                    newInterval = TimeInMilliseconds.TEN_YEARS;  // default for passive
+
             }
             // take the new time interval and add it to the last event out and set it as the due date
             contact.setDateContactDue(contact.getDateLastEventOut() + newInterval);
         }
+
+        return contact;
+    }
+
+    private ContactInfo setContact(ContactInfo contact){
 
         // update the contact entry in the contactStats database
         final ContactStatsContract contactStatsContract = new ContactStatsContract(mContext);

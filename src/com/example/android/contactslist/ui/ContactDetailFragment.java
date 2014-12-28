@@ -19,12 +19,9 @@ package com.example.android.contactslist.ui;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.support.v4.app.DialogFragment;
 //import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -47,7 +44,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.InputType;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -59,7 +55,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -73,11 +68,11 @@ import com.example.android.contactslist.FloatingActionMenu.SubActionButton;
 
 import com.example.android.contactslist.R;
 import com.example.android.contactslist.ScrollViewListener;
+import com.example.android.contactslist.TimeInMilliseconds;
 import com.example.android.contactslist.contactNotes.ContactNotesInterface;
 import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.contactStats.ContactStatsContentProvider;
 import com.example.android.contactslist.contactStats.ContactStatsContract;
-import com.example.android.contactslist.contactStats.IntervalStats;
 import com.example.android.contactslist.dataImport.GatherSMSLog;
 import com.example.android.contactslist.dataImport.Imports;
 import com.example.android.contactslist.eventLogs.EventInfo;
@@ -85,19 +80,15 @@ import com.example.android.contactslist.eventLogs.SocialEventsContentProvider;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.language.GatherWordCounts;
 import com.example.android.contactslist.ui.chartActivity.ContactDetailChartActivity;
+import com.example.android.contactslist.ui.contactEditor.ContactEditorDialogFragment;
 import com.example.android.contactslist.ui.eventEntry.EventEntryActivity;
 import com.example.android.contactslist.ui.notesEditor.NotesEditorDialogFragment;
 import com.example.android.contactslist.util.Blur;
-import com.example.android.contactslist.util.BlurTransform;
 import com.example.android.contactslist.util.ImageLoader;
 import com.example.android.contactslist.util.ImageUtils;
 import com.example.android.contactslist.util.ObservableScrollView;
 import com.example.android.contactslist.util.Utils;
 
-import com.squareup.picasso.*;
-import android.graphics.Bitmap.Config;
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -127,7 +118,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContactDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>,
-       NotesEditorDialogFragment.NotesEditorDialogListener
+       NotesEditorDialogFragment.NotesEditorDialogListener,
+        ContactEditorDialogFragment.ContactEditorDialogListener
 {
     private ContactDetailAdapter mContactDetailAdapter;
 
@@ -148,7 +140,6 @@ public class ContactDetailFragment extends Fragment implements
 
     private Context mContext;
 
-
     private View detailView;
 
     // Whether or not this fragment is showing in a two pane layout
@@ -163,6 +154,8 @@ public class ContactDetailFragment extends Fragment implements
     // in multiple methods throughout this class.
     private ImageView mContactDetailImageView;
     private ImageView mBlurredContactDetailImageView;
+    private ImageView mGroupFunctionImageView;
+
 
     private ImageView mImageView;
     private ImageView mEditNotesButton;
@@ -179,7 +172,6 @@ public class ContactDetailFragment extends Fragment implements
     private TextView mNotesView;
     private TextView mDetailsSubtitleView;
     private FloatingActionButton2 fab1;
-    private FloatingActionButton2 fab_hist;
 
     private FloatingActionMenu centerBottomMenu;
 
@@ -201,6 +193,7 @@ public class ContactDetailFragment extends Fragment implements
 
     private Uri mContactUri; // Stores the contact Uri for this fragment instance
     private ContactInfo mContactStats = null;
+    private ContactInfo mGroupStats = null;
     private String mContactLookupKey;
     private String mVoiceNumber = "";
     private String mSMSNumber = "";
@@ -466,6 +459,17 @@ public class ContactDetailFragment extends Fragment implements
         //Fraction View
         fractionView = (FractionView) detailView.findViewById(R.id.fraction);
 
+        mGroupFunctionImageView = (ImageView) detailView.findViewById(R.id.group_function_image);
+        mGroupFunctionImageView.setOnClickListener(new View.OnClickListener() {
+            // perform function when pressed
+            @Override
+            public void onClick(View v) {
+                // start the behavior dialog
+                startEditContact();
+            }
+        });
+
+
         // set wordcloud view
         wordCloudView = (WordCloudView) detailView.findViewById(R.id.word_cloud);
 
@@ -616,20 +620,6 @@ public class ContactDetailFragment extends Fragment implements
 
 
         fab1 = (FloatingActionButton2) detailView.findViewById(R.id.fab_1);
-        fab_hist = (FloatingActionButton2) detailView.findViewById(R.id.fab_2);
-
-        fab_hist.setOnClickListener(new View.OnClickListener() {
-            // perform function when pressed
-            @Override
-            public void onClick(View view) {
-
-                Toast.makeText(getActivity(),
-                        R.string.next_version, Toast.LENGTH_SHORT).show();
-
-                //TODO open lookback overlay
-            }
-        });
-
 
         setFloatingActionMenu();
 
@@ -654,6 +644,8 @@ public class ContactDetailFragment extends Fragment implements
             }
         });
         // http://www.survivingwithandroid.com/2014/05/android-swiperefreshlayout-tutorial.html
+
+
 
         return detailView;
     }
@@ -733,7 +725,6 @@ public class ContactDetailFragment extends Fragment implements
                 startNewEntry();
                 break;
             case R.id.run_interval_stats:
-                runIntervalStats();
                 break;
             case R.id.run_test:
                 break;
@@ -764,16 +755,6 @@ public class ContactDetailFragment extends Fragment implements
 
         // Start the edit activity
         startActivity(intent);
-    }
-
-    private void runIntervalStats() {
-        mContactStats.setDecay_rate((float)0.5);
-        IntervalStats intervalStats = new IntervalStats(mContext, mContactStats);
-        intervalStats.getAllEventsForContact();
-        intervalStats.calculateLongStats();
-        mContactStats = intervalStats.getUpdatedContact();
-
-        intervalStats.close();
     }
 
     @Override
@@ -810,7 +791,9 @@ public class ContactDetailFragment extends Fragment implements
     private void getContactStats(){
         getLoaderManager().restartLoader(ContactStatsQuery.QUERY_ID, null, this);
     }
-
+    private void getGroupStats(){
+        getLoaderManager().restartLoader(GroupStatsQuery.QUERY_ID, null, this);
+    }
     private void getVoiceNumber(){
         getLoaderManager().restartLoader(ContactVoiceNumberQuery.QUERY_ID, null, this);
     }
@@ -943,6 +926,19 @@ public class ContactDetailFragment extends Fragment implements
                         ContactStatsContentProvider.CONTACT_STATS_URI,
                         null,
                         where, whereArgs, null);
+
+            // for the display of group info
+            case GroupStatsQuery.QUERY_ID:
+                // This query loads data from ContactStatsContentProvider.
+
+                //prepare the shere and args clause for the contact lookup key
+                where = ContactStatsContract.TableEntry.KEY_CONTACT_KEY + " = ? ";
+                String[] whereArgs7 ={ Long.toString(mContactStats.getPrimaryGroupMembership()) };
+
+                return new CursorLoader(getActivity(),
+                        ContactStatsContentProvider.CONTACT_STATS_URI,
+                        null,
+                        GroupStatsQuery.WHERE, whereArgs7, null);
 
             // Get photo from file system based on contact's name
             case ContactDetailPhotoQuery.QUERY_ID:
@@ -1195,10 +1191,53 @@ public class ContactDetailFragment extends Fragment implements
                 if(mContactStats != null){
                     // set the fractionView with the contact times from mContactStats
                     setFractionView(mContactStats);
+
+                    getGroupStats();
                 }
 
                 break;
 
+            case GroupStatsQuery.QUERY_ID:
+
+                // set the content of mContactStats
+                if(data != null && data.moveToFirst()){
+                    mGroupStats = ContactStatsContract.getContactInfoFromCursor(data);
+                }
+
+                // check to make sure the contact object exists
+                if(mGroupStats != null){
+                    // set the fractionView with the contact times from mContactStats
+
+                    //set group function icon
+                    switch (mGroupStats.getBehavior()){
+                        default:
+                        case ContactInfo.IGNORED:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_visibility_off_white_36dp);
+                            break;
+                        case ContactInfo.PASSIVE_BEHAVIOR:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_visibility_white_36dp);
+                            break;
+                        case ContactInfo.COUNTDOWN_BEHAVIOR:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_timelapse_white_36dp);
+                            break;
+                        case ContactInfo.AUTOMATIC_BEHAVIOR:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_track_changes_white_36dp);
+                            break;
+                        case ContactInfo.RANDOM_BEHAVIOR:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_shuffle_white_36dp);
+                            break;
+                        case ContactInfo.EXPONENTIAL_BEHAVIOR:
+                            mGroupFunctionImageView.setImageResource(
+                                    R.drawable.ic_search_white_36dp);
+                            break;
+                    }
+                }
+                break;
 
             case ContactDetailPhotoQuery.QUERY_ID:
 
@@ -1577,7 +1616,8 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
                                     SocialEventsContract.TableEntry.KEY_WORD_COUNT));
                             mContactStats.setWordCountIn(count);
 
-                            mContactStats.setWordCountAvgIn((int) ((float) mContactStats.getWordCountIn() /
+                            mContactStats.setWordCountAvgIn((int)
+                                    ((float) mContactStats.getWordCountIn() /
                                     (float) mContactStats.getMessagesCountIn()));
 
                             count = mContactStats.getSmileyCountIn();
@@ -1644,14 +1684,12 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
                                     SocialEventsContract.TableEntry.KEY_SECOND_PERSON_WORD_COUNT));
                             mContactStats.setSecondPersonWordCountOut(count);
                         }
-
-
                         break;
                     default:
 
                 }
 
-
+/*
                 // generalized recording of event dates
                 date_millis = cursor.getInt(cursor.getColumnIndex(
                         SocialEventsContract.TableEntry.KEY_EVENT_TIME));
@@ -1666,18 +1704,16 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
                         if (date_millis > mContactStats.getDateLastEventIn()) {
                             mContactStats.setDateLastEventIn(date_millis);
                         }
-
                         break;
                     case EventInfo.OUTGOING_TYPE:
                         if (date_millis > mContactStats.getDateLastEventOut()) {
                             mContactStats.setDateLastEventOut(date_millis);
                         }
                         break;
-
                     default:
                         // This should never happen
                 }
-
+*/
 
             } while (cursor.moveToNext());
         }
@@ -1976,6 +2012,17 @@ Take the cursor containing all the event data and pace it in a contactInfo for d
         final static int QUERY_ID = 13;
     }
 
+    // for getting the event Log for the event lookback display
+    public interface GroupStatsQuery{
+        final static int QUERY_ID = 14;
+
+        // query contacts database for the group stats
+        final String WHERE = ContactStatsContract.TableEntry.KEY_CONTACT_KEY
+                + " = '" + ContactInfo.group_lookup_key + "' AND " +
+                //where the group ID is stored
+                ContactStatsContract.TableEntry.KEY_CONTACT_ID + " = ?";
+    }
+
 /*
     Build the buttons for the Contact Stats Display
 */
@@ -2139,7 +2186,6 @@ Set the FractionView with appropriate time data
     private void setFractionView(ContactInfo contactInfo) {
 
         if(contactInfo != null){
-            final int ONE_DAY = 86400000;
 
             // set the fraction view with current state of contact countdown
             // based on contact due date stored at the contact Event date
@@ -2149,8 +2195,8 @@ Set the FractionView with appropriate time data
             Long last_event = (contactInfo.getDateLastEventIn() > contactInfo.getDateLastEventOut() ?
                     contactInfo.getDateLastEventIn() : contactInfo.getDateLastEventOut());
 
-            int days_left = (int) ((contactInfo.getDateEventDue() - now.toMillis(true)) / ONE_DAY);
-            int days_in_span = (int) ((contactInfo.getDateEventDue() - last_event) / ONE_DAY);
+            int days_left = (int) ((contactInfo.getDateEventDue() - now.toMillis(true)) / TimeInMilliseconds.ONE_DAY);
+            int days_in_span = (int) ((contactInfo.getDateEventDue() - last_event) / TimeInMilliseconds.ONE_DAY);
 
             fractionView.setFraction(days_left, days_in_span);
         }
@@ -2781,6 +2827,67 @@ Set the FractionView with appropriate time data
         }else {
             Toast.makeText(getActivity(), "Write something down", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    final static int CONTACT_EDITOR_DIALOG_REQUEST_CODE = 136;
+    private void startEditContact() {
+
+        // Create an instance of the dialog fragment and show it
+        ContactEditorDialogFragment dialog = new ContactEditorDialogFragment().
+                newInstance(mContactStats,
+                        mGroupStats,
+                        CONTACT_EDITOR_DIALOG_REQUEST_CODE);
+
+        dialog.setTargetFragment(this, CONTACT_EDITOR_DIALOG_REQUEST_CODE);
+        dialog.show(getFragmentManager(), "ContactEditorDialogFragment");
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the NotesEditorDialogFragment.NotesEditorDialogListener interface
+
+    @Override
+    public void onContactEditorDialogPositiveClick(Float newDecayRate) {
+        // User touched the dialog's positive button
+
+        // save the new decay rate
+        mContactStats.setDecay_rate(newDecayRate);
+        updateContactStats();
+    }
+
+    private void updateContactStats(){
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+/*                IntervalStats intervalStats = new IntervalStats(mContext, mContactStats);
+                intervalStats.getAllEventsForContact();
+                //intervalStats.setFlagRecordDataToFile();
+                intervalStats.calculateLongStats();
+                mContactStats = intervalStats.getUpdatedContact();*/
+
+                // update the contact entry in the contactStats database
+                final ContactStatsContract contactStatsContract = new ContactStatsContract(mContext);
+                //Update the contacts database with the contact stats
+                contactStatsContract.updateContact(mContactStats);
+                contactStatsContract.close();
+
+
+/*                getActivity().runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setFractionView(mContactStats);
+
+                    }
+                });*/
+
+            }
+        }).start();
+
     }
 
     /*

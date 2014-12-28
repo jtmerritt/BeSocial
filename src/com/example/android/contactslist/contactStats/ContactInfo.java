@@ -8,6 +8,7 @@ public class ContactInfo {
     final public static int RANDOM_BEHAVIOR = 2;
     final public static int COUNTDOWN_BEHAVIOR = 3;
     final public static int AUTOMATIC_BEHAVIOR = 4;
+    final public static int EXPONENTIAL_BEHAVIOR = 5;
     final static public String group_lookup_key = "GROUP";
 
     // if a contact is equal to this row ID, then we know it's new and not committed
@@ -38,7 +39,7 @@ public class ContactInfo {
     private int eventCount = 0; // -
 
 
-    private float decay_rate = 0;
+    private float decay_rate = 1.0f;
 
     private long primary_group_membership = 0;  //by ID //-
 

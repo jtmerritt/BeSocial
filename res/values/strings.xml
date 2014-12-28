@@ -280,6 +280,16 @@
     </string-array>
 
 
+    <!--List of Group Behaviors-->
+    <string-array name="array_of_group_behaviors">
+        <item>Ignored</item>
+        <item>Passive</item>
+        <item>Random</item>
+        <item>Countdown</item>
+        <item>Automatic</item>
+        <item>Exponential Fall</item>
+    </string-array>
+
     <!-- Event Classifications -->
     <string name="incoming_title">Incoming</string>
     <string name="outgoing_title">Outgoing</string>

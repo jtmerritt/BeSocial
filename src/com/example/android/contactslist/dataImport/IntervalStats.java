@@ -1,10 +1,16 @@
-package com.example.android.contactslist.contactStats;
+package com.example.android.contactslist.dataImport;
 
 import android.content.Context;
 import android.util.Log;
 
+import com.example.android.contactslist.CommunicationModels.CommunicationModel;
+import com.example.android.contactslist.CommunicationModels.CountdownModel;
 import com.example.android.contactslist.CommunicationModels.ExponentialDecayModel;
+import com.example.android.contactslist.CommunicationModels.LinearDecayModel;
+import com.example.android.contactslist.CommunicationModels.PowerDecayModel;
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.TimeInMilliseconds;
+import com.example.android.contactslist.contactStats.ContactInfo;
 import com.example.android.contactslist.eventLogs.EventInfo;
 import com.example.android.contactslist.eventLogs.SocialEventsContract;
 import com.example.android.contactslist.notification.FileIO;
@@ -24,9 +30,11 @@ public class IntervalStats {
     ContactInfo mContact;
     List<EventInfo> mContactEventList;
     SocialEventsContract eventDb;
+    boolean record_data_to_file = false;
+    float newInterval_days = 0;
 
 
-    final int ONE_DAY = 86400000;
+    final double TRIGGER_THRESHOLD = 0.75;
     final int conversion_ratio;
 
 
@@ -48,7 +56,9 @@ public class IntervalStats {
         eventDb.close();
     }
 
-
+    public float getNewInterval_days(){
+        return newInterval_days;
+    }
 
     public void getAllEventsForContact(){
         if(mContactEventList != null){
@@ -71,6 +81,9 @@ public class IntervalStats {
         // This should be in ascending sort order on event time
     }
 
+    public void setFlagRecordDataToFile(){
+        record_data_to_file = true;
+    }
 
     public void calculateLongStats(){
 
@@ -85,9 +98,12 @@ public class IntervalStats {
         int eventUpdateReturn;
         double eventHoursDiff;
 
-        ExponentialDecayModel model = new ExponentialDecayModel();
+        CommunicationModel model = null;
 
-        FileIO recordEventData = new FileIO(mContext, mContact);
+        FileIO recordEventData = null;
+        if(record_data_to_file) {
+            recordEventData = new FileIO(mContext, mContact);
+        }
 
         if(mContactEventList == null || mContactEventList.size() == 0) {
 
@@ -97,8 +113,24 @@ public class IntervalStats {
         }
 
 
+        //Choose the communication model
+        switch (mContact.getBehavior()) {
+            case ContactInfo.EXPONENTIAL_BEHAVIOR:
+                model = new ExponentialDecayModel();
+                break;
+            default:
+            case ContactInfo.COUNTDOWN_BEHAVIOR:
+            case ContactInfo.AUTOMATIC_BEHAVIOR:
+            case ContactInfo.RANDOM_BEHAVIOR:
+            case ContactInfo.PASSIVE_BEHAVIOR:
+                // If it's one of these behaviors, then set the blank model
+                model = new CommunicationModel();
+                return;
+        }
+
+
         /*
-        What counts as contact?
+        What counts as an event?
         For these purposes, it is only useful when the user initiates contact or has mutual contact.
         As such, sending a text-based message, or having a phone call satisfies.
 
@@ -123,12 +155,8 @@ public class IntervalStats {
             wordCount = event.getWordCount();
 
             // normalized combined data
-            eventScore = (int)wordCount
-                    + (int)(conversion_ratio*secondsToDecimalMinutes(eventDuration));
-
-            //set the score for each event
-            event.setScore(eventScore);
-
+            eventScore = (int)((float)wordCount/(float)conversion_ratio)
+                    + (int)(secondsToDecimalMinutes(eventDuration));
 
 
             // collect interval data
@@ -161,8 +189,10 @@ public class IntervalStats {
                     //Second, update the model value with the latest event score
                     model.addToValue(eventScore);
 
-                    //add data to the output file
-                    recordEventData.recordEventData(event, eventHoursDiff);
+                    if(record_data_to_file && recordEventData != null) {
+                        //add data to the output file
+                        recordEventData.recordEventData(event, eventHoursDiff);
+                    }
 
                     // record keeping for the next data point
                     lastEventTime = event.getDate();
@@ -170,8 +200,12 @@ public class IntervalStats {
                 }
 
 
-            // only update the database if the score is greater than zero
-            if(eventScore > 0){
+            // only update the database if its different from that listed in the event
+            if(eventScore != event.getScore()){
+
+                //set the score for each event
+                event.setScore(eventScore);
+
                 //update event record
                 eventUpdateReturn = eventDb.updateEvent(event);
                 switch (eventUpdateReturn){
@@ -190,22 +224,27 @@ public class IntervalStats {
         Log.d("INTERVAL STATS: ", "End Event Chain Analysis");
 
 
+        // collect some event interval stats
         // protect against zero divides
         if(eventCount > 0) {
             mContact.setEventIntervalAvg((int)(((float)sumOfAllIntervals /
-                    ((float) eventCount))/(float)ONE_DAY));
-            mContact.setEventIntervalLongest((int)((float)eventIntervalLongest/(float)ONE_DAY));
-        }else {
-            //since value is indeterminant, set to a large value
-            mContact.setEventIntervalAvg(999);
-            mContact.setEventIntervalLongest(999);
+                    ((float) eventCount))/(float) TimeInMilliseconds.ONE_DAY));
+            mContact.setEventIntervalLongest((int)((float)eventIntervalLongest/
+                    (float)TimeInMilliseconds.ONE_DAY));
         }
 
         // set the standing_value for the contact
         mContact.setStanding((float)model.getCurrentValue());
 
-        // close the file
-        recordEventData.close();
+
+        // record the number of days until the next contact due date.
+        newInterval_days = (float)(model.estimatedTriggerTime(TRIGGER_THRESHOLD) / (double)24 );
+
+
+        if(recordEventData != null) {
+            // close the file
+            recordEventData.close();
+        }
     }
 
 
