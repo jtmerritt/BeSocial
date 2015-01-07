@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.android.contactslist.R;
+import com.example.android.contactslist.util.TimeStamp;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -175,7 +176,7 @@ public class NotesEditorDialogFragment extends DialogFragment {
 
                     if(checkBox.isChecked()) {
                         //Append the new string to the existing notes
-                        mNewNotes = getDateHeaderString() + newNotes;
+                        mNewNotes = TimeStamp.getDateHeaderString(getActivity()) + newNotes;
                     }else {
                         mNewNotes = newNotes;
                     }
@@ -193,38 +194,6 @@ public class NotesEditorDialogFragment extends DialogFragment {
         });
 
         return builder.create();
-    }
-
-    /*
-Return a formatted string for the date header
-*/
-    private String getDateHeaderString(){
-        // return only the date string
-        return "*****  " + getDateAndTimeStrings((long)0)[0] + "  *****\n";
-    }
-
-    /*
-    * Return a string for the current calendar date
-     */
-
-    private String[] getDateAndTimeStrings(Long timeInMills){
-        // set the default time to now
-        Date date = new Date();
-
-        // if the time is not 0, then we should set the date to it
-        if(timeInMills != 0){
-            date.setTime(timeInMills);
-        }
-
-        DateFormat formatDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
-        String formattedEventDate = formatDate.format(date);
-
-        DateFormat formatTime = new SimpleDateFormat("HH:mm");
-        String formattedEventTime = formatTime.format(date);
-
-        String[] date_and_time = {formattedEventDate, formattedEventTime};
-
-        return date_and_time;
     }
 
     /**

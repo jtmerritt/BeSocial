@@ -50,7 +50,7 @@
             android:autoText="false"
             android:layout_gravity="center_vertical" />
 
-        <com.example.android.contactslist.ui.SparkBarChartView
+        <com.example.android.contactslist.ui.SparkLineList.SparkBarChartView
             android:layout_width="0dp"
             android:layout_height="35dp"
             android:id="@+id/spark_bar_chart"

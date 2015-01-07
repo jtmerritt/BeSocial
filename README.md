@@ -2,6 +2,7 @@ TODO: All THIS STUFF
 ___________________________________________________________________
 
 ***Priority List***
+- Remove StatsLayout to its own class
 - Have a nightly database maintenance routine
 - figure out what to do with the event notes
 - When the contact list is in search mode, there needs to be something to stop the contact updtes
@@ -10,7 +11,8 @@ ___________________________________________________________________
 - make groups editor show mosaic of contact photos of it's photo
 - re-evaluate what needs to be saved when a fragment goes into the background
  - may be related to crashes
-
+- find exponential decay icon
+- implement check for existance of Misses You group
 - background images
     - from text messages
     - internet source
@@ -47,6 +49,7 @@ ___________________________________________________________________
  - https://developer.android.com/training/material/theme.html
 
 ***Bug List***
+- Random other contacts are getting added to the Misses You Group
 - not entering a number in the wordcount dialog of the event entry fragment, hitting OK, causes crash
 - crashing when contact notes are updated
 - Is it a problem that the method that creates the master contact list for the update, is also

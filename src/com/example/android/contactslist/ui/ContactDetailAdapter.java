@@ -1,6 +1,7 @@
 package com.example.android.contactslist.ui;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -8,14 +9,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import java.util.ArrayList;
-import android.database.Cursor;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AlphabetIndexer;
 
-import com.example.android.contactslist.R;
+import java.util.ArrayList;
 
 
 /**
@@ -24,16 +20,15 @@ import com.example.android.contactslist.R;
  */
 public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
 
-    private ArrayList<ContactDetailFragment> mFragments;
+    private ArrayList<TestContactDetailFragment> mFragments;
     private ViewPager mPager;
-    private AlphabetIndexer mAlphabetIndexer; // Stores the AlphabetIndexer instance
-
 
     public ContactDetailAdapter(Context context, FragmentManager fm) {
         super(fm);
 
-        mFragments = new ArrayList<ContactDetailFragment>();
+        mFragments = new ArrayList<TestContactDetailFragment>();
    }
+
 
     @Override
     public Fragment getItem(int i) {
@@ -45,9 +40,9 @@ public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
         return mFragments.size();
     }
 
-    public void add(ContactDetailFragment parallaxFragment) {
-        parallaxFragment.setAdapter(this);
-        mFragments.add(parallaxFragment);
+    public void add(TestContactDetailFragment fragment) {
+        fragment.setAdapter(this);
+        mFragments.add(fragment);
         notifyDataSetChanged();
         mPager.setCurrentItem(getCount() - 1, true);
 
@@ -55,25 +50,21 @@ public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
 
     public void swapCursor (Cursor newCursor){
 
-        Bundle bundle;
-        ContactDetailFragment frag;
-        Uri contactUri;
-
         if((newCursor != null) && (newCursor.moveToFirst())){
             do{
 
                 // Generates the contact lookup Uri
-                contactUri = ContactsContract.Contacts.getLookupUri(
+                final Uri contactUri = ContactsContract.Contacts.getLookupUri(
                         newCursor.getLong(ContactsListFragment.ContactsQuery.ID),
                         newCursor.getString(ContactsListFragment.ContactsQuery.LOOKUP_KEY));
 
-                bundle = new Bundle();
-                bundle.putParcelable(ContactDetailFragment.EXTRA_CONTACT_URI, contactUri);
-                frag = new ContactDetailFragment();
+                final Bundle bundle = new Bundle();
+                bundle.putParcelable(TestContactDetailFragment.EXTRA_CONTACT_URI, contactUri);
+                final TestContactDetailFragment fragment = new TestContactDetailFragment();
 
-                frag.setArguments(bundle);
+                fragment.setArguments(bundle);
 
-                this.add(frag);
+                this.add(fragment);
             }while(newCursor.moveToNext());
         }else{
 
@@ -90,8 +81,8 @@ public class ContactDetailAdapter  extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
-    public void remove(ContactDetailFragment parallaxFragment) {
-        mFragments.remove(parallaxFragment);
+    public void remove(TestContactDetailFragment fragment) {
+        mFragments.remove(fragment);
 
         int pos = mPager.getCurrentItem();
         notifyDataSetChanged();

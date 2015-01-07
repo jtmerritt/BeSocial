@@ -16,6 +16,7 @@ import java.lang.Math;
  */
 public class ExponentialDecayModel extends CommunicationModel{
 
+    private final double MULTIPLIER = 10;
 
     // method calculates the result after some time interval,
     // and replaces the initial condition as setup for the next calculation
@@ -24,7 +25,7 @@ public class ExponentialDecayModel extends CommunicationModel{
 
         // do nothing if the interval is less than an hour
         if(hours >= 1){
-            mYo = mYo*Math.pow(Math.E, -mDecayRate*hours/10);  // decrement value for time
+            mYo = mYo*Math.pow(Math.E, -mDecayRate*hours/MULTIPLIER);  // decrement value for time
         }
         return mYo;
     }
@@ -33,7 +34,7 @@ public class ExponentialDecayModel extends CommunicationModel{
     public double estimatedTriggerTime(double yEnd){
 
         // return the projection of the number of hours to decay to the finish point, yEnd
-        return 10*Math.log(yEnd/mYo)/-mDecayRate;
+        return MULTIPLIER*Math.log(yEnd/mYo)/-mDecayRate;
     }
 
 }

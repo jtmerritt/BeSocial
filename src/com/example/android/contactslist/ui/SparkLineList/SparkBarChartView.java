@@ -1,4 +1,4 @@
-package com.example.android.contactslist.ui;
+package com.example.android.contactslist.ui.SparkLineList;
 
 import android.content.Context;
 import android.graphics.Canvas;
