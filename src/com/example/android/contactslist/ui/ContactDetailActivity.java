@@ -17,10 +17,12 @@
 package com.example.android.contactslist.ui;
 
 import android.annotation.TargetApi;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -92,6 +94,10 @@ public class ContactDetailActivity extends FragmentActivity
             mContactUri = getIntent().getData();
             mGroupID = getIntent().getIntExtra("group_id", -1);
 
+            final SharedPreferences sharedPref =
+                    PreferenceManager.getDefaultSharedPreferences(this);
+            useAdapter = sharedPref.
+                    getBoolean("side_scroll_contacts_checkbox_preference_key", false);
 
             if(useAdapter){
                 setContentView(R.layout.contact_detail_activity);
@@ -99,12 +105,13 @@ public class ContactDetailActivity extends FragmentActivity
                 mPager = (ViewPager) findViewById(R.id.pager);
 
                 // add all the views that need to be altered upon side scroll
+                /*
                 ParallaxPagerTransformer pt =
                         new ParallaxPagerTransformer(R.id.contact_detail_image,
                                 R.id.blurred_contact_detail_image, R.id.fab_1);
 
                 mPager.setPageTransformer(false, pt);
-
+                */
                 mContactDetailAdapter = new ContactDetailAdapter(this, getSupportFragmentManager());
                 mContactDetailAdapter.setPager(mPager);
 
@@ -128,7 +135,8 @@ public class ContactDetailActivity extends FragmentActivity
 
                     // Adds a newly created ContactDetailFragment that is instantiated with the
                     // data Uri
-                    ft.add(android.R.id.content, ContactDetailFragment.newInstance(mContactUri), TAG);
+                    ft.add(android.R.id.content,
+                            ContactDetailFragment.newInstance(mContactUri), TAG);
                     ft.commit();
                 }
             }
@@ -195,12 +203,15 @@ public class ContactDetailActivity extends FragmentActivity
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
+        // this is only called if useAdapter = true
+
         String testKey;
         // Parse the contact uri to get the lookup key for the contact
         List<String> path = mContactUri.getPathSegments();
         // the lookup key is the second element in
         String uriKey = path.get(path.size() - 2);
 
+        Log.d(TAG, "OnLoadFinished - Loading URI: " + uriKey);
 
         // This swaps the new cursor into the adapter.
         switch (loader.getId()) {
@@ -219,51 +230,13 @@ public class ContactDetailActivity extends FragmentActivity
                 }
 
 
-                    mContactDetailAdapter.swapCursor(data);
+                mContactDetailAdapter.swapCursor(data);
 
                 mPager.setAdapter(mContactDetailAdapter);
                 mPager.setCurrentItem(mStartingAdapterPosition);
                 mPager.setOffscreenPageLimit(3);
 
-
-                /*
-                mPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
-
-                    private     int scrollState=-1;
-
-
-                    @Override
-                    public void onPageSelected(int newPositon) {
-                    }
-
-                    @Override
-                    public void onPageScrolled(int position , float positionOffset, int positionOffsetPixel) {
-
-                        // if there is a side scroll over 100 pixels
-                        if(scrollState==ViewPager.SCROLL_STATE_DRAGGING &&
-                                Math.abs(positionOffsetPixel) > 100)
-                        {
-                            // stuff goes here
-                        }
-                    }
-
-                    @Override
-                    public void onPageScrollStateChanged(int state) {
-                        scrollState=state;
-
-
-                        Log.d("LMTLOGGERR",
-                                "   SCROLL_STATE_DRAGGING: "+ViewPager.SCROLL_STATE_DRAGGING +
-                                "   SCROLL_STATE_IDLE: "+ViewPager.SCROLL_STATE_IDLE +
-                                "   SCROLL_STATE_SETTLING: "+ViewPager.SCROLL_STATE_SETTLING +
-                                "   current state: "+state);
-
-
-                    }
-                });
-                 */
-
-               break;
+                break;
             default:
 
 
@@ -283,7 +256,10 @@ public class ContactDetailActivity extends FragmentActivity
     public void onDestroy()
     {
         super.onDestroy();
-        mPager.removeAllViews();
+
+        if(useAdapter) {
+            mPager.removeAllViews();
+        }
     }
 
 }
