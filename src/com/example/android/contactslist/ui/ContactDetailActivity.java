@@ -105,13 +105,13 @@ public class ContactDetailActivity extends FragmentActivity
                 mPager = (ViewPager) findViewById(R.id.pager);
 
                 // add all the views that need to be altered upon side scroll
-                /*
+
                 ParallaxPagerTransformer pt =
                         new ParallaxPagerTransformer(R.id.contact_detail_image,
                                 R.id.blurred_contact_detail_image, R.id.fab_1);
 
                 mPager.setPageTransformer(false, pt);
-                */
+
                 mContactDetailAdapter = new ContactDetailAdapter(this, getSupportFragmentManager());
                 mContactDetailAdapter.setPager(mPager);
 

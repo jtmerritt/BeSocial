@@ -97,4 +97,10 @@
         android:summary="@string/animate_detail_chart_preference_summary"
         android:defaultValue="true" />
 
+    <CheckBoxPreference
+        android:key="side_scroll_contacts_checkbox_preference_key"
+        android:title="Enable contact detail view swipe"
+        android:summary="Swipe left/right to brows through contacts in the detail view"
+        android:defaultValue="false" />
+
 </PreferenceScreen>
