@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/pchart">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:id="@+id/event_class_spinner"
+            android:gravity="center"
+            android:ellipsize="marquee"
+            android:prompt="@string/event_class_prompt"
+            android:spinnerMode="dialog"
+            android:layout_toLeftOf="@+id/contact_image" />
+
+        <ImageView
+            android:id="@+id/contact_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_contact_picture_180_holo_light"
+            android:contentDescription="@string/imageview_description"
+            android:minWidth="197dp"
+            android:minHeight="197dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:paddingBottom="5dp"
+        android:orientation="vertical">
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Auto Scale"
+            android:id="@+id/autoScale"
+            android:layout_centerHorizontal="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trend"
+            android:id="@+id/trend" />
+
+    </RelativeLayout>
+
+    <!-- This view will be displayed when the views above are hidden. That happens when in two-pane
+         layout mode and no contact is currently selected and therefore the this fragment will
+         simply show a text message instead of contact details. -->
+
+    <TextView android:id="@+id/android:empty"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_contact_selected"
+        android:fontFamily="sans-serif-light"
+        android:visibility="gone"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+</LinearLayout>

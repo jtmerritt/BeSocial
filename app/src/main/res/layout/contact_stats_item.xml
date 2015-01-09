@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2013 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- This layout is used to display a single mailing address for a contact. In the case of multiple
+     mailing addresses it could be inflated multiple times and displayed in a ScrollView container
+     to let the user more easily scroll over all addresses. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+    android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+    android:showDividers="beginning"
+    android:gravity="center_horizontal"
+    style="@android:style/TextAppearance.Holo.Small"
+    android:baselineAligned="false"
+    android:paddingLeft="@dimen/padding"
+    android:paddingRight="@dimen/padding"
+    android:paddingTop="5dp"
+    android:focusableInTouchMode="true"
+    android:divider="@android:drawable/divider_horizontal_textfield"
+    android:dividerPadding="10dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/contact_stats_item"
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight=".7"
+            style="@style/AppTheme"
+            android:textColor="@color/off_white_1"
+            android:autoText="false"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            style="@style/AppTheme"
+            android:id="@+id/contact_stats_item_out_value"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".15"
+            android:linksClickable="false"
+            android:autoText="false"
+            android:textColor="@color/off_white_1"
+            android:layout_gravity="center"
+            android:textAlignment="center" />
+
+        <TextView
+            style="@style/AppTheme"
+            android:id="@+id/contact_stats_item_in_value"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".15"
+            android:linksClickable="false"
+            android:autoText="false"
+            android:textColor="@color/off_white_1"
+            android:layout_gravity="center_vertical"
+            android:textAlignment="center" />
+    </LinearLayout>
+
+</LinearLayout>

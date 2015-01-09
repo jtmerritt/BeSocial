@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2013 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- This file defines various styles for the application. As this file is located in the /values
+     subdirectory the styles defined here will be used by default unless the styles are redefined
+     inside a more specific resource directory such as /values-sw600dp. -->
+
+<resources>
+
+    <style name="AppTheme" parent="@android:style/Theme"/>
+
+    <style name="ContactListView">
+        <item name="android:scrollbars">none</item> <!-- kill the scrollbar -->
+        <item name="android:verticalScrollbarPosition">right</item>
+        <item name="android:fastScrollAlwaysVisible">false</item> <!-- hide the additional scroll marker -->
+        <item name="android:scrollbarStyle">insideOverlay</item>
+    </style>
+
+    <style name="listViewActivatedStyle"/>
+
+    <style name="quickContactBadgeStyle">
+        <item name="android:background">@drawable/quickcontact_badge_small</item>
+    </style>
+
+    <style name="contact_detail_item_background">
+        <item name="android:background">@drawable/rounded_rectangle</item>
+    </style>
+
+    <style name="searchTextHiglight">
+        <item name="android:textColor">@android:color/holo_blue_light</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="addressHeader" parent="@android:style/TextAppearance.Small">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="addressHeader1" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">@color/red</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+
+    <style name="callDuration" parent="@android:style/TextAppearance.Small">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:alpha">10</item>
+    </style>
+
+    <style name="addressDetail" parent="@android:style/TextAppearance.Medium">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:alpha">10</item>
+    </style>
+
+
+    <style name="contactNameTitle" parent="@android:style/TextAppearance.Large">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
+    <style name="addressButton"/>
+
+
+
+
+    <!-- the theme applied to the application or activity -->
+    <style name="CustomActionBarTheme"
+        parent="@android:style/Theme.Holo.Light.DarkActionBar">
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="MyActionBar"
+        parent="@android:style/Widget.Holo.ActionBar">
+        <item name="android:windowActionBarOverlay">false</item>
+
+        <item name="android:colorBackground">@color/primary_500</item>
+        <item name="android:colorForeground">@color/primary_500</item>
+        <item name="android:color">@color/primary_500</item>
+
+
+        <item name="android:titleTextStyle">@style/ActionBarTitle</item>
+
+    </style>
+
+    <style name="ActionBarTitle"
+        parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/standard_text_on_white</item>
+
+    </style>
+
+</resources>

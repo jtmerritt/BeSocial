@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2013 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- This layout is used to display a single mailing address for a contact. In the case of multiple
+     mailing addresses it could be inflated multiple times and displayed in a ScrollView container
+     to let the user more easily scroll over all addresses. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+    android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/date_text_view"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/nibble"
+        android:textColor="@color/off_white_1" />
+
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:showDividers="middle"
+                  android:dividerPadding="12dp"
+                  android:minHeight="48dp"
+                  android:divider="?android:attr/listDivider"
+        android:background="@drawable/rounded_rectangle_outgoing_event"
+        android:layout_marginTop="@dimen/nibble"
+        android:layout_marginLeft="@dimen/left_text_padding">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/nibble"
+            android:layout_gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/event_class_icon"
+                android:src="@drawable/ic_textsms_white_24dp"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                    android:id="@+id/time_text_view"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                android:minWidth="50dp"
+                android:alpha="0.5"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+        <TextView
+                android:id="@+id/message"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+            android:paddingRight="@dimen/padding"
+            android:paddingLeft="@dimen/padding"
+            android:textAlignment="center"
+            android:layout_marginTop="@dimen/nibble"
+            android:layout_marginBottom="@dimen/nibble"
+            android:gravity="center_vertical"
+            android:alpha="0.85" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/nibble"></FrameLayout>
+
+</LinearLayout>

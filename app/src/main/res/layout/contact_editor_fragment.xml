@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2013 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!-- This layout is used by ContactDetailFragment to show contact details: contact photo, contact
+     display name and a dynamic number of addresses (if the contact has any) inside a ScrollView.
+-->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- This view will be displayed when the views above are hidden. That happens when in two-pane
+         layout mode and no contact is currently selected and therefore the this fragment will
+         simply show a text message instead of contact details. -->
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/nibble"
+        android:layout_marginRight="@dimen/nibble">
+
+        <!--android:inputType="phone"
+        android:inputType="textEmailAddress"-->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+            android:text="Group Behavior"
+            android:id="@+id/group_name_text_view"
+            android:layout_gravity="center_horizontal" />
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/alert_light_frame">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/group_function_image"
+                android:src="@drawable/ic_visibility_off_black_48dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".20" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/class_layout"
+                android:gravity="center"
+                android:layout_weight=".8"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Prime Behavior"
+                    android:id="@+id/group_primary_behavior_text_view" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Interval Limit"
+                    android:id="@+id/group_interval_limit_text_view" />
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/event_word_count_layout">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:text="Decay Constant"
+                android:id="@+id/word_count_title"
+                android:layout_weight=".34"
+                android:layout_gravity="center_horizontal" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/event_word_count_inner_layout"
+                android:focusableInTouchMode="false"
+                android:layout_marginTop="10dp"
+                android:background="@android:drawable/alert_light_frame"
+                android:divider="@android:drawable/divider_horizontal_dark"
+                android:showDividers="middle">
+
+                <SeekBar
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/decay_factor_seek_bar"
+                    android:layout_weight=".80"
+                    android:layout_gravity="center_vertical"
+                    android:splitTrack="false" />
+
+                <EditText
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:ems="10"
+                    android:id="@+id/decay_rate_button"
+                    android:layout_weight="0.2"
+                    android:selectAllOnFocus="false" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</FrameLayout>
+
+
+

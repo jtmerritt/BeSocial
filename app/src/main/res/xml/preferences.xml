@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="contact_status_alert_key"
+        android:title="@string/contact_status_alert_preference_title"
+        android:summary="@string/contact_status_alert_preference_summary"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="update_db_checkbox_preference_key"
+        android:title="@string/update_db_preference_title"
+        android:summary="@string/update_db_preference_summary"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="update_db_at_startup_checkbox_preference_key"
+        android:title="@string/update_db_at_startup_preference_title"
+        android:summary="@string/update_db_at_startup_preference_summary"
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
+        android:dependency="update_db_checkbox_preference_key"
+
+        android:key="sync_only_with_power_checkbox_preference_key"
+        android:title="@string/sync_only_with_power_preference_title"
+        android:summary="@string/sync_only_with_power_preference_summary"
+        android:defaultValue="false" />
+
+
+    <CheckBoxPreference
+        android:key="update_db_at_group_contact_list_checkbox_preference_key"
+        android:title="@string/update_db_at_group_contact_list_preference_title"
+        android:summary="@string/update_db_at_group_contact_list_preference_Summary"
+        android:defaultValue="false" />
+
+    <!--
+    <CheckBoxPreference
+        android:dependency="update_db_checkbox_preference_key"
+
+        android:key="sync_with_local_db_checkbox_preference_key"
+        android:title="@string/sync_with_local_sources_preference_title"
+        android:summary="@string/sync_with_local_sources_preference_summary"
+        android:defaultValue="false" />
+        -->
+
+    <CheckBoxPreference
+        android:dependency="update_db_checkbox_preference_key"
+
+        android:key="sync_with_internet_sources_checkbox_preference_key"
+        android:title="@string/sync_with_web_sources_preference_title"
+        android:summary="@string/sync_with_web_sources_preference_summary"
+        android:defaultValue="false" />
+
+    <ListPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="sync_with_internet_sources_freq_preference_key"
+        android:title="@string/sync_with_internet_sources_frequency_preference_title"
+        android:summary="@string/sync_with_internet_sources_frequency_preference_summary"
+        android:dialogTitle="@string/sync_with_internet_sources_frequency_preference_summary"
+        android:entries="@array/string_array_list_of_web_sync_freq"
+        android:entryValues="@array/contact_group_data"
+        android:defaultValue="@string/web_access_freq_default" />
+    <CheckBoxPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="Facebook_web_sources_checkbox_preference_key"
+        android:title="@string/Facebook_web_sources_preference_title"
+        android:summary="@string/Facebook_web_sources_preference_summary"
+        android:defaultValue="false" />
+    <CheckBoxPreference
+        android:dependency="sync_with_internet_sources_checkbox_preference_key"
+        android:key="Hangouts_web_sources_checkbox_preference_key"
+        android:title="@string/Hangouts_web_sources_preference_title"
+        android:summary="@string/Hangouts_web_sources_preference_summary"
+        android:defaultValue="false" />
+
+    <ListPreference
+        android:key="source_group_list_preference_key"
+        android:title="@string/choose_source_group_list_preference_title"
+        android:dialogTitle="@string/choose_source_group_list_preference_title"
+        android:entries="@array/string_array_list_of_contact_groups"
+        android:entryValues="@array/string_array_list_of_contact_groups"
+        android:defaultValue="@string/contact_group_preference_default" />
+
+    <ListPreference
+        android:key="first_day_of_week_preference_key"
+        android:title="@string/choose_first_day_of_week_preference_title"
+        android:dialogTitle="@string/choose_first_day_of_week_preference_title"
+        android:entries="@array/string_array_list_of_days_of_week"
+        android:entryValues="@array/int_array_list_of_days_of_week"
+        android:defaultValue="@string/first_day_of_week_preference_default" />
+
+    <CheckBoxPreference
+        android:key="animate_detail_chart_checkbox_preference_key"
+        android:title="@string/animate_detail_chart_preference_title"
+        android:summary="@string/animate_detail_chart_preference_summary"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="side_scroll_contacts_checkbox_preference_key"
+        android:title="Enable contact detail view swipe"
+        android:summary="Swipe left/right to brows through contacts in the detail view"
+        android:defaultValue="false" />
+
+</PreferenceScreen>
